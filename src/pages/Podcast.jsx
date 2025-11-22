@@ -74,7 +74,7 @@ export default function Podcast() {
           <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-12 rounded-3xl text-center">
             <Mic className="w-20 h-20 text-purple-400 mx-auto mb-4" />
             <h3 className="text-2xl font-black text-white mb-2">Próximamente</h3>
-            <p className="text-gray-400">Estamos preparando episodios épicos. ¡Vuelve pronto!</p>
+            <p className="text-gray-400">Estamos preparando episodios increíbles. ¡Vuelve pronto!</p>
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -169,7 +169,7 @@ export default function Podcast() {
               <Mic className="w-16 h-16 text-pink-400 mx-auto mb-4" />
               <h3 className="text-3xl font-black text-white mb-3">¿Quieres Ser Invitado?</h3>
               <p className="text-gray-300 mb-6">
-                Si tienes una historia épica del mundo gaming, escríbenos y podrías ser nuestro próximo invitado.
+                Si tienes una historia increíble del mundo gaming, escríbenos y podrías ser nuestro próximo invitado.
               </p>
               <Button className="h-12 px-8 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black rounded-xl">
                 Contactar

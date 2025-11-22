@@ -47,7 +47,7 @@ export default function Home() {
                 </span><br/>
                 y Gana Premios<br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">
-                  ÉPICOS
+                  INCREÍBLES
                 </span>
               </h1>
               
@@ -192,7 +192,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
-              ¿Por Qué <span className="text-purple-400">GamerWins?</span>
+              ¿Por Qué <span className="text-purple-400">ICC Wins?</span>
             </h2>
           </div>
 
@@ -211,7 +211,7 @@ export default function Home() {
 
             <Card className="bg-gradient-to-br from-pink-900/30 to-transparent border border-pink-500/20 p-6 rounded-2xl card-hover">
               <Zap className="w-12 h-12 text-pink-400 mb-4" />
-              <h3 className="text-xl font-black text-white mb-2">Premios Épicos</h3>
+              <h3 className="text-xl font-black text-white mb-2">Premios Increíbles</h3>
               <p className="text-gray-400 text-sm">Consolas, PCs, periféricos gaming y más.</p>
             </Card>
 

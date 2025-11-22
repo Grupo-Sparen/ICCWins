@@ -161,7 +161,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
               <p className="text-gray-400 text-sm mb-6">
                 La plataforma #1 de sorteos y comunidad gaming en Latinoamérica con ICC Agency. 
-                Únete, participa y gana premios épicos.
+                Únete, participa y gana premios increíbles.
               </p>
               <div className="flex gap-3">
                 <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" 
@@ -209,7 +209,7 @@ export default function Layout({ children, currentPageName }) {
 
           <div className="border-t border-purple-900/20 mt-8 pt-8 text-center">
             <p className="text-gray-500 text-sm">
-              © 2024 ICC WINS LATAM. Todos los derechos reservados. | Sorteos transparentes y legales
+              © 2025 ICC WINS LATAM. Todos los derechos reservados. | Sorteos transparentes y legales
             </p>
           </div>
         </div>

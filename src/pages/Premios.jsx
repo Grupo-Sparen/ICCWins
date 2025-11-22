@@ -32,7 +32,7 @@ export default function Premios() {
           </div>
           
           <h1 className="text-5xl lg:text-6xl font-black text-white mb-6">
-            Premios <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Épicos</span>
+            Premios <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Increíbles</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Explora todos los premios disponibles. Cada premio tiene su propio sorteo independiente. 
@@ -214,7 +214,7 @@ export default function Premios() {
               <Trophy className="w-16 h-16 text-purple-400 mx-auto mb-4" />
               <h3 className="text-3xl font-black text-white mb-3">¿Listo para Ganar?</h3>
               <p className="text-gray-300 mb-6 max-w-md">
-                Elige tu premio favorito y participa ahora. ¡Podrías ser el próximo ganador!
+                Elige tu premio favorito y participa ahora. ¡Podrías ser el próximo ganador increíble!
               </p>
               <Link to={createPageUrl("Participar")}>
                 <Button className="h-14 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-lg rounded-xl">
