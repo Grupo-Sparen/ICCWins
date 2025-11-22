@@ -22,10 +22,10 @@ export default function Podcast() {
           </div>
           
           <h1 className="text-5xl lg:text-6xl font-black text-white mb-6">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">GamerTalks</span> Podcast
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">ICC Talks</span> Podcast
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Conversaciones épicas sobre gaming, esports, tecnología y cultura gamer. 
+            Conversaciones increíbles sobre gaming, esports, tecnología y cultura gamer. 
             <span className="text-pink-400 font-bold"> Episodios nuevos cada semana.</span>
           </p>
         </div>
