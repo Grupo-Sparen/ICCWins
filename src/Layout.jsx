@@ -66,7 +66,7 @@ export default function Layout({ children, currentPageName }) {
                 <Trophy className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-white tracking-tight">GAMER<span className="text-purple-500">WINS</span></h1>
+                <h1 className="text-2xl font-black text-white tracking-tight">ICC <span className="text-purple-500">WINS</span></h1>
                 <p className="text-xs text-purple-400 font-semibold">LATAM COMMUNITY</p>
               </div>
             </Link>
@@ -155,12 +155,12 @@ export default function Layout({ children, currentPageName }) {
                   <Trophy className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white">GAMER<span className="text-purple-500">WINS</span></h2>
+                  <h2 className="text-xl font-black text-white">ICC <span className="text-purple-500">WINS</span></h2>
                   <p className="text-xs text-purple-400 font-semibold">LATAM COMMUNITY</p>
                 </div>
               </div>
               <p className="text-gray-400 text-sm mb-6">
-                La plataforma #1 de sorteos y comunidad gaming en Latinoamérica. 
+                La plataforma #1 de sorteos y comunidad gaming en Latinoamérica con ICC Agency. 
                 Únete, participa y gana premios épicos.
               </p>
               <div className="flex gap-3">
@@ -209,7 +209,7 @@ export default function Layout({ children, currentPageName }) {
 
           <div className="border-t border-purple-900/20 mt-8 pt-8 text-center">
             <p className="text-gray-500 text-sm">
-              © 2024 GamerWins LATAM. Todos los derechos reservados. | Sorteos transparentes y legales
+              © 2024 ICC WINS LATAM. Todos los derechos reservados. | Sorteos transparentes y legales
             </p>
           </div>
         </div>
