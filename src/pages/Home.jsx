@@ -135,7 +135,7 @@ export default function Home() {
                 <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border-2 border-purple-500/30 p-12 rounded-3xl text-center">
                   <Trophy className="w-20 h-20 text-purple-400 mx-auto mb-4" />
                   <h3 className="text-2xl font-black text-white mb-2">Próximamente</h3>
-                  <p className="text-gray-400">Nuevo premio épico muy pronto...</p>
+                  <p className="text-gray-400">Nuevo premio increíble muy pronto...</p>
                 </Card>
               )}
             </div>
