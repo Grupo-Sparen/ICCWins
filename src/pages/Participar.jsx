@@ -282,14 +282,14 @@ export default function Participar() {
                 <Button
                   onClick={() => setStep(1)}
                   variant="outline"
-                  className="flex-1 h-12 border-purple-500/30 text-white font-bold"
+                  className="flex-1 h-12 border-purple-500/30 text-black hover:text-black font-bold"
                 >
                   Volver
                 </Button>
                 <Button
                   onClick={() => setStep(3)}
                   disabled={!uploadedScreenshotUrl}
-                  className="flex-1 h-14 bg-gradient-to-r from-green-600 to-cyan-600 hover:from-green-700 hover:to-cyan-700 text-white font-black text-lg rounded-xl disabled:opacity-50"
+                  className="flex-1 h-14 bg-gradient-to-r from-green-600 to-cyan-600 hover:from-green-700 hover:to-cyan-700 text-black hover:text-black font-black text-lg rounded-xl disabled:opacity-50"
                 >
                   Confirmar Pago
                 </Button>
