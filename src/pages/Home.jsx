@@ -284,7 +284,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="bg-gradient-to-r from-purple-600 to-pink-600 p-12 rounded-3xl text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wIDhoLTJ2LTJoMnYyem00IDBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-20"></div>
-            
+
             <div className="relative">
               <Star className="w-16 h-16 text-yellow-300 mx-auto mb-6" />
               <h2 className="text-4xl lg:text-5xl font-black text-white mb-6">
@@ -303,6 +303,56 @@ export default function Home() {
           </Card>
         </div>
       </section>
-    </div>
-  );
-}
+
+      {/* Influencers Section */}
+      <section className="py-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="bg-gradient-to-br from-[#1a0f2e] to-[#0f0818] border-2 border-purple-500/40 p-12 lg:p-16 rounded-3xl text-center relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 left-0 w-32 h-32 bg-pink-600/30 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-40 h-40 bg-purple-600/30 rounded-full blur-3xl"></div>
+
+            <div className="relative">
+              <Sparkles className="w-12 h-12 text-pink-400 mx-auto mb-6" />
+
+              <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
+                ¿List@ para <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Brillar?</span>
+              </h2>
+
+              <p className="text-lg lg:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+                Únete a la comunidad de creadores más innovadora y transforma tu pasión 
+                en una <span className="text-purple-400 font-bold">carrera exitosa</span>.
+              </p>
+
+              <a 
+                href="https://iccagencylatam.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Button className="h-16 px-12 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black text-xl rounded-full shadow-2xl glow-purple">
+                  Únete a ICC Agency
+                </Button>
+              </a>
+
+              <div className="mt-10 flex flex-col items-center gap-4">
+                <div className="flex items-center gap-4 text-gray-400 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                      <span className="text-purple-600 font-black text-xs">ICC</span>
+                    </div>
+                    <span className="font-semibold">International Creative Collective Agency</span>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 bg-red-600 px-4 py-2 rounded-full">
+                  <span className="text-white font-bold text-sm">Official Partner of TikTok</span>
+                  <span className="text-white text-xs">LIVE</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+      </div>
+      );
+      }
