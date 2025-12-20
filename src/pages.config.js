@@ -1,21 +1,25 @@
-import Home from './pages/Home';
-import Premios from './pages/Premios';
-import Ganadores from './pages/Ganadores';
-import Podcast from './pages/Podcast';
-import Gaming from './pages/Gaming';
-import Participar from './pages/Participar';
 import Admin from './pages/Admin';
+import Gaming from './pages/Gaming';
+import Ganadores from './pages/Ganadores';
+import Home from './pages/Home';
+import Participar from './pages/Participar';
+import Podcast from './pages/Podcast';
+import Premios from './pages/Premios';
+import Suscripcion from './pages/Suscripcion';
+import MiSuscripcion from './pages/MiSuscripcion';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Premios": Premios,
-    "Ganadores": Ganadores,
-    "Podcast": Podcast,
-    "Gaming": Gaming,
-    "Participar": Participar,
     "Admin": Admin,
+    "Gaming": Gaming,
+    "Ganadores": Ganadores,
+    "Home": Home,
+    "Participar": Participar,
+    "Podcast": Podcast,
+    "Premios": Premios,
+    "Suscripcion": Suscripcion,
+    "MiSuscripcion": MiSuscripcion,
 }
 
 export const pagesConfig = {

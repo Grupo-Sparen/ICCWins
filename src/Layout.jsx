@@ -8,11 +8,12 @@ export default function Layout({ children, currentPageName }) {
 
   const navLinks = [
     { name: "Inicio", path: "Home", icon: Trophy },
+    { name: "Suscripción", path: "Suscripcion", icon: Crown },
     { name: "Premios", path: "Premios", icon: Gift },
-    { name: "Ganadores", path: "Ganadores", icon: Crown },
+    { name: "Ganadores", path: "Ganadores", icon: Trophy },
     { name: "Podcast", path: "Podcast", icon: Mic },
     { name: "Gaming", path: "Gaming", icon: Gamepad2 },
-    { name: "Participar", path: "Participar", icon: CreditCard },
+    { name: "Mi Cuenta", path: "MiSuscripcion", icon: CreditCard },
   ];
 
   return (
