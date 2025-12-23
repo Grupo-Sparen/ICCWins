@@ -62,8 +62,17 @@ function LayoutContent({ children, currentPageName }) {
         }
       `}</style>
 
+      {/* Top Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#050508] border-b border-purple-900/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-end items-center h-10">
+            <LanguageCurrencySelector />
+          </div>
+        </div>
+      </div>
+
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0F]/95 backdrop-blur-lg border-b border-purple-900/20">
+      <nav className="fixed top-10 left-0 right-0 z-50 bg-[#0A0A0F]/95 backdrop-blur-lg border-b border-purple-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
@@ -78,9 +87,7 @@ function LayoutContent({ children, currentPageName }) {
             </Link>
 
             {/* Desktop Menu */}
-            <div className="hidden lg:flex items-center gap-2">
-              <LanguageCurrencySelector />
-
+            <div className="hidden lg:flex items-center gap-3">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -119,9 +126,6 @@ function LayoutContent({ children, currentPageName }) {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[#0F0F1E] border-t border-purple-900/20">
             <div className="px-4 py-4 space-y-2">
-              <div className="pb-4 border-b border-purple-900/20 mb-4">
-                <LanguageCurrencySelector />
-              </div>
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -151,7 +155,7 @@ function LayoutContent({ children, currentPageName }) {
       </nav>
 
       {/* Main Content */}
-      <main className="pt-20">
+      <main className="pt-30">
         {children}
       </main>
 
