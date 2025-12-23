@@ -2,18 +2,23 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { Menu, X, Trophy, Gift, Crown, Mic, Gamepad2, CreditCard, Shield } from "lucide-react";
+import { LanguageProvider, useLanguage } from "./components/LanguageContext";
+import LanguageCurrencySelector from "./components/LanguageCurrencySelector";
+import { translations } from "./components/translations";
 
-export default function Layout({ children, currentPageName }) {
+function LayoutContent({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { language } = useLanguage();
+  const t = translations[language].nav;
 
   const navLinks = [
-    { name: "Inicio", path: "Home", icon: Trophy },
-    { name: "Suscripción", path: "Suscripcion", icon: Crown },
-    { name: "Premios", path: "Premios", icon: Gift },
-    { name: "Ganadores", path: "Ganadores", icon: Trophy },
-    { name: "Podcast", path: "Podcast", icon: Mic },
-    { name: "Gaming", path: "Gaming", icon: Gamepad2 },
-    { name: "Mi Cuenta", path: "MiSuscripcion", icon: CreditCard },
+    { name: t.home, path: "Home", icon: Trophy },
+    { name: t.subscription, path: "Suscripcion", icon: Crown },
+    { name: t.prizes, path: "Premios", icon: Gift },
+    { name: t.winners, path: "Ganadores", icon: Trophy },
+    { name: t.podcast, path: "Podcast", icon: Mic },
+    { name: t.gaming, path: "Gaming", icon: Gamepad2 },
+    { name: t.myAccount, path: "MiSuscripcion", icon: CreditCard },
   ];
 
   return (
@@ -73,7 +78,9 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             {/* Desktop Menu */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-2">
+              <LanguageCurrencySelector />
+
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -91,10 +98,10 @@ export default function Layout({ children, currentPageName }) {
               
               <Link
                 to={createPageUrl("Admin")}
-                className="ml-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
               >
                 <Shield className="w-4 h-4" />
-                Admin
+                {t.admin}
               </Link>
             </div>
 
@@ -112,6 +119,9 @@ export default function Layout({ children, currentPageName }) {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[#0F0F1E] border-t border-purple-900/20">
             <div className="px-4 py-4 space-y-2">
+              <div className="pb-4 border-b border-purple-900/20 mb-4">
+                <LanguageCurrencySelector />
+              </div>
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
@@ -133,11 +143,11 @@ export default function Layout({ children, currentPageName }) {
                 className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg"
               >
                 <Shield className="w-5 h-5" />
-                Admin
+                {t.admin}
               </Link>
-            </div>
-          </div>
-        )}
+              </div>
+              </div>
+              )}
       </nav>
 
       {/* Main Content */}
@@ -188,18 +198,18 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Links */}
             <div>
-              <h3 className="text-white font-bold mb-4">Navegación</h3>
+              <h3 className="text-white font-bold mb-4">{translations[language].footer.navigation}</h3>
               <ul className="space-y-2">
-                <li><Link to={createPageUrl("Premios")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">Premios</Link></li>
-                <li><Link to={createPageUrl("Ganadores")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">Ganadores</Link></li>
-                <li><Link to={createPageUrl("Podcast")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">Podcast</Link></li>
-                <li><Link to={createPageUrl("Gaming")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">Gaming</Link></li>
+                <li><Link to={createPageUrl("Premios")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">{t.prizes}</Link></li>
+                <li><Link to={createPageUrl("Ganadores")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">{t.winners}</Link></li>
+                <li><Link to={createPageUrl("Podcast")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">{t.podcast}</Link></li>
+                <li><Link to={createPageUrl("Gaming")} className="text-gray-400 hover:text-purple-400 text-sm transition-colors">{t.gaming}</Link></li>
               </ul>
             </div>
 
             {/* Contact */}
             <div>
-              <h3 className="text-white font-bold mb-4">Contacto</h3>
+              <h3 className="text-white font-bold mb-4">{translations[language].footer.contact}</h3>
               <ul className="space-y-2 text-sm">
                 <li className="text-gray-400">📧 info@gamerwins.com</li>
                 <li className="text-gray-400">📱 +51 999 999 999</li>
@@ -210,7 +220,7 @@ export default function Layout({ children, currentPageName }) {
 
           <div className="border-t border-purple-900/20 mt-8 pt-8 text-center">
             <p className="text-gray-500 text-sm">
-              © 2025 ICC WINS LATAM. Todos los derechos reservados. | Sorteos transparentes y legales
+              © 2025 ICC WINS LATAM. {translations[language].footer.allRights}
             </p>
           </div>
         </div>

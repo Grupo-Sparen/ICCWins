@@ -1,10 +1,13 @@
 import React from "react";
 import { Globe, DollarSign } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLanguage } from "./LanguageContext";
 
-export default function LanguageCurrencySelector({ language, setLanguage, currency, setCurrency }) {
+export default function LanguageCurrencySelector() {
+  const { language, setLanguage, currency, setCurrency } = useLanguage();
+  
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       <div className="flex items-center gap-2">
         <Globe className="w-4 h-4 text-gray-400" />
         <Select value={language} onValueChange={setLanguage}>
