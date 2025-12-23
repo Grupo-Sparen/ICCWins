@@ -171,8 +171,7 @@ function LayoutContent({ children, currentPageName }) {
                 </div>
               </div>
               <p className="text-gray-400 text-sm mb-6">
-                La plataforma #1 de sorteos y comunidad gaming en Latinoamérica con ICC Agency. 
-                Únete, participa y gana premios increíbles.
+                {translations[language].footer.description}
               </p>
               <div className="flex gap-3">
                 <a href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" 
@@ -226,5 +225,13 @@ function LayoutContent({ children, currentPageName }) {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function Layout(props) {
+  return (
+    <LanguageProvider>
+      <LayoutContent {...props} />
+    </LanguageProvider>
   );
 }
