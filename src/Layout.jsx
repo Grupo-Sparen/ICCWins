@@ -145,9 +145,9 @@ function LayoutContent({ children, currentPageName }) {
                 <Shield className="w-5 h-5" />
                 {t.admin}
               </Link>
-              </div>
-              </div>
-              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Main Content */}
