@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, CreditCard, Upload, CheckCircle2, Loader2 } from "lucide-react";
+import { X, CreditCard, Upload, CheckCircle2, Loader2, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createPageUrl } from "../utils";
 
 export default function SubscriptionModal({ plan, currency, language, onClose }) {
   const [paymentMethod, setPaymentMethod] = useState("yape");
@@ -25,6 +26,7 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
   const [uploadedScreenshotUrl, setUploadedScreenshotUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -117,14 +119,18 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
       
       queryClient.invalidateQueries(["user-subscription"]);
       
-      alert(translations.success + "\n\n" + translations.successMessage);
-      onClose();
+      setShowSuccess(true);
     } catch (error) {
       console.error("Error creating subscription:", error);
       alert("Error al procesar la suscripción. Por favor intenta nuevamente.");
-    } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccess(false);
+    onClose();
+    window.location.href = createPageUrl("MiSuscripcion");
   };
 
   const isFormValid = () => {
@@ -134,6 +140,24 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
       return cardData.name && cardData.email && cardData.cardNumber && cardData.expiryDate && cardData.cvv;
     }
   };
+
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <Card className="bg-gradient-to-br from-green-900/95 to-cyan-900/95 border-2 border-green-500/40 p-12 rounded-3xl max-w-md w-full text-center">
+          <PartyPopper className="w-20 h-20 text-green-400 mx-auto mb-6" />
+          <h2 className="text-4xl font-black text-white mb-4">{translations.success}</h2>
+          <p className="text-xl text-gray-300 mb-8">{translations.successMessage}</p>
+          <Button
+            onClick={handleSuccessClose}
+            className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl"
+          >
+            Ir a Mi Perfil
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -300,7 +324,7 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
           <Button
             onClick={onClose}
             variant="outline"
-            className="flex-1 h-12 border-purple-500/30 text-white hover:bg-white/10"
+            className="flex-1 h-12 border-purple-500/30 text-black bg-white/90 hover:bg-white hover:text-black font-bold"
           >
             {translations.cancel}
           </Button>
