@@ -393,7 +393,7 @@ export default function Admin() {
                           total_participants: 0
                         });
                       }}
-                      className="border-purple-500/30 text-white"
+                      className="border-purple-500/30 text-black"
                     >
                       Cancelar
                     </Button>
