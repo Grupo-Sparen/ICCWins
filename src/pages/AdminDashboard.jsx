@@ -664,18 +664,44 @@ export default function AdminDashboard() {
                           <span>Participantes: {tournament.current_participants}/{tournament.max_participants}</span>
                         </div>
                       </div>
-                      <Button
-                        onClick={() => {
-                          if (confirm("¿Eliminar torneo?")) {
-                            deleteTournamentMutation.mutate(tournament.id);
-                          }
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="border-red-500/30 text-red-400"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => {
+                            setTournamentForm({
+                              name: tournament.name,
+                              game: tournament.game,
+                              platform: tournament.platform,
+                              start_date: tournament.start_date,
+                              end_date: tournament.end_date,
+                              prizes: tournament.prizes || "",
+                              max_participants: tournament.max_participants.toString(),
+                              entry_fee: tournament.entry_fee || 0,
+                              format: tournament.format,
+                              description: tournament.description,
+                              rules: tournament.rules || "",
+                              image_url: tournament.image_url || ""
+                            });
+                            setShowTournamentForm(true);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-blue-500/30 text-blue-400"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            if (confirm("¿Eliminar torneo?")) {
+                              deleteTournamentMutation.mutate(tournament.id);
+                            }
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500/30 text-red-400"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))}
