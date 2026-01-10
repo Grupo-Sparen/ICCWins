@@ -21,6 +21,7 @@ export default function Admin() {
   const [showWinnerForm, setShowWinnerForm] = useState(false);
   const [showPodcastForm, setShowPodcastForm] = useState(false);
   const [showGamingForm, setShowGamingForm] = useState(false);
+  const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const [prizeForm, setPrizeForm] = useState({
@@ -34,6 +35,20 @@ export default function Admin() {
     total_participants: 0
   });
   const [editingPrize, setEditingPrize] = useState(null);
+
+  const [subscriptionForm, setSubscriptionForm] = useState({
+    name_es: "",
+    name_en: "",
+    description_es: "",
+    description_en: "",
+    duration_months: 1,
+    price_pen: "",
+    price_usd: "",
+    benefits: [],
+    featured: false,
+    active: true
+  });
+  const [editingSubscription, setEditingSubscription] = useState(null);
 
   // Queries
   const { data: prizes = [] } = useQuery({
@@ -59,6 +74,11 @@ export default function Admin() {
   const { data: gaming = [] } = useQuery({
     queryKey: ["admin-gaming"],
     queryFn: () => base44.entities.StreamingContent.list("-created_date")
+  });
+
+  const { data: subscriptionPlans = [] } = useQuery({
+    queryKey: ["admin-subscription-plans"],
+    queryFn: () => base44.entities.SubscriptionPlan.list("-created_date")
   });
 
   // Stats
@@ -152,6 +172,109 @@ export default function Admin() {
     setShowPrizeForm(true);
   };
 
+  // Subscription mutations
+  const createSubscriptionMutation = useMutation({
+    mutationFn: (data) => base44.entities.SubscriptionPlan.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscription-plans"]);
+      setShowSubscriptionForm(false);
+      setEditingSubscription(null);
+      setSubscriptionForm({
+        name_es: "",
+        name_en: "",
+        description_es: "",
+        description_en: "",
+        duration_months: 1,
+        price_pen: "",
+        price_usd: "",
+        benefits: [],
+        featured: false,
+        active: true
+      });
+    }
+  });
+
+  const updateSubscriptionMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.SubscriptionPlan.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscription-plans"]);
+      setShowSubscriptionForm(false);
+      setEditingSubscription(null);
+      setSubscriptionForm({
+        name_es: "",
+        name_en: "",
+        description_es: "",
+        description_en: "",
+        duration_months: 1,
+        price_pen: "",
+        price_usd: "",
+        benefits: [],
+        featured: false,
+        active: true
+      });
+    }
+  });
+
+  const deleteSubscriptionMutation = useMutation({
+    mutationFn: (id) => base44.entities.SubscriptionPlan.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscription-plans"]);
+    }
+  });
+
+  const handleCreateSubscription = (e) => {
+    e.preventDefault();
+    const data = {
+      ...subscriptionForm,
+      duration_months: parseInt(subscriptionForm.duration_months),
+      price_pen: parseFloat(subscriptionForm.price_pen),
+      price_usd: parseFloat(subscriptionForm.price_usd) || null
+    };
+    
+    if (editingSubscription) {
+      updateSubscriptionMutation.mutate({ id: editingSubscription.id, data });
+    } else {
+      createSubscriptionMutation.mutate(data);
+    }
+  };
+
+  const handleEditSubscription = (plan) => {
+    setEditingSubscription(plan);
+    setSubscriptionForm({
+      name_es: plan.name_es,
+      name_en: plan.name_en || "",
+      description_es: plan.description_es || "",
+      description_en: plan.description_en || "",
+      duration_months: plan.duration_months,
+      price_pen: plan.price_pen.toString(),
+      price_usd: plan.price_usd ? plan.price_usd.toString() : "",
+      benefits: plan.benefits || [],
+      featured: plan.featured || false,
+      active: plan.active !== false
+    });
+    setShowSubscriptionForm(true);
+  };
+
+  const addBenefit = () => {
+    setSubscriptionForm({
+      ...subscriptionForm,
+      benefits: [...subscriptionForm.benefits, { text_es: "", text_en: "" }]
+    });
+  };
+
+  const updateBenefit = (index, field, value) => {
+    const newBenefits = [...subscriptionForm.benefits];
+    newBenefits[index][field] = value;
+    setSubscriptionForm({ ...subscriptionForm, benefits: newBenefits });
+  };
+
+  const removeBenefit = (index) => {
+    setSubscriptionForm({
+      ...subscriptionForm,
+      benefits: subscriptionForm.benefits.filter((_, i) => i !== index)
+    });
+  };
+
   return (
     <div className="min-h-screen pt-40 pb-20 bg-gradient-to-b from-[#0A0A0F] to-[#0F0F1E]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -222,6 +345,10 @@ export default function Admin() {
             <TabsTrigger value="gaming" className="data-[state=active]:bg-cyan-600">
               <Gamepad2 className="w-4 h-4 mr-2" />
               Gaming
+            </TabsTrigger>
+            <TabsTrigger value="subscriptions" className="data-[state=active]:bg-yellow-600">
+              <Crown className="w-4 h-4 mr-2" />
+              Suscripciones
             </TabsTrigger>
           </TabsList>
 
@@ -606,6 +733,309 @@ export default function Admin() {
                       </div>
                       <h3 className="text-lg font-black text-white mb-1">{content.title}</h3>
                       <p className="text-gray-400 text-sm">{content.description}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Subscriptions Tab */}
+          <TabsContent value="subscriptions">
+            <div className="mb-6">
+              <Button
+                onClick={() => {
+                  setShowSubscriptionForm(!showSubscriptionForm);
+                  setEditingSubscription(null);
+                  setSubscriptionForm({
+                    name_es: "",
+                    name_en: "",
+                    description_es: "",
+                    description_en: "",
+                    duration_months: 1,
+                    price_pen: "",
+                    price_usd: "",
+                    benefits: [],
+                    featured: false,
+                    active: true
+                  });
+                }}
+                className="h-12 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-black font-bold shadow-lg"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Plan de Suscripción
+              </Button>
+            </div>
+
+            {showSubscriptionForm && (
+              <Card className="bg-gradient-to-br from-yellow-900/50 to-orange-800/30 border-2 border-yellow-500/40 p-8 rounded-2xl mb-6 shadow-xl">
+                <h3 className="text-2xl font-black text-white mb-6">
+                  {editingSubscription ? "Editar Plan" : "Crear Nuevo Plan"}
+                </h3>
+                
+                <form onSubmit={handleCreateSubscription} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Nombre (Español) *</Label>
+                      <Input
+                        required
+                        value={subscriptionForm.name_es}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, name_es: e.target.value })}
+                        className="bg-black/30 border-yellow-500/30 text-white"
+                        placeholder="Plan Mensual"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Nombre (Inglés)</Label>
+                      <Input
+                        value={subscriptionForm.name_en}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, name_en: e.target.value })}
+                        className="bg-black/30 border-yellow-500/30 text-white"
+                        placeholder="Monthly Plan"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Descripción (Español)</Label>
+                      <Textarea
+                        value={subscriptionForm.description_es}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, description_es: e.target.value })}
+                        className="bg-black/30 border-yellow-500/30 text-white min-h-20"
+                        placeholder="Descripción del plan..."
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Descripción (Inglés)</Label>
+                      <Textarea
+                        value={subscriptionForm.description_en}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, description_en: e.target.value })}
+                        className="bg-black/30 border-yellow-500/30 text-white min-h-20"
+                        placeholder="Plan description..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Duración (meses) *</Label>
+                      <Select
+                        value={subscriptionForm.duration_months.toString()}
+                        onValueChange={(value) => setSubscriptionForm({ ...subscriptionForm, duration_months: parseInt(value) })}
+                      >
+                        <SelectTrigger className="bg-black/30 border-yellow-500/30 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 mes (Mensual)</SelectItem>
+                          <SelectItem value="3">3 meses (Trimestral)</SelectItem>
+                          <SelectItem value="6">6 meses (Semestral)</SelectItem>
+                          <SelectItem value="12">12 meses (Anual)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Precio PEN (S/) *</Label>
+                      <Input
+                        required
+                        type="number"
+                        step="0.01"
+                        value={subscriptionForm.price_pen}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, price_pen: e.target.value })}
+                        className="bg-black/30 border-yellow-500/30 text-white"
+                        placeholder="49.90"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Precio USD ($)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={subscriptionForm.price_usd}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, price_usd: e.target.value })}
+                        className="bg-black/30 border-yellow-500/30 text-white"
+                        placeholder="15.00"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-white font-bold">Beneficios</Label>
+                      <Button
+                        type="button"
+                        onClick={addBenefit}
+                        size="sm"
+                        className="bg-yellow-600 hover:bg-yellow-700 text-black"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Agregar
+                      </Button>
+                    </div>
+                    
+                    {subscriptionForm.benefits.map((benefit, index) => (
+                      <div key={index} className="grid md:grid-cols-2 gap-3 p-4 bg-black/30 rounded-xl">
+                        <Input
+                          placeholder="Beneficio en español"
+                          value={benefit.text_es}
+                          onChange={(e) => updateBenefit(index, 'text_es', e.target.value)}
+                          className="bg-black/40 border-yellow-500/30 text-white"
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Benefit in english"
+                            value={benefit.text_en}
+                            onChange={(e) => updateBenefit(index, 'text_en', e.target.value)}
+                            className="bg-black/40 border-yellow-500/30 text-white"
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => removeBenefit(index)}
+                            size="sm"
+                            variant="outline"
+                            className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-6">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="featured-plan"
+                        checked={subscriptionForm.featured}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, featured: e.target.checked })}
+                        className="w-5 h-5 rounded"
+                      />
+                      <Label htmlFor="featured-plan" className="text-white font-bold cursor-pointer">
+                        Plan Destacado
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="active-plan"
+                        checked={subscriptionForm.active}
+                        onChange={(e) => setSubscriptionForm({ ...subscriptionForm, active: e.target.checked })}
+                        className="w-5 h-5 rounded"
+                      />
+                      <Label htmlFor="active-plan" className="text-white font-bold cursor-pointer">
+                        Plan Activo
+                      </Label>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="submit"
+                      disabled={createSubscriptionMutation.isPending || updateSubscriptionMutation.isPending}
+                      className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-black font-bold"
+                    >
+                      {(createSubscriptionMutation.isPending || updateSubscriptionMutation.isPending) 
+                        ? (editingSubscription ? "Actualizando..." : "Creando...") 
+                        : (editingSubscription ? "Actualizar Plan" : "Crear Plan")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowSubscriptionForm(false);
+                        setEditingSubscription(null);
+                        setSubscriptionForm({
+                          name_es: "",
+                          name_en: "",
+                          description_es: "",
+                          description_en: "",
+                          duration_months: 1,
+                          price_pen: "",
+                          price_usd: "",
+                          benefits: [],
+                          featured: false,
+                          active: true
+                        });
+                      }}
+                      className="border-yellow-500/30 text-black"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            )}
+
+            <div className="grid gap-4">
+              {subscriptionPlans.map((plan) => (
+                <Card key={plan.id} className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-black text-white">{plan.name_es}</h3>
+                        {plan.featured && (
+                          <span className="px-2 py-1 bg-yellow-600 text-black text-xs font-bold rounded">
+                            DESTACADO
+                          </span>
+                        )}
+                        <span className={`px-2 py-1 text-xs font-bold rounded ${
+                          plan.active ? "bg-green-600 text-white" : "bg-gray-600 text-white"
+                        }`}>
+                          {plan.active ? "ACTIVO" : "INACTIVO"}
+                        </span>
+                      </div>
+                      <p className="text-gray-400 text-sm mb-3">{plan.description_es}</p>
+                      <div className="flex gap-4 text-sm mb-3">
+                        <span className="text-yellow-400 font-bold">S/ {plan.price_pen}</span>
+                        {plan.price_usd && (
+                          <>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-gray-400">$ {plan.price_usd}</span>
+                          </>
+                        )}
+                        <span className="text-gray-500">•</span>
+                        <span className="text-gray-400">{plan.duration_months} {plan.duration_months === 1 ? "mes" : "meses"}</span>
+                      </div>
+                      {plan.benefits && plan.benefits.length > 0 && (
+                        <div className="space-y-1">
+                          {plan.benefits.map((benefit, index) => (
+                            <div key={index} className="text-sm text-gray-300 flex items-center gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-green-400" />
+                              {benefit.text_es}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleEditSubscription(plan)}
+                        variant="outline"
+                        size="sm"
+                        className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Editar
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Estás seguro de eliminar este plan?")) {
+                            deleteSubscriptionMutation.mutate(plan.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </Card>
