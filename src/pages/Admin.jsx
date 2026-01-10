@@ -512,6 +512,10 @@ export default function Admin() {
             <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600">
               Dashboard
             </TabsTrigger>
+            <TabsTrigger value="subscriptions" className="data-[state=active]:bg-yellow-600">
+              <Crown className="w-4 h-4 mr-2" />
+              Suscripciones
+            </TabsTrigger>
             <TabsTrigger value="draw" className="data-[state=active]:bg-orange-600">
               <Trophy className="w-4 h-4 mr-2" />
               Sorteos
@@ -531,10 +535,6 @@ export default function Admin() {
             <TabsTrigger value="gaming" className="data-[state=active]:bg-cyan-600">
               <Gamepad2 className="w-4 h-4 mr-2" />
               Gaming
-            </TabsTrigger>
-            <TabsTrigger value="subscriptions" className="data-[state=active]:bg-yellow-600">
-              <Crown className="w-4 h-4 mr-2" />
-              Suscripciones
             </TabsTrigger>
           </TabsList>
 
