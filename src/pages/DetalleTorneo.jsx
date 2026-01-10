@@ -308,10 +308,10 @@ export default function DetalleTorneo() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
-              <h3 className="text-xl font-black text-white mb-4">Información</h3>
-              <div className="space-y-3 text-sm">
+          <div className="lg:col-span-1 space-y-4">
+            <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-4 rounded-2xl">
+              <h3 className="text-lg font-black text-white mb-3">Información</h3>
+              <div className="space-y-2 text-xs">
                 <div>
                   <div className="text-gray-400 mb-1">Plataforma</div>
                   <div className="text-white font-bold">{tournament.platform}</div>
@@ -330,15 +330,39 @@ export default function DetalleTorneo() {
             </Card>
 
             {tournament.winner_name && (
-              <Card className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/30 p-6 rounded-2xl text-center">
-                <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
-                <div className="text-yellow-400 font-bold text-sm mb-1">CAMPEÓN</div>
-                <div className="text-2xl font-black text-white">{tournament.winner_name}</div>
+              <Card className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/30 p-4 rounded-2xl text-center">
+                <Trophy className="w-10 h-10 text-yellow-400 mx-auto mb-2" />
+                <div className="text-yellow-400 font-bold text-xs mb-1">CAMPEÓN</div>
+                <div className="text-xl font-black text-white">{tournament.winner_name}</div>
               </Card>
             )}
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="bg-gradient-to-br from-green-900 to-gray-900 border-2 border-green-500/40 max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-green-400" />
+              ¡Inscripción Exitosa!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <p className="text-gray-300 mb-2">Ya estás registrado en el torneo</p>
+            <p className="text-green-400 font-bold text-lg">{tournament.name}</p>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
+            >
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
