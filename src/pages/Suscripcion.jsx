@@ -168,9 +168,10 @@ export default function Suscripcion() {
 
               <Button 
                 onClick={() => setSelectedPlan(plan)}
-                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl"
+                disabled={userSubscription?.plan_id === plan.id}
+                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t.subscribe}
+                {userSubscription?.plan_id === plan.id ? (language === "es" ? "Plan Actual" : "Current Plan") : t.subscribe}
               </Button>
             </Card>
           ))}
