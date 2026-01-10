@@ -288,6 +288,13 @@ export default function AdminDashboard() {
     }
   });
 
+  const updateBattleMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Battle.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-battles"]);
+    }
+  });
+
   const deleteBattleMutation = useMutation({
     mutationFn: (id) => base44.entities.Battle.delete(id),
     onSuccess: () => {
