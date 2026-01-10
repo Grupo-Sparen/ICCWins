@@ -198,7 +198,148 @@ export default function AdminDashboard() {
     return colors[color] || colors.purple;
   };
 
-  // Placeholder para secciones - implementar cada una según el Admin original
+  // Mutations - Premios
+  const createPrizeMutation = useMutation({
+    mutationFn: (data) => base44.entities.Prize.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-prizes"]);
+      setShowPrizeForm(false);
+      setEditingPrize(null);
+      setPrizeForm({
+        title: "",
+        description: "",
+        image_url: "",
+        participation_cost: "",
+        draw_date: "",
+        status: "active",
+        featured: false,
+        total_participants: 0
+      });
+    }
+  });
+
+  const updatePrizeMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Prize.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-prizes"]);
+      setShowPrizeForm(false);
+      setEditingPrize(null);
+    }
+  });
+
+  const confirmPaymentMutation = useMutation({
+    mutationFn: ({ id }) => base44.entities.Participation.update(id, { payment_status: "confirmed" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-participations"]);
+    }
+  });
+
+  const selectWinnerMutation = useMutation({
+    mutationFn: async ({ subscriber, prize }) => {
+      await base44.entities.Winner.create({
+        prize_id: prize.id,
+        prize_title: prize.title,
+        winner_name: subscriber.user_name,
+        winner_photo_url: "",
+        winner_country: "",
+        draw_video_url: "",
+        winner_date: new Date().toISOString().split('T')[0]
+      });
+      await base44.entities.Prize.update(prize.id, { status: "finished" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-prizes"]);
+      queryClient.invalidateQueries(["admin-winners"]);
+      setSelectedPrizeForParticipants(null);
+    }
+  });
+
+  // Mutations - Batallas
+  const createBattleMutation = useMutation({
+    mutationFn: async (data) => {
+      const user = await base44.auth.me();
+      const battleData = {
+        ...data,
+        creator_id: user.id,
+        creator_name: user.full_name,
+        status: "invited"
+      };
+      const battle = await base44.entities.Battle.create(battleData);
+      await base44.entities.BattleInvitation.create({
+        battle_id: battle.id,
+        from_user_id: user.id,
+        from_user_name: user.full_name,
+        to_user_id: data.opponent_id,
+        to_user_name: data.opponent_name,
+        status: "pending",
+        message: `Te invito a una batalla el ${new Date(data.date_time).toLocaleString('es-ES')}`
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-battles"]);
+      setShowBattleForm(false);
+      setBattleForm({
+        opponent_id: "",
+        opponent_name: "",
+        date_time: "",
+        rules: "",
+        prize: ""
+      });
+    }
+  });
+
+  const deleteBattleMutation = useMutation({
+    mutationFn: (id) => base44.entities.Battle.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-battles"]);
+    }
+  });
+
+  // Mutations - Torneos
+  const createTournamentMutation = useMutation({
+    mutationFn: (data) => base44.entities.Tournament.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-tournaments"]);
+      setShowTournamentForm(false);
+      setTournamentForm({
+        name: "",
+        game: "",
+        platform: "",
+        start_date: "",
+        end_date: "",
+        prizes: "",
+        max_participants: "",
+        entry_fee: 0,
+        format: "single_elimination",
+        description: "",
+        rules: "",
+        image_url: ""
+      });
+    }
+  });
+
+  const deleteTournamentMutation = useMutation({
+    mutationFn: (id) => base44.entities.Tournament.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-tournaments"]);
+    }
+  });
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setPrizeForm({ ...prizeForm, image_url: result.file_url });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Render Sections
   const renderSection = () => {
     switch(activeSection) {
       case "dashboard":
@@ -236,6 +377,174 @@ export default function AdminDashboard() {
             </Card>
           </div>
         );
+
+      case "premios":
+        return (
+          <div>
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowPrizeForm(!showPrizeForm)}
+                className="h-12 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Premio
+              </Button>
+            </div>
+
+            <div className="grid gap-4">
+              {prizes.map((prize) => (
+                <Card key={prize.id} className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex gap-4 flex-1">
+                      {prize.image_url && (
+                        <img src={prize.image_url} alt={prize.title} className="w-24 h-24 object-cover rounded-xl" />
+                      )}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-black text-white mb-1">{prize.title}</h3>
+                        <p className="text-gray-400 text-sm mb-2">{prize.description}</p>
+                        <div className="flex gap-4 text-sm">
+                          <span className="text-yellow-400 font-bold">S/ {prize.participation_cost}</span>
+                          <span className="text-gray-500">•</span>
+                          <span className="text-gray-400">{new Date(prize.draw_date).toLocaleDateString('es-ES')}</span>
+                          <span className="text-gray-500">•</span>
+                          <span className={`font-bold ${prize.status === "active" ? "text-green-400" : "text-gray-400"}`}>
+                            {prize.status === "active" ? "ACTIVO" : "FINALIZADO"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setEditingPrize(prize);
+                        setPrizeForm({
+                          title: prize.title,
+                          description: prize.description,
+                          image_url: prize.image_url || "",
+                          participation_cost: prize.participation_cost.toString(),
+                          draw_date: prize.draw_date,
+                          status: prize.status,
+                          featured: prize.featured || false,
+                          total_participants: prize.total_participants || 0
+                        });
+                        setShowPrizeForm(true);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="border-yellow-500/30 text-yellow-400"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Editar
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "batallas":
+        return (
+          <div>
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowBattleForm(true)}
+                className="h-12 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nueva Batalla
+              </Button>
+            </div>
+
+            {battles.length === 0 ? (
+              <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-12 rounded-2xl text-center">
+                <Swords className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                <h3 className="text-xl font-black text-white mb-2">No hay batallas</h3>
+                <p className="text-gray-400">Crea la primera batalla</p>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {battles.map((battle) => (
+                  <Card key={battle.id} className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-xl font-black text-white mb-2">
+                          {battle.creator_name} vs {battle.opponent_name}
+                        </h3>
+                        <p className="text-gray-400 mb-2">{new Date(battle.date_time).toLocaleString('es-ES')}</p>
+                        <p className="text-gray-300 text-sm">{battle.rules}</p>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Eliminar batalla?")) {
+                            deleteBattleMutation.mutate(battle.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
+      case "torneos":
+        return (
+          <div>
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowTournamentForm(true)}
+                className="h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Torneo
+              </Button>
+            </div>
+
+            {tournaments.length === 0 ? (
+              <Card className="bg-gradient-to-br from-blue-900/30 to-transparent border border-blue-500/20 p-12 rounded-2xl text-center">
+                <Trophy className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                <h3 className="text-xl font-black text-white mb-2">No hay torneos</h3>
+                <p className="text-gray-400">Crea el primer torneo</p>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {tournaments.map((tournament) => (
+                  <Card key={tournament.id} className="bg-gradient-to-br from-blue-900/30 to-transparent border border-blue-500/20 p-6 rounded-2xl">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-black text-white mb-2">{tournament.name}</h3>
+                        <p className="text-gray-400 text-sm mb-2">{tournament.description}</p>
+                        <div className="flex gap-4 text-sm text-gray-400">
+                          <span>Juego: {tournament.game}</span>
+                          <span>Participantes: {tournament.current_participants}/{tournament.max_participants}</span>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Eliminar torneo?")) {
+                            deleteTournamentMutation.mutate(tournament.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
       default:
         return (
           <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-12 rounded-2xl text-center">
@@ -327,6 +636,175 @@ export default function AdminDashboard() {
           </div>
         </main>
       </div>
+
+      {/* Battle Modal */}
+      <Dialog open={showBattleForm} onOpenChange={setShowBattleForm}>
+        <DialogContent className="bg-gradient-to-br from-red-900 to-gray-900 border-2 border-red-500/40 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Swords className="w-6 h-6 text-red-400" />
+              Crear Nueva Batalla
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            createBattleMutation.mutate(battleForm);
+          }} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Oponente *</Label>
+              <Select
+                value={battleForm.opponent_id}
+                onValueChange={(value) => {
+                  const opponent = tiktokers.find(t => t.id === value);
+                  setBattleForm({
+                    ...battleForm,
+                    opponent_id: value,
+                    opponent_name: opponent?.full_name || ""
+                  });
+                }}
+              >
+                <SelectTrigger className="bg-black/30 border-red-500/30 text-white">
+                  <SelectValue placeholder="Selecciona un TikToker" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tiktokers.map((tiktoker) => (
+                    <SelectItem key={tiktoker.id} value={tiktoker.id}>
+                      {tiktoker.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Fecha y Hora *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-black/30 border-red-500/30 text-white hover:bg-black/40 hover:text-white"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {battleForm.date_time ? format(new Date(battleForm.date_time), 'PPP p', { locale: es }) : <span>Seleccionar fecha</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={battleForm.date_time ? new Date(battleForm.date_time) : undefined}
+                    onSelect={(date) => {
+                      if (date) setBattleForm({ ...battleForm, date_time: date.toISOString() });
+                    }}
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Reglas *</Label>
+              <Textarea
+                required
+                value={battleForm.rules}
+                onChange={(e) => setBattleForm({ ...battleForm, rules: e.target.value })}
+                className="bg-black/30 border-red-500/30 text-white"
+              />
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowBattleForm(false)}
+                className="border-gray-500/30 text-black"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createBattleMutation.isPending}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                {createBattleMutation.isPending ? "Creando..." : "Crear Batalla"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tournament Modal */}
+      <Dialog open={showTournamentForm} onOpenChange={setShowTournamentForm}>
+        <DialogContent className="bg-gradient-to-br from-blue-900 to-gray-900 border-2 border-blue-500/40 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-blue-400" />
+              Crear Nuevo Torneo
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            createTournamentMutation.mutate({
+              ...tournamentForm,
+              max_participants: parseInt(tournamentForm.max_participants),
+              entry_fee: parseFloat(tournamentForm.entry_fee) || 0,
+              status: "upcoming"
+            });
+          }} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Nombre *</Label>
+                <Input
+                  required
+                  value={tournamentForm.name}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, name: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="Nombre del torneo"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Juego *</Label>
+                <Input
+                  required
+                  value={tournamentForm.game}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, game: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="Ej: League of Legends"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Descripción *</Label>
+              <Textarea
+                required
+                value={tournamentForm.description}
+                onChange={(e) => setTournamentForm({ ...tournamentForm, description: e.target.value })}
+                className="bg-black/30 border-blue-500/30 text-white min-h-20"
+              />
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowTournamentForm(false)}
+                className="border-gray-500/30 text-black"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createTournamentMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              >
+                {createTournamentMutation.isPending ? "Creando..." : "Crear Torneo"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
