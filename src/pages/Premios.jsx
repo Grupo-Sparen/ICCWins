@@ -10,10 +10,16 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Premios() {
   const [filter, setFilter] = useState("active");
+  const [showingWinnerId, setShowingWinnerId] = useState(null);
 
   const { data: prizes = [], isLoading } = useQuery({
     queryKey: ["prizes"],
     queryFn: () => base44.entities.Prize.list("-draw_date")
+  });
+
+  const { data: winners = [] } = useQuery({
+    queryKey: ["winners"],
+    queryFn: () => base44.entities.Winner.list()
   });
 
   const filteredPrizes = prizes.filter(prize => {
@@ -194,12 +200,36 @@ export default function Premios() {
                       Próximamente
                     </Button>
                   ) : (
-                    <Link to={createPageUrl("Ganadores") + "?prize=" + prize.id} className="block">
-                      <Button className="w-full h-12 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl">
+                    <>
+                      <Button 
+                        onClick={() => setShowingWinnerId(showingWinnerId === prize.id ? null : prize.id)}
+                        className="w-full h-12 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl"
+                      >
                         <Trophy className="w-5 h-5 mr-2" />
-                        Ver Ganador
+                        {showingWinnerId === prize.id ? "Ocultar Ganador" : "Ver Ganador"}
                       </Button>
-                    </Link>
+                      {showingWinnerId === prize.id && (() => {
+                        const winner = winners.find(w => w.prize_id === prize.id);
+                        if (winner) {
+                          const initials = winner.winner_name.split(' ').map(n => n[0]).join('.') + '.';
+                          return (
+                            <div className="mt-4 bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-4 text-center">
+                              <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+                              <p className="text-yellow-400 font-bold text-sm mb-1">GANADOR</p>
+                              <p className="text-white font-black text-2xl">{initials}</p>
+                              {winner.winner_country && (
+                                <p className="text-gray-400 text-sm mt-1">{winner.winner_country}</p>
+                              )}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="mt-4 bg-gray-600/20 border border-gray-500/30 rounded-xl p-4 text-center">
+                            <p className="text-gray-400 text-sm">No hay ganador registrado</p>
+                          </div>
+                        );
+                      })()}
+                    </>
                   )}
                 </div>
               </Card>
