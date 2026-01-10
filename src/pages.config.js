@@ -2,7 +2,6 @@ import Gaming from './pages/Gaming';
 import Ganadores from './pages/Ganadores';
 import Home from './pages/Home';
 import MiSuscripcion from './pages/MiSuscripcion';
-import Participar from './pages/Participar';
 import Podcast from './pages/Podcast';
 import Premios from './pages/Premios';
 import Suscripcion from './pages/Suscripcion';
@@ -15,7 +14,6 @@ export const PAGES = {
     "Ganadores": Ganadores,
     "Home": Home,
     "MiSuscripcion": MiSuscripcion,
-    "Participar": Participar,
     "Podcast": Podcast,
     "Premios": Premios,
     "Suscripcion": Suscripcion,

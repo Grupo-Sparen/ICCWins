@@ -180,25 +180,23 @@ export default function Admin() {
   });
 
   const selectWinnerMutation = useMutation({
-    mutationFn: async ({ participation, prize }) => {
+    mutationFn: async ({ subscriber, prize }) => {
       // Create winner record
       await base44.entities.Winner.create({
         prize_id: prize.id,
         prize_title: prize.title,
-        winner_name: participation.user_name,
+        winner_name: subscriber.user_name,
         winner_photo_url: "",
-        winner_country: participation.country || "",
+        winner_country: "",
         draw_video_url: "",
         winner_date: new Date().toISOString().split('T')[0]
       });
-      // Update participation as winner
-      await base44.entities.Participation.update(participation.id, { is_winner: true });
       // Update prize status to finished
       await base44.entities.Prize.update(prize.id, { status: "finished" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-prizes"]);
-      queryClient.invalidateQueries(["admin-participations"]);
+      queryClient.invalidateQueries(["admin-subscriptions"]);
       queryClient.invalidateQueries(["admin-winners"]);
       setSelectedPrizeForParticipants(null);
     }
@@ -818,10 +816,10 @@ export default function Admin() {
           <TabsContent value="draw">
             {!selectedPrizeForParticipants ? (
               <div>
-                <h3 className="text-xl font-black text-white mb-6">Selecciona un Premio para Ver Participantes</h3>
+                <h3 className="text-xl font-black text-white mb-6">Selecciona un Premio para Ver Suscriptores</h3>
                 <div className="grid gap-4">
                   {prizes.map((prize) => {
-                    const prizeParticipants = participations.filter(p => p.prize_id === prize.id && p.payment_status === "confirmed");
+                    const activeSubscribers = subscriptions.filter(s => s.status === "active");
                     const prizeWinner = winners.find(w => w.prize_id === prize.id);
                     return (
                       <Card key={prize.id} className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
@@ -830,7 +828,7 @@ export default function Admin() {
                             <h3 className="text-xl font-black text-white mb-2">{prize.title}</h3>
                             <p className="text-gray-400 text-sm mb-2">Sorteo: {new Date(prize.draw_date).toLocaleDateString('es-ES')}</p>
                             <div className="flex gap-4 text-sm mb-3">
-                              <span className="text-green-400 font-bold">{prizeParticipants.length} participantes confirmados</span>
+                              <span className="text-green-400 font-bold">{activeSubscribers.length} suscriptores activos</span>
                               <span className="text-gray-500">•</span>
                               <span className={`font-bold ${
                                 prize.status === "active" ? "text-green-400" : 
@@ -857,10 +855,10 @@ export default function Admin() {
                           </div>
                           <Button
                             onClick={() => setSelectedPrizeForParticipants(prize)}
-                            disabled={prizeParticipants.length === 0}
+                            disabled={activeSubscribers.length === 0}
                             className="bg-orange-600 hover:bg-orange-700 text-white font-bold"
                           >
-                            Ver Participantes
+                            Ver Suscriptores
                           </Button>
                         </div>
                       </Card>
@@ -884,52 +882,46 @@ export default function Admin() {
                   </Card>
                 </div>
 
-                <h3 className="text-xl font-black text-white mb-4">Participantes Confirmados</h3>
+                <h3 className="text-xl font-black text-white mb-4">Suscriptores Activos Participando</h3>
                 <div className="grid gap-4">
-                  {participations
-                    .filter(p => p.prize_id === selectedPrizeForParticipants.id && p.payment_status === "confirmed")
-                    .map((participation) => (
-                      <Card key={participation.id} className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-lg font-black text-white">{participation.user_name}</h3>
-                            <p className="text-gray-400 text-sm">{participation.user_email}</p>
-                            {participation.country && (
-                              <p className="text-purple-400 font-bold mt-1">{participation.country}</p>
-                            )}
-                            <p className="text-gray-500 text-sm mt-1">Pagó: S/ {participation.amount_paid}</p>
-                            {participation.is_winner && (
-                              <span className="inline-block mt-2 px-3 py-1 bg-yellow-600 text-black text-xs font-bold rounded-full">
-                                🏆 GANADOR
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-2">
-                            {participation.payment_screenshot_url && (
-                              <a href={participation.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
-                                <Button variant="outline" size="sm" className="border-purple-500/30 text-purple-400">
-                                  Ver Comprobante
+                  {subscriptions
+                    .filter(s => s.status === "active")
+                    .map((subscriber) => {
+                      const hasWon = winners.find(w => w.prize_id === selectedPrizeForParticipants.id && w.winner_name === subscriber.user_name);
+                      return (
+                        <Card key={subscriber.id} className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="text-lg font-black text-white">{subscriber.user_name}</h3>
+                              <p className="text-gray-400 text-sm">{subscriber.user_email}</p>
+                              <p className="text-purple-400 font-bold mt-1">{subscriber.plan_name}</p>
+                              <p className="text-gray-500 text-sm mt-1">Suscripción: {subscriber.currency} {subscriber.amount_paid}</p>
+                              {hasWon && (
+                                <span className="inline-block mt-2 px-3 py-1 bg-yellow-600 text-black text-xs font-bold rounded-full">
+                                  🏆 GANADOR
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              {!hasWon && (
+                                <Button
+                                  onClick={() => {
+                                    if (confirm(`¿Confirmar a ${subscriber.user_name} como ganador de ${selectedPrizeForParticipants.title}?`)) {
+                                      selectWinnerMutation.mutate({ subscriber, prize: selectedPrizeForParticipants });
+                                    }
+                                  }}
+                                  disabled={selectWinnerMutation.isPending}
+                                  className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold"
+                                >
+                                  <Trophy className="w-4 h-4 mr-2" />
+                                  Seleccionar Ganador
                                 </Button>
-                              </a>
-                            )}
-                            {!participation.is_winner && (
-                              <Button
-                                onClick={() => {
-                                  if (confirm(`¿Confirmar a ${participation.user_name} como ganador de ${selectedPrizeForParticipants.title}?`)) {
-                                    selectWinnerMutation.mutate({ participation, prize: selectedPrizeForParticipants });
-                                  }
-                                }}
-                                disabled={selectWinnerMutation.isPending}
-                                className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold"
-                              >
-                                <Trophy className="w-4 h-4 mr-2" />
-                                Seleccionar Ganador
-                              </Button>
-                            )}
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                 </div>
               </div>
             )}

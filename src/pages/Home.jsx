@@ -69,12 +69,12 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to={createPageUrl("Participar")}>
-                  <Button className="h-14 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-lg rounded-xl glow-purple">
-                    <Zap className="w-5 h-5 mr-2" />
-                    Participar Ahora
-                  </Button>
-                </Link>
+                  <Link to={createPageUrl("Suscripcion")}>
+                    <Button className="h-14 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-lg rounded-xl glow-purple">
+                      <Zap className="w-5 h-5 mr-2" />
+                      Suscribirse Ahora
+                    </Button>
+                  </Link>
                 <Link to={createPageUrl("Premios")}>
                   <Button className="h-14 px-8 bg-white/10 hover:bg-white/20 text-white font-bold text-lg rounded-xl border border-white/20">
                     Ver Premios
@@ -140,10 +140,10 @@ export default function Home() {
                               </div>
                             </div>
 
-                            <Link to={createPageUrl("Participar") + "?prize=" + prize.id} className="block">
+                            <Link to={createPageUrl("Suscripcion")} className="block">
                               <Button className="w-full h-12 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-black text-lg rounded-xl">
                                 <Gift className="w-5 h-5 mr-2" />
-                                ¡Quiero Participar!
+                                ¡Suscribirse y Participar!
                               </Button>
                             </Link>
                           </Card>
@@ -331,10 +331,10 @@ export default function Home() {
               <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
                 Miles de gamers ya participan. No te quedes afuera de la comunidad gaming más grande de LATAM.
               </p>
-              <Link to={createPageUrl("Participar")}>
+              <Link to={createPageUrl("Suscripcion")}>
                 <Button className="h-16 px-12 bg-white hover:bg-gray-100 text-purple-600 font-black text-xl rounded-xl shadow-2xl">
                   <Zap className="w-6 h-6 mr-2" />
-                  Participar Ahora
+                  Suscribirse Ahora
                 </Button>
               </Link>
             </div>

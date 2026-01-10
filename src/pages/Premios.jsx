@@ -189,10 +189,10 @@ export default function Premios() {
 
                   {/* CTA Button */}
                   {prize.status === "active" ? (
-                    <Link to={createPageUrl("Participar") + "?prize=" + prize.id} className="block">
+                    <Link to={createPageUrl("Suscripcion")} className="block">
                       <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black rounded-xl">
                         <Zap className="w-5 h-5 mr-2" />
-                        Participar Ahora
+                        Suscribirse y Participar
                       </Button>
                     </Link>
                   ) : prize.status === "upcoming" ? (
@@ -246,10 +246,10 @@ export default function Premios() {
               <p className="text-gray-300 mb-6 max-w-md">
                 Elige tu premio favorito y participa ahora. ¡Podrías ser el próximo ganador increíble!
               </p>
-              <Link to={createPageUrl("Participar")}>
+              <Link to={createPageUrl("Suscripcion")}>
                 <Button className="h-14 px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-lg rounded-xl">
                   <Zap className="w-5 h-5 mr-2" />
-                  Participar Ahora
+                  Suscribirse Ahora
                 </Button>
               </Link>
             </Card>
