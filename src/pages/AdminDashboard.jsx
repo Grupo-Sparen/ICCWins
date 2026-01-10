@@ -404,6 +404,15 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries(["admin-gaming"]);
       setShowGamingForm(false);
       setEditingGaming(null);
+      setGamingForm({
+        title: "",
+        description: "",
+        thumbnail_url: "",
+        embed_url: "",
+        platform: "youtube",
+        category: "highlights",
+        publish_date: ""
+      });
     }
   });
 
