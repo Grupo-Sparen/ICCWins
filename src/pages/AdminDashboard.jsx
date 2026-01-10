@@ -21,7 +21,18 @@ export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // ... (mantener todos los estados del Admin original)
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    }
+  });
+
+  // All hooks must be called before early returns
   const [selectedPrizeForParticipants, setSelectedPrizeForParticipants] = useState(null);
   const [showPrizeForm, setShowPrizeForm] = useState(false);
   const [showWinnerForm, setShowWinnerForm] = useState(false);
