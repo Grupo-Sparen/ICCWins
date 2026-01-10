@@ -10,6 +10,8 @@ import Batallas from './pages/Batallas';
 import Torneos from './pages/Torneos';
 import CrearBatalla from './pages/CrearBatalla';
 import CrearTorneo from './pages/CrearTorneo';
+import DetalleBatalla from './pages/DetalleBatalla';
+import DetalleTorneo from './pages/DetalleTorneo';
 import __Layout from './Layout.jsx';
 
 
@@ -26,6 +28,8 @@ export const PAGES = {
     "Torneos": Torneos,
     "CrearBatalla": CrearBatalla,
     "CrearTorneo": CrearTorneo,
+    "DetalleBatalla": DetalleBatalla,
+    "DetalleTorneo": DetalleTorneo,
 }
 
 export const pagesConfig = {
