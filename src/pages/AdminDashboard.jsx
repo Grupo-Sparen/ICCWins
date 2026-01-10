@@ -1532,6 +1532,295 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Prize Modal */}
+      <Dialog open={showPrizeForm} onOpenChange={setShowPrizeForm}>
+        <DialogContent className="bg-gradient-to-br from-yellow-900 to-gray-900 border-2 border-yellow-500/40 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-yellow-400" />
+              {editingPrize ? "Editar Premio" : "Crear Nuevo Premio"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const data = {
+              ...prizeForm,
+              participation_cost: parseFloat(prizeForm.participation_cost),
+              total_participants: parseInt(prizeForm.total_participants) || 0
+            };
+            if (editingPrize) {
+              updatePrizeMutation.mutate({ id: editingPrize.id, data });
+            } else {
+              createPrizeMutation.mutate(data);
+            }
+          }} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Título *</Label>
+              <Input
+                required
+                value={prizeForm.title}
+                onChange={(e) => setPrizeForm({ ...prizeForm, title: e.target.value })}
+                className="bg-black/30 border-yellow-500/30 text-white"
+                placeholder="PlayStation 5"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Descripción *</Label>
+              <Textarea
+                required
+                value={prizeForm.description}
+                onChange={(e) => setPrizeForm({ ...prizeForm, description: e.target.value })}
+                className="bg-black/30 border-yellow-500/30 text-white min-h-20"
+                placeholder="Descripción del premio"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Costo de Participación (S/) *</Label>
+                <Input
+                  required
+                  type="number"
+                  value={prizeForm.participation_cost}
+                  onChange={(e) => setPrizeForm({ ...prizeForm, participation_cost: e.target.value })}
+                  className="bg-black/30 border-yellow-500/30 text-white"
+                  placeholder="50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha del Sorteo *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-black/30 border-yellow-500/30 text-white hover:bg-black/40 hover:text-white"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {prizeForm.draw_date ? format(new Date(prizeForm.draw_date), 'PPP', { locale: es }) : <span>Seleccionar fecha</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={prizeForm.draw_date ? new Date(prizeForm.draw_date) : undefined}
+                      onSelect={(date) => {
+                        if (date) setPrizeForm({ ...prizeForm, draw_date: date.toISOString().split('T')[0] });
+                      }}
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">URL de Imagen</Label>
+              <Input
+                value={prizeForm.image_url}
+                onChange={(e) => setPrizeForm({ ...prizeForm, image_url: e.target.value })}
+                className="bg-black/30 border-yellow-500/30 text-white"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Estado</Label>
+              <Select
+                value={prizeForm.status}
+                onValueChange={(value) => setPrizeForm({ ...prizeForm, status: value })}
+              >
+                <SelectTrigger className="bg-black/30 border-yellow-500/30 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Activo</SelectItem>
+                  <SelectItem value="upcoming">Próximo</SelectItem>
+                  <SelectItem value="finished">Finalizado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowPrizeForm(false);
+                  setEditingPrize(null);
+                  setPrizeForm({
+                    title: "",
+                    description: "",
+                    image_url: "",
+                    participation_cost: "",
+                    draw_date: "",
+                    status: "active",
+                    featured: false,
+                    total_participants: 0
+                  });
+                }}
+                className="border-gray-500/30 text-black"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createPrizeMutation.isPending || updatePrizeMutation.isPending}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold"
+              >
+                {(createPrizeMutation.isPending || updatePrizeMutation.isPending) 
+                  ? (editingPrize ? "Actualizando..." : "Creando...") 
+                  : (editingPrize ? "Actualizar Premio" : "Crear Premio")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Subscription Modal */}
+      <Dialog open={showSubscriptionForm} onOpenChange={setShowSubscriptionForm}>
+        <DialogContent className="bg-gradient-to-br from-blue-900 to-gray-900 border-2 border-blue-500/40 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Crown className="w-6 h-6 text-blue-400" />
+              {editingSubscription ? "Editar Plan" : "Crear Nuevo Plan"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const data = {
+              ...subscriptionForm,
+              price_pen: parseFloat(subscriptionForm.price_pen),
+              price_usd: subscriptionForm.price_usd ? parseFloat(subscriptionForm.price_usd) : 0,
+              duration_months: parseInt(subscriptionForm.duration_months)
+            };
+            if (editingSubscription) {
+              updateSubscriptionMutation.mutate({ id: editingSubscription.id, data });
+            } else {
+              createSubscriptionMutation.mutate(data);
+            }
+          }} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Nombre (Español) *</Label>
+                <Input
+                  required
+                  value={subscriptionForm.name_es}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, name_es: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="Plan Mensual"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Nombre (English) *</Label>
+                <Input
+                  required
+                  value={subscriptionForm.name_en}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, name_en: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="Monthly Plan"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Descripción (Español) *</Label>
+                <Textarea
+                  required
+                  value={subscriptionForm.description_es}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, description_es: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white min-h-16"
+                  placeholder="Acceso a todas las características"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Descripción (English) *</Label>
+                <Textarea
+                  required
+                  value={subscriptionForm.description_en}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, description_en: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white min-h-16"
+                  placeholder="Access to all features"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Duración (meses) *</Label>
+                <Input
+                  required
+                  type="number"
+                  value={subscriptionForm.duration_months}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, duration_months: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Precio (S/) *</Label>
+                <Input
+                  required
+                  type="number"
+                  value={subscriptionForm.price_pen}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, price_pen: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="99"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Precio (USD)</Label>
+                <Input
+                  type="number"
+                  value={subscriptionForm.price_usd}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, price_usd: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="27"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowSubscriptionForm(false);
+                  setEditingSubscription(null);
+                  setSubscriptionForm({
+                    name_es: "",
+                    name_en: "",
+                    description_es: "",
+                    description_en: "",
+                    duration_months: 1,
+                    price_pen: "",
+                    price_usd: "",
+                    benefits: [],
+                    featured: false,
+                    active: true
+                  });
+                }}
+                className="border-gray-500/30 text-black"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createSubscriptionMutation.isPending || updateSubscriptionMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              >
+                {(createSubscriptionMutation.isPending || updateSubscriptionMutation.isPending) 
+                  ? (editingSubscription ? "Actualizando..." : "Creando...") 
+                  : (editingSubscription ? "Actualizar Plan" : "Crear Plan")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Tournament Modal */}
       <Dialog open={showTournamentForm} onOpenChange={setShowTournamentForm}>
         <DialogContent className="bg-gradient-to-br from-blue-900 to-gray-900 border-2 border-blue-500/40 max-w-2xl max-h-[90vh] overflow-y-auto">
