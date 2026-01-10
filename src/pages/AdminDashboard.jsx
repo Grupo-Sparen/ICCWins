@@ -469,32 +469,6 @@ export default function AdminDashboard() {
     }
   };
 
-  if (userLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F] flex items-center justify-center">
-        <div className="text-white text-xl">Cargando...</div>
-      </div>
-    );
-  }
-
-  if (!user || user.role !== "admin") {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F] flex items-center justify-center">
-        <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-12 rounded-3xl text-center max-w-md">
-          <Shield className="w-20 h-20 text-red-400 mx-auto mb-4" />
-          <h3 className="text-2xl font-black text-white mb-2">Acceso Denegado</h3>
-          <p className="text-gray-400 mb-6">Solo los administradores pueden acceder a este panel.</p>
-          <Button
-            onClick={() => window.location.href = "/"}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
-          >
-            Volver al Inicio
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
   // Render Sections
   const renderSection = () => {
     switch(activeSection) {
@@ -887,6 +861,18 @@ export default function AdminDashboard() {
                       <Button
                         onClick={() => {
                           setEditingSubscription(plan);
+                          setSubscriptionForm({
+                            name_es: plan.name_es,
+                            name_en: plan.name_en || "",
+                            description_es: plan.description_es,
+                            description_en: plan.description_en || "",
+                            duration_months: plan.duration_months,
+                            price_pen: plan.price_pen.toString(),
+                            price_usd: plan.price_usd ? plan.price_usd.toString() : "",
+                            benefits: plan.benefits || [],
+                            featured: plan.featured || false,
+                            active: plan.active !== false
+                          });
                           setShowSubscriptionForm(true);
                         }}
                         variant="outline"
