@@ -579,39 +579,7 @@ export default function Admin() {
               </Card>
             </div>
 
-            <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-3xl">
-              <h2 className="text-2xl font-black text-white mb-6">Resumen General</h2>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Premios Activos</span>
-                  <span className="text-white font-bold">{prizes.filter(p => p.status === "active").length}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Pagos Confirmados</span>
-                  <span className="text-green-400 font-bold">{participations.filter(p => p.payment_status === "confirmed").length}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Pagos Pendientes</span>
-                  <span className="text-yellow-400 font-bold">{pendingPayments}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Episodios de Podcast</span>
-                  <span className="text-white font-bold">{podcasts.length}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Contenido Gaming</span>
-                  <span className="text-white font-bold">{gaming.length}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Suscriptores Activos</span>
-                  <span className="text-pink-400 font-bold">{totalSubscribers}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Ingresos por Suscripciones</span>
-                  <span className="text-orange-400 font-bold">S/ {subscriptionRevenue}</span>
-                </div>
-              </div>
-            </Card>
+
           </TabsContent>
 
           {/* Prizes Tab */}
