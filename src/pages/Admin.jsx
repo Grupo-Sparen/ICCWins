@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 export default function Admin() {
   const queryClient = useQueryClient();
@@ -570,6 +571,65 @@ export default function Admin() {
 
           {/* Overview Tab */}
           <TabsContent value="overview">
+            {/* Income Charts */}
+            <div className="grid lg:grid-cols-2 gap-6 mb-6">
+              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-3xl">
+                <h3 className="text-xl font-black text-white mb-6">Ingresos por Fuente</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={[
+                    { name: 'Participaciones', value: totalRevenue, fill: '#06B6D4' },
+                    { name: 'Suscripciones', value: subscriptionRevenue, fill: '#A855F7' }
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="name" stroke="#9CA3AF" />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                      labelStyle={{ color: '#F3F4F6' }}
+                      formatter={(value) => `S/ ${value.toFixed(2)}`}
+                    />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                      {[
+                        { name: 'Participaciones', value: totalRevenue, fill: '#06B6D4' },
+                        { name: 'Suscripciones', value: subscriptionRevenue, fill: '#A855F7' }
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-3xl">
+                <h3 className="text-xl font-black text-white mb-6">Distribución de Ingresos</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Participaciones', value: totalRevenue },
+                        { name: 'Suscripciones', value: subscriptionRevenue }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      <Cell fill="#06B6D4" />
+                      <Cell fill="#A855F7" />
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                      formatter={(value) => `S/ ${value.toFixed(2)}`}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </div>
+
             <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-3xl">
               <h2 className="text-2xl font-black text-white mb-6">Resumen General</h2>
               <div className="space-y-4">
