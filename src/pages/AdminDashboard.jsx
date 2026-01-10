@@ -367,6 +367,17 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries(["admin-podcasts"]);
       setShowPodcastForm(false);
       setEditingPodcast(null);
+      setPodcastForm({
+        title: "",
+        description: "",
+        cover_image_url: "",
+        audio_url: "",
+        video_url: "",
+        duration: "",
+        guests: "",
+        topics: [],
+        publish_date: ""
+      });
     }
   });
 
