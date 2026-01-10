@@ -1565,17 +1565,34 @@ export default function AdminDashboard() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowTournamentForm(false)}
+                onClick={() => {
+                  setShowTournamentForm(false);
+                  setEditingGaming(null);
+                  setTournamentForm({
+                    name: "",
+                    game: "",
+                    platform: "",
+                    start_date: "",
+                    end_date: "",
+                    prizes: "",
+                    max_participants: "",
+                    entry_fee: 0,
+                    format: "single_elimination",
+                    description: "",
+                    rules: "",
+                    image_url: ""
+                  });
+                }}
                 className="border-gray-500/30 text-black"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={createTournamentMutation.isPending}
+                disabled={createTournamentMutation.isPending || updateTournamentMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
               >
-                {createTournamentMutation.isPending ? "Creando..." : "Crear Torneo"}
+                {createTournamentMutation.isPending || updateTournamentMutation.isPending ? "Procesando..." : (editingGaming ? "Actualizar Torneo" : "Crear Torneo")}
               </Button>
             </DialogFooter>
           </form>
