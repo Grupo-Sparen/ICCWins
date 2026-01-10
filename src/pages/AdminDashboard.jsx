@@ -21,6 +21,43 @@ export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    }
+  });
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F] flex items-center justify-center">
+        <div className="text-white text-xl">Cargando...</div>
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F] flex items-center justify-center">
+        <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-12 rounded-3xl text-center max-w-md">
+          <Shield className="w-20 h-20 text-red-400 mx-auto mb-4" />
+          <h3 className="text-2xl font-black text-white mb-2">Acceso Denegado</h3>
+          <p className="text-gray-400 mb-6">Solo los administradores pueden acceder a este panel.</p>
+          <Button
+            onClick={() => window.location.href = "/"}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold"
+          >
+            Volver al Inicio
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   // ... (mantener todos los estados del Admin original)
   const [selectedPrizeForParticipants, setSelectedPrizeForParticipants] = useState(null);
   const [showPrizeForm, setShowPrizeForm] = useState(false);
