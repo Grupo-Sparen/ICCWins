@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function Admin() {
   const queryClient = useQueryClient();
@@ -257,7 +258,20 @@ export default function Admin() {
           <TabsContent value="prizes">
             <div className="mb-6">
               <Button
-                onClick={() => setShowPrizeForm(!showPrizeForm)}
+                onClick={() => {
+                  setShowPrizeForm(!showPrizeForm);
+                  setEditingPrize(null);
+                  setPrizeForm({
+                    title: "",
+                    description: "",
+                    image_url: "",
+                    participation_cost: "",
+                    draw_date: "",
+                    status: "active",
+                    featured: false,
+                    total_participants: 0
+                  });
+                }}
                 className="h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
@@ -319,7 +333,7 @@ export default function Admin() {
                             className="w-full justify-start text-left font-normal bg-black/30 border-purple-500/30 text-white hover:bg-black/40 hover:text-white"
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {prizeForm.draw_date ? format(new Date(prizeForm.draw_date), 'PPP') : <span>Seleccionar fecha</span>}
+                            {prizeForm.draw_date ? format(new Date(prizeForm.draw_date), 'PPP', { locale: es }) : <span>Seleccionar fecha</span>}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -328,6 +342,7 @@ export default function Admin() {
                             selected={prizeForm.draw_date ? new Date(prizeForm.draw_date) : undefined}
                             onSelect={(date) => setPrizeForm({ ...prizeForm, draw_date: date ? format(date, 'yyyy-MM-dd') : '' })}
                             initialFocus
+                            locale={es}
                           />
                         </PopoverContent>
                       </Popover>
