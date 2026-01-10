@@ -238,15 +238,15 @@ export default function DetalleTorneo() {
 
             {/* Tabs */}
             <Tabs defaultValue="participants" className="w-full">
-              <TabsList className="bg-purple-900/30 border border-purple-500/30 p-1 mb-6">
+              <TabsList className="bg-purple-900/30 border border-purple-500/30 p-1 mb-4">
                 <TabsTrigger value="participants">Participantes</TabsTrigger>
                 <TabsTrigger value="bracket">Bracket</TabsTrigger>
               </TabsList>
 
               <TabsContent value="participants">
-                <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
-                  <h3 className="text-xl font-black text-white mb-4">Participantes ({participants.length})</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
+                <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-4 rounded-2xl">
+                  <h3 className="text-lg font-black text-white mb-3">Participantes ({participants.length})</h3>
+                  <div className="grid md:grid-cols-3 gap-3">
                     {participants.map((participant, index) => (
                       <div key={participant.id} className="bg-black/30 p-3 rounded-xl">
                         <div className="text-white font-bold text-sm">{index + 1}. {participant.user_name}</div>
