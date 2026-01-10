@@ -15,7 +15,6 @@ function LayoutContent({ children, currentPageName }) {
     { name: t.home, path: "Home", icon: Trophy },
     { name: t.subscription, path: "Suscripcion", icon: Crown },
     { name: t.prizes, path: "Premios", icon: Gift },
-    { name: t.winners, path: "Ganadores", icon: Trophy },
     { name: t.podcast, path: "Podcast", icon: Mic },
     { name: t.gaming, path: "Gaming", icon: Gamepad2 },
     { name: t.myAccount, path: "MiSuscripcion", icon: CreditCard },
