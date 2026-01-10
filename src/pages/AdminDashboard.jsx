@@ -882,6 +882,17 @@ export default function AdminDashboard() {
                       <Button
                         onClick={() => {
                           setEditingPodcast(episode);
+                          setPodcastForm({
+                            title: episode.title,
+                            description: episode.description,
+                            cover_image_url: episode.cover_image_url || "",
+                            audio_url: episode.audio_url || "",
+                            video_url: episode.video_url || "",
+                            duration: episode.duration || "",
+                            guests: episode.guests || "",
+                            topics: episode.topics || [],
+                            publish_date: episode.publish_date
+                          });
                           setShowPodcastForm(true);
                         }}
                         variant="outline"
