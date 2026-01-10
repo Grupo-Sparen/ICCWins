@@ -1,4 +1,5 @@
 import Admin from './pages/Admin';
+import AdminDashboard from './pages/AdminDashboard';
 import Batallas from './pages/Batallas';
 import CrearBatalla from './pages/CrearBatalla';
 import CrearTorneo from './pages/CrearTorneo';
@@ -12,12 +13,12 @@ import Podcast from './pages/Podcast';
 import Premios from './pages/Premios';
 import Suscripcion from './pages/Suscripcion';
 import Torneos from './pages/Torneos';
-import AdminDashboard from './pages/AdminDashboard';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Admin": Admin,
+    "AdminDashboard": AdminDashboard,
     "Batallas": Batallas,
     "CrearBatalla": CrearBatalla,
     "CrearTorneo": CrearTorneo,
@@ -31,7 +32,6 @@ export const PAGES = {
     "Premios": Premios,
     "Suscripcion": Suscripcion,
     "Torneos": Torneos,
-    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {

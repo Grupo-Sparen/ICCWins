@@ -1137,6 +1137,259 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Podcast Modal */}
+      <Dialog open={showPodcastForm} onOpenChange={setShowPodcastForm}>
+        <DialogContent className="bg-gradient-to-br from-pink-900 to-gray-900 border-2 border-pink-500/40 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Mic className="w-6 h-6 text-pink-400" />
+              {editingPodcast ? "Editar Episodio" : "Crear Nuevo Episodio"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const data = { ...podcastForm, topics: podcastForm.topics.filter(t => t.trim() !== "") };
+            if (editingPodcast) {
+              updatePodcastMutation.mutate({ id: editingPodcast.id, data });
+            } else {
+              createPodcastMutation.mutate(data);
+            }
+          }} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Título *</Label>
+                <Input
+                  required
+                  value={podcastForm.title}
+                  onChange={(e) => setPodcastForm({ ...podcastForm, title: e.target.value })}
+                  className="bg-black/30 border-pink-500/30 text-white"
+                  placeholder="Episodio #1: Título"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha de Publicación *</Label>
+                <Input
+                  required
+                  type="date"
+                  value={podcastForm.publish_date}
+                  onChange={(e) => setPodcastForm({ ...podcastForm, publish_date: e.target.value })}
+                  className="bg-black/30 border-pink-500/30 text-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Descripción *</Label>
+              <Textarea
+                required
+                value={podcastForm.description}
+                onChange={(e) => setPodcastForm({ ...podcastForm, description: e.target.value })}
+                className="bg-black/30 border-pink-500/30 text-white min-h-24"
+                placeholder="Descripción del episodio..."
+              />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Duración</Label>
+                <Input
+                  value={podcastForm.duration}
+                  onChange={(e) => setPodcastForm({ ...podcastForm, duration: e.target.value })}
+                  className="bg-black/30 border-pink-500/30 text-white"
+                  placeholder="45 min"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Invitados</Label>
+                <Input
+                  value={podcastForm.guests}
+                  onChange={(e) => setPodcastForm({ ...podcastForm, guests: e.target.value })}
+                  className="bg-black/30 border-pink-500/30 text-white"
+                  placeholder="Juan, María"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">URL de Portada</Label>
+                <Input
+                  value={podcastForm.cover_image_url}
+                  onChange={(e) => setPodcastForm({ ...podcastForm, cover_image_url: e.target.value })}
+                  className="bg-black/30 border-pink-500/30 text-white"
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">URL de Audio</Label>
+                <Input
+                  value={podcastForm.audio_url}
+                  onChange={(e) => setPodcastForm({ ...podcastForm, audio_url: e.target.value })}
+                  className="bg-black/30 border-pink-500/30 text-white"
+                  placeholder="https://spotify.com/..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">URL de Video</Label>
+                <Input
+                  value={podcastForm.video_url}
+                  onChange={(e) => setPodcastForm({ ...podcastForm, video_url: e.target.value })}
+                  className="bg-black/30 border-pink-500/30 text-white"
+                  placeholder="https://youtube.com/..."
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowPodcastForm(false);
+                  setEditingPodcast(null);
+                }}
+                className="border-gray-500/30 text-black"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createPodcastMutation.isPending || updatePodcastMutation.isPending}
+                className="bg-pink-600 hover:bg-pink-700 text-white font-bold"
+              >
+                {(createPodcastMutation.isPending || updatePodcastMutation.isPending) 
+                  ? (editingPodcast ? "Actualizando..." : "Creando...") 
+                  : (editingPodcast ? "Actualizar Episodio" : "Crear Episodio")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Gaming Modal */}
+      <Dialog open={showGamingForm} onOpenChange={setShowGamingForm}>
+        <DialogContent className="bg-gradient-to-br from-cyan-900 to-gray-900 border-2 border-cyan-500/40 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Gamepad2 className="w-6 h-6 text-cyan-400" />
+              {editingGaming ? "Editar Contenido" : "Crear Nuevo Contenido"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (editingGaming) {
+              updateGamingMutation.mutate({ id: editingGaming.id, data: gamingForm });
+            } else {
+              createGamingMutation.mutate(gamingForm);
+            }
+          }} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Título *</Label>
+                <Input
+                  required
+                  value={gamingForm.title}
+                  onChange={(e) => setGamingForm({ ...gamingForm, title: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white"
+                  placeholder="Título del contenido"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha de Publicación *</Label>
+                <Input
+                  required
+                  type="date"
+                  value={gamingForm.publish_date}
+                  onChange={(e) => setGamingForm({ ...gamingForm, publish_date: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Descripción</Label>
+              <Textarea
+                value={gamingForm.description}
+                onChange={(e) => setGamingForm({ ...gamingForm, description: e.target.value })}
+                className="bg-black/30 border-cyan-500/30 text-white min-h-20"
+                placeholder="Descripción..."
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Plataforma *</Label>
+                <Select
+                  value={gamingForm.platform}
+                  onValueChange={(value) => setGamingForm({ ...gamingForm, platform: value })}
+                >
+                  <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="youtube">YouTube</SelectItem>
+                    <SelectItem value="twitch">Twitch</SelectItem>
+                    <SelectItem value="tiktok">TikTok</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Categoría *</Label>
+                <Select
+                  value={gamingForm.category}
+                  onValueChange={(value) => setGamingForm({ ...gamingForm, category: value })}
+                >
+                  <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="highlights">Highlights</SelectItem>
+                    <SelectItem value="streams">Streams</SelectItem>
+                    <SelectItem value="gaming_news">Gaming News</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">URL de Embed *</Label>
+              <Input
+                required
+                value={gamingForm.embed_url}
+                onChange={(e) => setGamingForm({ ...gamingForm, embed_url: e.target.value })}
+                className="bg-black/30 border-cyan-500/30 text-white"
+                placeholder="https://youtube.com/embed/..."
+              />
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowGamingForm(false);
+                  setEditingGaming(null);
+                }}
+                className="border-gray-500/30 text-black"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createGamingMutation.isPending || updateGamingMutation.isPending}
+                className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
+              >
+                {(createGamingMutation.isPending || updateGamingMutation.isPending) 
+                  ? (editingGaming ? "Actualizando..." : "Creando...") 
+                  : (editingGaming ? "Actualizar Contenido" : "Crear Contenido")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Tournament Modal */}
       <Dialog open={showTournamentForm} onOpenChange={setShowTournamentForm}>
         <DialogContent className="bg-gradient-to-br from-blue-900 to-gray-900 border-2 border-blue-500/40 max-w-2xl max-h-[90vh] overflow-y-auto">
