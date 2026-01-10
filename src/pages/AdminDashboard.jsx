@@ -894,7 +894,7 @@ export default function AdminDashboard() {
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       subscription.status === "active" ? "bg-green-600" : "bg-yellow-600"
                     } text-white`}>
-                      {subscription.status.toUpperCase()}
+                      {subscription.status === "active" ? "ACTIVA" : subscription.status === "pending" ? "PENDIENTE" : subscription.status === "cancelled" ? "CANCELADA" : "VENCIDA"}
                     </span>
                     {subscription.status === "pending" && (
                       <Button
