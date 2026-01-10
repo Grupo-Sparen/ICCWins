@@ -248,14 +248,9 @@ export default function DetalleTorneo() {
                   <h3 className="text-xl font-black text-white mb-4">Participantes ({participants.length})</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     {participants.map((participant, index) => (
-                      <div key={participant.id} className="bg-black/30 p-4 rounded-xl flex items-center justify-between">
-                        <div>
-                          <div className="text-white font-bold">{index + 1}. {participant.user_name}</div>
-                          <div className="text-xs text-gray-400">{participant.user_email}</div>
-                        </div>
-                        {participant.payment_status === "paid" && (
-                          <span className="text-green-400 text-xs font-bold">✓ Pagado</span>
-                        )}
+                      <div key={participant.id} className="bg-black/30 p-3 rounded-xl">
+                        <div className="text-white font-bold text-sm">{index + 1}. {participant.user_name}</div>
+                        <div className="text-xs text-gray-500 mt-1">ID: {participant.user_id.substring(0, 8)}</div>
                       </div>
                     ))}
                   </div>
