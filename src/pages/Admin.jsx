@@ -24,6 +24,7 @@ export default function Admin() {
   const [showPodcastForm, setShowPodcastForm] = useState(false);
   const [showGamingForm, setShowGamingForm] = useState(false);
   const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
+  const [showBattleForm, setShowBattleForm] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [confirmPaymentDialog, setConfirmPaymentDialog] = useState({ open: false, subscription: null });
 
@@ -77,6 +78,14 @@ export default function Admin() {
   });
   const [editingGaming, setEditingGaming] = useState(null);
 
+  const [battleForm, setBattleForm] = useState({
+    opponent_id: "",
+    opponent_name: "",
+    date_time: "",
+    rules: "",
+    prize: ""
+  });
+
   // Queries
   const { data: prizes = [] } = useQuery({
     queryKey: ["admin-prizes"],
@@ -121,6 +130,14 @@ export default function Admin() {
   const { data: tournaments = [] } = useQuery({
     queryKey: ["admin-tournaments"],
     queryFn: () => base44.entities.Tournament.list("-created_date")
+  });
+
+  const { data: tiktokers = [] } = useQuery({
+    queryKey: ["verified-tiktokers"],
+    queryFn: async () => {
+      const users = await base44.entities.User.list();
+      return users.filter(u => u.verified_tiktoker === true);
+    }
   });
 
   // Stats
@@ -508,6 +525,41 @@ export default function Admin() {
   };
 
   // Battle mutations
+  const createBattleMutation = useMutation({
+    mutationFn: async (data) => {
+      const user = await base44.auth.me();
+      const battleData = {
+        ...data,
+        creator_id: user.id,
+        creator_name: user.full_name,
+        status: "invited"
+      };
+      const battle = await base44.entities.Battle.create(battleData);
+      
+      // Create invitation
+      await base44.entities.BattleInvitation.create({
+        battle_id: battle.id,
+        from_user_id: user.id,
+        from_user_name: user.full_name,
+        to_user_id: data.opponent_id,
+        to_user_name: data.opponent_name,
+        status: "pending",
+        message: `Te invito a una batalla el ${new Date(data.date_time).toLocaleString('es-ES')}`
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-battles"]);
+      setShowBattleForm(false);
+      setBattleForm({
+        opponent_id: "",
+        opponent_name: "",
+        date_time: "",
+        rules: "",
+        prize: ""
+      });
+    }
+  });
+
   const updateBattleMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Battle.update(id, data),
     onSuccess: () => {
@@ -1868,12 +1920,13 @@ export default function Admin() {
           <TabsContent value="batallas">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-black text-white">Gestión de Batallas</h3>
-              <a href="/CrearBatalla">
-                <Button className="bg-red-600 hover:bg-red-700 text-white font-bold">
-                  <Plus className="w-5 h-5 mr-2" />
-                  Nueva Batalla
-                </Button>
-              </a>
+              <Button 
+                onClick={() => setShowBattleForm(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nueva Batalla
+              </Button>
             </div>
 
             <div className="grid gap-4">
@@ -2181,6 +2234,133 @@ export default function Admin() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Battle Creation Modal */}
+        <Dialog open={showBattleForm} onOpenChange={setShowBattleForm}>
+          <DialogContent className="bg-gradient-to-br from-red-900 to-gray-900 border-2 border-red-500/40 max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+                <Swords className="w-6 h-6 text-red-400" />
+                Crear Nueva Batalla
+              </DialogTitle>
+              <DialogDescription className="text-gray-300">
+                Configura los detalles de la batalla e invita a un oponente
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              createBattleMutation.mutate(battleForm);
+            }} className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Oponente *</Label>
+                <Select
+                  value={battleForm.opponent_id}
+                  onValueChange={(value) => {
+                    const opponent = tiktokers.find(t => t.id === value);
+                    setBattleForm({
+                      ...battleForm,
+                      opponent_id: value,
+                      opponent_name: opponent?.full_name || ""
+                    });
+                  }}
+                >
+                  <SelectTrigger className="bg-black/30 border-red-500/30 text-white">
+                    <SelectValue placeholder="Selecciona un TikToker" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tiktokers.map((tiktoker) => (
+                      <SelectItem key={tiktoker.id} value={tiktoker.id}>
+                        {tiktoker.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha y Hora *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-black/30 border-red-500/30 text-white hover:bg-black/40 hover:text-white"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {battleForm.date_time ? format(new Date(battleForm.date_time), 'PPP p', { locale: es }) : <span>Seleccionar fecha y hora</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={battleForm.date_time ? new Date(battleForm.date_time) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          setBattleForm({ ...battleForm, date_time: date.toISOString() });
+                        }
+                      }}
+                      initialFocus
+                      locale={es}
+                    />
+                    <div className="p-3 border-t">
+                      <Label className="text-sm mb-2 block">Hora</Label>
+                      <Input
+                        type="time"
+                        value={battleForm.date_time ? format(new Date(battleForm.date_time), 'HH:mm') : ''}
+                        onChange={(e) => {
+                          const currentDate = battleForm.date_time ? new Date(battleForm.date_time) : new Date();
+                          const [hours, minutes] = e.target.value.split(':');
+                          currentDate.setHours(parseInt(hours), parseInt(minutes));
+                          setBattleForm({ ...battleForm, date_time: currentDate.toISOString() });
+                        }}
+                        className="bg-black/30 border-red-500/30 text-black"
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Reglas *</Label>
+                <Textarea
+                  required
+                  value={battleForm.rules}
+                  onChange={(e) => setBattleForm({ ...battleForm, rules: e.target.value })}
+                  className="bg-black/30 border-red-500/30 text-white min-h-24"
+                  placeholder="Describe las reglas de la batalla..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Premio (Opcional)</Label>
+                <Input
+                  value={battleForm.prize}
+                  onChange={(e) => setBattleForm({ ...battleForm, prize: e.target.value })}
+                  className="bg-black/30 border-red-500/30 text-white"
+                  placeholder="Ej: $100 USD"
+                />
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowBattleForm(false)}
+                  className="border-gray-500/30 text-black hover:bg-white/10 hover:text-black"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createBattleMutation.isPending || !battleForm.opponent_id || !battleForm.date_time || !battleForm.rules}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                >
+                  {createBattleMutation.isPending ? "Creando..." : "Crear Batalla"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Confirmation Dialog */}
         <Dialog open={confirmPaymentDialog.open} onOpenChange={(open) => setConfirmPaymentDialog({ open, subscription: null })}>
