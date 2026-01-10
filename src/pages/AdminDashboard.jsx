@@ -630,6 +630,325 @@ export default function AdminDashboard() {
           </div>
         );
 
+      case "sorteos":
+        return (
+          <div>
+            {!selectedPrizeForParticipants ? (
+              <div className="space-y-4">
+                <h3 className="text-xl font-black text-white mb-6">Selecciona un Premio</h3>
+                <div className="grid gap-4">
+                  {prizes.map((prize) => {
+                    const activeSubscribers = subscriptions.filter(s => s.status === "active");
+                    const prizeWinner = winners.find(w => w.prize_id === prize.id);
+                    return (
+                      <Card key={prize.id} className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-lg font-black text-white mb-2">{prize.title}</h3>
+                            <p className="text-gray-400 text-sm">Sorteo: {new Date(prize.draw_date).toLocaleDateString('es-ES')}</p>
+                            <p className="text-green-400 font-bold text-sm mt-2">{activeSubscribers.length} suscriptores activos</p>
+                            {prizeWinner && (
+                              <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 mt-3">
+                                <p className="text-yellow-400 font-bold text-xs mb-1">GANADOR</p>
+                                <p className="text-white font-black">{prizeWinner.winner_name}</p>
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            onClick={() => setSelectedPrizeForParticipants(prize)}
+                            disabled={activeSubscribers.length === 0}
+                            className="bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                          >
+                            Ver Suscriptores
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <Button
+                  onClick={() => setSelectedPrizeForParticipants(null)}
+                  variant="outline"
+                  className="border-orange-500/30 text-orange-400 mb-6"
+                >
+                  ← Volver
+                </Button>
+                <h3 className="text-lg font-black text-white mb-4">Suscriptores - {selectedPrizeForParticipants.title}</h3>
+                <div className="grid gap-3">
+                  {subscriptions.filter(s => s.status === "active").map((subscriber) => (
+                    <Card key={subscriber.id} className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-4 rounded-xl">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-white font-bold">{subscriber.user_name}</h3>
+                          <p className="text-gray-400 text-sm">{subscriber.user_email}</p>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            if (confirm(`¿Confirmar ganador ${subscriber.user_name}?`)) {
+                              selectWinnerMutation.mutate({ subscriber, prize: selectedPrizeForParticipants });
+                            }
+                          }}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold"
+                          size="sm"
+                        >
+                          Seleccionar Ganador
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case "participaciones":
+        return (
+          <div className="grid gap-4">
+            {participations.map((participation) => (
+              <Card key={participation.id} className="bg-gradient-to-br from-green-900/30 to-transparent border border-green-500/20 p-6 rounded-2xl">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-black text-white">{participation.user_name}</h3>
+                    <p className="text-gray-400 text-sm">{participation.user_email}</p>
+                    <p className="text-green-400 font-bold mt-2">{participation.prize_title}</p>
+                    <p className="text-gray-500 text-sm">S/ {participation.amount_paid}</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      participation.payment_status === "confirmed" ? "bg-green-600" : "bg-yellow-600"
+                    } text-white`}>
+                      {participation.payment_status.toUpperCase()}
+                    </span>
+                    {participation.payment_status === "pending" && (
+                      <Button
+                        onClick={() => confirmPaymentMutation.mutate({ id: participation.id })}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                      >
+                        <Check className="w-4 h-4 mr-1" />
+                        Confirmar
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        );
+
+      case "suscripciones":
+        return (
+          <div>
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowSubscriptionForm(true)}
+                className="h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Plan
+              </Button>
+            </div>
+            <div className="grid gap-4">
+              {subscriptionPlans.map((plan) => (
+                <Card key={plan.id} className="bg-gradient-to-br from-blue-900/30 to-transparent border border-blue-500/20 p-6 rounded-2xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-black text-white mb-2">{plan.name_es}</h3>
+                      <p className="text-gray-400 text-sm mb-2">{plan.description_es}</p>
+                      <div className="flex gap-4 text-sm">
+                        <span className="text-blue-400 font-bold">S/ {plan.price_pen}</span>
+                        {plan.price_usd && <span className="text-gray-400">$ {plan.price_usd}</span>}
+                        <span className="text-gray-500">•</span>
+                        <span className="text-gray-400">{plan.duration_months} meses</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          setEditingSubscription(plan);
+                          setShowSubscriptionForm(true);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-blue-500/30 text-blue-400"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Eliminar plan?")) {
+                            deleteSubscriptionMutation.mutate(plan.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "pagos":
+        return (
+          <div className="grid gap-4">
+            {subscriptions.map((subscription) => (
+              <Card key={subscription.id} className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-black text-white">{subscription.user_name}</h3>
+                    <p className="text-gray-400 text-sm">{subscription.user_email}</p>
+                    <p className="text-cyan-400 font-bold mt-2">{subscription.plan_name}</p>
+                    <p className="text-gray-500 text-sm">{subscription.currency} {subscription.amount_paid}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      subscription.status === "active" ? "bg-green-600" : "bg-yellow-600"
+                    } text-white`}>
+                      {subscription.status.toUpperCase()}
+                    </span>
+                    {subscription.status === "pending" && (
+                      <Button
+                        onClick={() => confirmSubscriptionPaymentMutation.mutate({ id: subscription.id })}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                      >
+                        <Check className="w-4 h-4 mr-1" />
+                        Confirmar
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        );
+
+      case "podcast":
+        return (
+          <div>
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowPodcastForm(true)}
+                className="h-12 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Episodio
+              </Button>
+            </div>
+            <div className="grid gap-4">
+              {podcasts.map((episode) => (
+                <Card key={episode.id} className="bg-gradient-to-br from-pink-900/30 to-transparent border border-pink-500/20 p-6 rounded-2xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-black text-white mb-1">{episode.title}</h3>
+                      <p className="text-gray-400 text-sm">{episode.description}</p>
+                      <div className="flex gap-2 text-xs text-gray-500 mt-2">
+                        <span>{new Date(episode.publish_date).toLocaleDateString('es-ES')}</span>
+                        {episode.duration && <span>• {episode.duration}</span>}
+                        {episode.guests && <span>• {episode.guests}</span>}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          setEditingPodcast(episode);
+                          setShowPodcastForm(true);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-pink-500/30 text-pink-400"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Eliminar episodio?")) {
+                            deletePodcastMutation.mutate(episode.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "gaming":
+        return (
+          <div>
+            <div className="mb-6">
+              <Button
+                onClick={() => setShowGamingForm(true)}
+                className="h-12 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Contenido
+              </Button>
+            </div>
+            <div className="grid gap-4">
+              {gaming.map((content) => (
+                <Card key={content.id} className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${
+                          content.platform === "youtube" ? "bg-red-600" : "bg-purple-600"
+                        } text-white`}>
+                          {content.platform.toUpperCase()}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-black text-white mb-1">{content.title}</h3>
+                      <p className="text-gray-400 text-sm">{content.description}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          setEditingGaming(content);
+                          setShowGamingForm(true);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-cyan-500/30 text-cyan-400"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Eliminar contenido?")) {
+                            deleteGamingMutation.mutate(content.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
       default:
         return (
           <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-12 rounded-2xl text-center">
