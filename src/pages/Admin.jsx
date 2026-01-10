@@ -25,6 +25,7 @@ export default function Admin() {
   const [showGamingForm, setShowGamingForm] = useState(false);
   const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
   const [showBattleForm, setShowBattleForm] = useState(false);
+  const [showTournamentForm, setShowTournamentForm] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [confirmPaymentDialog, setConfirmPaymentDialog] = useState({ open: false, subscription: null });
 
@@ -84,6 +85,21 @@ export default function Admin() {
     date_time: "",
     rules: "",
     prize: ""
+  });
+
+  const [tournamentForm, setTournamentForm] = useState({
+    name: "",
+    game: "",
+    platform: "",
+    start_date: "",
+    end_date: "",
+    prizes: "",
+    max_participants: "",
+    entry_fee: 0,
+    format: "single_elimination",
+    description: "",
+    rules: "",
+    image_url: ""
   });
 
   // Queries
@@ -640,6 +656,28 @@ export default function Admin() {
   });
 
   // Tournament mutations
+  const createTournamentMutation = useMutation({
+    mutationFn: (data) => base44.entities.Tournament.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-tournaments"]);
+      setShowTournamentForm(false);
+      setTournamentForm({
+        name: "",
+        game: "",
+        platform: "",
+        start_date: "",
+        end_date: "",
+        prizes: "",
+        max_participants: "",
+        entry_fee: 0,
+        format: "single_elimination",
+        description: "",
+        rules: "",
+        image_url: ""
+      });
+    }
+  });
+
   const updateTournamentMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Tournament.update(id, data),
     onSuccess: () => {
@@ -2070,12 +2108,13 @@ export default function Admin() {
           <TabsContent value="torneos">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-black text-white">Gestión de Torneos</h3>
-              <a href="/CrearTorneo">
-                <Button className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
-                  <Plus className="w-5 h-5 mr-2" />
-                  Nuevo Torneo
-                </Button>
-              </a>
+              <Button 
+                onClick={() => setShowTournamentForm(true)}
+                className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Nuevo Torneo
+              </Button>
             </div>
 
             <div className="grid gap-4">
@@ -2084,12 +2123,13 @@ export default function Admin() {
                   <Trophy className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
                   <h3 className="text-xl font-black text-white mb-2">No hay torneos</h3>
                   <p className="text-gray-400 mb-6">Crea el primer torneo para comenzar</p>
-                  <a href="/CrearTorneo">
-                    <Button className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
-                      <Plus className="w-5 h-5 mr-2" />
-                      Crear Torneo
-                    </Button>
-                  </a>
+                  <Button 
+                    onClick={() => setShowTournamentForm(true)}
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Crear Torneo
+                  </Button>
                 </Card>
               ) : (
                 tournaments.map((tournament) => (
@@ -2357,6 +2397,208 @@ export default function Admin() {
                   className="bg-red-600 hover:bg-red-700 text-white font-bold"
                 >
                   {createBattleMutation.isPending ? "Creando..." : "Crear Batalla"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Tournament Creation Modal */}
+        <Dialog open={showTournamentForm} onOpenChange={setShowTournamentForm}>
+          <DialogContent className="bg-gradient-to-br from-cyan-900 to-gray-900 border-2 border-cyan-500/40 max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-cyan-400" />
+                Crear Nuevo Torneo
+              </DialogTitle>
+              <DialogDescription className="text-gray-300">
+                Configura los detalles del torneo
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              createTournamentMutation.mutate({
+                ...tournamentForm,
+                max_participants: parseInt(tournamentForm.max_participants),
+                entry_fee: parseFloat(tournamentForm.entry_fee) || 0,
+                status: "upcoming"
+              });
+            }} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Nombre del Torneo *</Label>
+                  <Input
+                    required
+                    value={tournamentForm.name}
+                    onChange={(e) => setTournamentForm({ ...tournamentForm, name: e.target.value })}
+                    className="bg-black/30 border-cyan-500/30 text-white"
+                    placeholder="Torneo de League of Legends"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Juego *</Label>
+                  <Input
+                    required
+                    value={tournamentForm.game}
+                    onChange={(e) => setTournamentForm({ ...tournamentForm, game: e.target.value })}
+                    className="bg-black/30 border-cyan-500/30 text-white"
+                    placeholder="League of Legends"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Plataforma *</Label>
+                <Input
+                  required
+                  value={tournamentForm.platform}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, platform: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white"
+                  placeholder="Discord, Twitch, etc."
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Fecha de Inicio *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-black/30 border-cyan-500/30 text-white hover:bg-black/40 hover:text-white"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {tournamentForm.start_date ? format(new Date(tournamentForm.start_date), 'PPP', { locale: es }) : <span>Seleccionar fecha</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={tournamentForm.start_date ? new Date(tournamentForm.start_date) : undefined}
+                        onSelect={(date) => setTournamentForm({ ...tournamentForm, start_date: date ? date.toISOString() : '' })}
+                        initialFocus
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Fecha de Fin *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-black/30 border-cyan-500/30 text-white hover:bg-black/40 hover:text-white"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {tournamentForm.end_date ? format(new Date(tournamentForm.end_date), 'PPP', { locale: es }) : <span>Seleccionar fecha</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={tournamentForm.end_date ? new Date(tournamentForm.end_date) : undefined}
+                        onSelect={(date) => setTournamentForm({ ...tournamentForm, end_date: date ? date.toISOString() : '' })}
+                        initialFocus
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Participantes Máximos *</Label>
+                  <Input
+                    required
+                    type="number"
+                    value={tournamentForm.max_participants}
+                    onChange={(e) => setTournamentForm({ ...tournamentForm, max_participants: e.target.value })}
+                    className="bg-black/30 border-cyan-500/30 text-white"
+                    placeholder="16"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Precio de Entrada</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={tournamentForm.entry_fee}
+                    onChange={(e) => setTournamentForm({ ...tournamentForm, entry_fee: e.target.value })}
+                    className="bg-black/30 border-cyan-500/30 text-white"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Formato *</Label>
+                  <Select
+                    value={tournamentForm.format}
+                    onValueChange={(value) => setTournamentForm({ ...tournamentForm, format: value })}
+                  >
+                    <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single_elimination">Eliminación Simple</SelectItem>
+                      <SelectItem value="double_elimination">Eliminación Doble</SelectItem>
+                      <SelectItem value="round_robin">Round Robin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Descripción *</Label>
+                <Textarea
+                  required
+                  value={tournamentForm.description}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, description: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white min-h-20"
+                  placeholder="Descripción del torneo..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Premios</Label>
+                <Textarea
+                  value={tournamentForm.prizes}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, prizes: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white min-h-20"
+                  placeholder="1er lugar: $500, 2do lugar: $300..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Reglas</Label>
+                <Textarea
+                  value={tournamentForm.rules}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, rules: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white min-h-20"
+                  placeholder="Reglas del torneo..."
+                />
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowTournamentForm(false)}
+                  className="border-gray-500/30 text-black hover:bg-white/10 hover:text-black"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createTournamentMutation.isPending}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
+                >
+                  {createTournamentMutation.isPending ? "Creando..." : "Crear Torneo"}
                 </Button>
               </DialogFooter>
             </form>
