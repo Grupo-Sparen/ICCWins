@@ -1283,13 +1283,27 @@ export default function AdminDashboard() {
               </div>
               <div className="space-y-2">
                 <Label className="text-white font-bold">Fecha de Publicación *</Label>
-                <Input
-                  required
-                  type="date"
-                  value={podcastForm.publish_date}
-                  onChange={(e) => setPodcastForm({ ...podcastForm, publish_date: e.target.value })}
-                  className="bg-black/30 border-pink-500/30 text-white"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-black/30 border-pink-500/30 text-white hover:bg-black/40 hover:text-white"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {podcastForm.publish_date ? format(new Date(podcastForm.publish_date), 'PPP', { locale: es }) : <span>Seleccionar fecha</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={podcastForm.publish_date ? new Date(podcastForm.publish_date) : undefined}
+                      onSelect={(date) => {
+                        if (date) setPodcastForm({ ...podcastForm, publish_date: date.toISOString().split('T')[0] });
+                      }}
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
