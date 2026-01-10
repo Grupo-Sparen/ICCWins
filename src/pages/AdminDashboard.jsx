@@ -325,6 +325,13 @@ export default function AdminDashboard() {
     }
   });
 
+  const updateTournamentMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Tournament.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-tournaments"]);
+    }
+  });
+
   const deleteTournamentMutation = useMutation({
     mutationFn: (id) => base44.entities.Tournament.delete(id),
     onSuccess: () => {
