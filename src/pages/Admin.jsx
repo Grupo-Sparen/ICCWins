@@ -422,7 +422,8 @@ export default function Admin() {
                             prize.status === "active" ? "text-green-400" : 
                             prize.status === "upcoming" ? "text-cyan-400" : "text-gray-400"
                           }`}>
-                            {prize.status.toUpperCase()}
+                            {prize.status === "active" ? "ACTIVO" : 
+                             prize.status === "upcoming" ? "PRÓXIMAMENTE" : "FINALIZADO"}
                           </span>
                         </div>
                       </div>
