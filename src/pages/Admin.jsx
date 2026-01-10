@@ -52,7 +52,7 @@ export default function Admin() {
   const pendingPayments = participations.filter(p => p.payment_status === "pending").length;
 
   return (
-    <div className="min-h-screen py-20 bg-gradient-to-b from-[#0A0A0F] to-[#0F0F1E]">
+    <div className="min-h-screen pt-40 pb-20 bg-gradient-to-b from-[#0A0A0F] to-[#0F0F1E]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">
