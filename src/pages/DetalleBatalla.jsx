@@ -140,7 +140,7 @@ export default function DetalleBatalla() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["battle", battleId]);
-      alert("Resultado registrado exitosamente");
+      toast.success("Resultado registrado exitosamente");
     }
   });
 
