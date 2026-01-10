@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
-import { Menu, X, Trophy, Gift, Crown, Mic, Gamepad2, CreditCard, Shield } from "lucide-react";
+import { Menu, X, Trophy, Gift, Crown, Mic, Gamepad2, CreditCard, Shield, Swords } from "lucide-react";
 import { LanguageProvider, useLanguage } from "./components/LanguageContext";
 import LanguageCurrencySelector from "./components/LanguageCurrencySelector";
 import { translations } from "./components/translations";
@@ -15,6 +15,8 @@ function LayoutContent({ children, currentPageName }) {
     { name: t.home, path: "Home", icon: Trophy },
     { name: t.subscription, path: "Suscripcion", icon: Crown },
     { name: t.prizes, path: "Premios", icon: Gift },
+    { name: "Batallas", path: "Batallas", icon: Shield },
+    { name: "Torneos", path: "Torneos", icon: Trophy },
     { name: t.podcast, path: "Podcast", icon: Mic },
     { name: t.gaming, path: "Gaming", icon: Gamepad2 },
     { name: t.myAccount, path: "MiSuscripcion", icon: CreditCard },
