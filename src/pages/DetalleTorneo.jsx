@@ -3,16 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Calendar, Users, DollarSign, UserPlus, Shield, Play } from "lucide-react";
+import { Trophy, Calendar, Users, DollarSign, UserPlus, Shield, Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export default function DetalleTorneo() {
   const queryClient = useQueryClient();
   const urlParams = new URLSearchParams(window.location.search);
   const tournamentId = urlParams.get("id");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
