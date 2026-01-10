@@ -5,6 +5,7 @@ import { Trophy, Zap, CheckCircle, Star, Crown, Sparkles, Gift } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import LanguageCurrencySelector from "../components/LanguageCurrencySelector";
+import SubscriptionModal from "../components/SubscriptionModal";
 
 const translations = {
   es: {
@@ -295,6 +296,16 @@ export default function Suscripcion() {
             </div>
           </Card>
         </div>
+
+        {/* Subscription Modal */}
+        {selectedPlan && (
+          <SubscriptionModal
+            plan={selectedPlan}
+            currency={currency}
+            language={language}
+            onClose={() => setSelectedPlan(null)}
+          />
+        )}
       </div>
     </div>
   );
