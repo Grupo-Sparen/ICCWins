@@ -13,7 +13,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 export default function Admin() {
   const queryClient = useQueryClient();
@@ -113,18 +112,6 @@ export default function Admin() {
     .reduce((sum, p) => sum + (p.amount_paid || 0), 0);
 
   const pendingPayments = participations.filter(p => p.payment_status === "pending").length;
-
-  const { data: subscriptions = [] } = useQuery({
-    queryKey: ["admin-subscriptions"],
-    queryFn: () => base44.entities.Subscription.list("-created_date")
-  });
-
-  const subscriptionRevenue = subscriptions
-    .filter(s => s.status === "active" || s.status === "expired")
-    .reduce((sum, s) => sum + (s.amount_paid || 0), 0);
-
-  const totalIncome = totalRevenue + subscriptionRevenue;
-  const activeSubscriptions = subscriptions.filter(s => s.status === "active").length;
 
   // Mutations
   const createPrizeMutation = useMutation({
@@ -531,7 +518,7 @@ export default function Admin() {
 
             <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
               <div className="text-sm text-gray-400 mb-1">Ingresos Totales</div>
-              <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalIncome.toFixed(2)}</div>
+              <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalRevenue}</div>
               <div className="text-xs text-yellow-400 font-bold">{pendingPayments} pagos pendientes</div>
             </Card>
           </div>
@@ -571,65 +558,6 @@ export default function Admin() {
 
           {/* Overview Tab */}
           <TabsContent value="overview">
-            {/* Income Charts */}
-            <div className="grid lg:grid-cols-2 gap-6 mb-6">
-              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-3xl">
-                <h3 className="text-xl font-black text-white mb-6">Ingresos por Fuente</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={[
-                    { name: 'Participaciones', value: totalRevenue, fill: '#06B6D4' },
-                    { name: 'Suscripciones', value: subscriptionRevenue, fill: '#A855F7' }
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="name" stroke="#9CA3AF" />
-                    <YAxis stroke="#9CA3AF" />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
-                      labelStyle={{ color: '#F3F4F6' }}
-                      formatter={(value) => `S/ ${value.toFixed(2)}`}
-                    />
-                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                      {[
-                        { name: 'Participaciones', value: totalRevenue, fill: '#06B6D4' },
-                        { name: 'Suscripciones', value: subscriptionRevenue, fill: '#A855F7' }
-                      ].map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-3xl">
-                <h3 className="text-xl font-black text-white mb-6">Distribución de Ingresos</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'Participaciones', value: totalRevenue },
-                        { name: 'Suscripciones', value: subscriptionRevenue }
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      <Cell fill="#06B6D4" />
-                      <Cell fill="#A855F7" />
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
-                      formatter={(value) => `S/ ${value.toFixed(2)}`}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
-            </div>
-
             <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-3xl">
               <h2 className="text-2xl font-black text-white mb-6">Resumen General</h2>
               <div className="space-y-4">
@@ -652,22 +580,6 @@ export default function Admin() {
                 <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
                   <span className="text-gray-400">Contenido Gaming</span>
                   <span className="text-white font-bold">{gaming.length}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-cyan-900/50 to-purple-900/50 border border-cyan-500/30 rounded-xl">
-                  <span className="text-cyan-300 font-bold">💰 Ingresos por Participaciones</span>
-                  <span className="text-cyan-400 font-black text-lg">S/ {totalRevenue.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border border-purple-500/30 rounded-xl">
-                  <span className="text-purple-300 font-bold">💎 Ingresos por Suscripciones</span>
-                  <span className="text-purple-400 font-black text-lg">S/ {subscriptionRevenue.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-900/50 to-cyan-900/50 border border-green-500/30 rounded-xl">
-                  <span className="text-green-300 font-bold">📊 Ingresos Totales</span>
-                  <span className="text-green-400 font-black text-2xl">S/ {totalIncome.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
-                  <span className="text-gray-400">Suscripciones Activas</span>
-                  <span className="text-purple-400 font-bold">{activeSubscriptions}</span>
                 </div>
               </div>
             </Card>
