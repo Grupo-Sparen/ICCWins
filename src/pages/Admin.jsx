@@ -547,7 +547,15 @@ export default function Admin() {
               <CreditCard className="w-4 h-4 mr-2" />
               Pagos Suscripciones
             </TabsTrigger>
-          </TabsList>
+            <TabsTrigger value="batallas" className="data-[state=active]:bg-red-600">
+              <Swords className="w-4 h-4 mr-2" />
+              Batallas
+            </TabsTrigger>
+            <TabsTrigger value="torneos" className="data-[state=active]:bg-cyan-600">
+              <Trophy className="w-4 h-4 mr-2" />
+              Torneos
+            </TabsTrigger>
+            </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview">
