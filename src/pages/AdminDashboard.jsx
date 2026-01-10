@@ -801,7 +801,7 @@ export default function AdminDashboard() {
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       participation.payment_status === "confirmed" ? "bg-green-600" : "bg-yellow-600"
                     } text-white`}>
-                      {participation.payment_status.toUpperCase()}
+                      {participation.payment_status === "confirmed" ? "CONFIRMADO" : "PENDIENTE"}
                     </span>
                     {participation.payment_status === "pending" && (
                       <Button
