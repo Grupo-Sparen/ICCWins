@@ -1935,12 +1935,13 @@ export default function Admin() {
                   <Swords className="w-16 h-16 text-red-400 mx-auto mb-4" />
                   <h3 className="text-xl font-black text-white mb-2">No hay batallas</h3>
                   <p className="text-gray-400 mb-6">Crea la primera batalla para comenzar</p>
-                  <a href="/CrearBatalla">
-                    <Button className="bg-red-600 hover:bg-red-700 text-white font-bold">
-                      <Plus className="w-5 h-5 mr-2" />
-                      Crear Batalla
-                    </Button>
-                  </a>
+                  <Button 
+                    onClick={() => setShowBattleForm(true)}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Crear Batalla
+                  </Button>
                 </Card>
               ) : (
                 battles.map((battle) => (
