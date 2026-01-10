@@ -960,7 +960,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F]">
+    <div className="min-h-screen pt-40 pb-20 bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F]">
       <div className="flex">
         {/* Sidebar */}
         <aside className={`${sidebarOpen ? "w-64" : "w-20"} bg-[#050508] border-r border-purple-900/20 transition-all duration-300 fixed h-screen flex flex-col overflow-y-auto`}>
