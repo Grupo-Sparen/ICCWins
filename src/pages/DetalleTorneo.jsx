@@ -259,14 +259,14 @@ export default function DetalleTorneo() {
 
               <TabsContent value="bracket">
                 {!tournament.bracket_generated ? (
-                  <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-12 rounded-2xl text-center">
-                    <Trophy className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-black text-white mb-2">Bracket no generado</h3>
+                  <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-2xl text-center">
+                    <Trophy className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                    <h3 className="text-lg font-black text-white mb-2">Bracket no generado</h3>
                     {isAdmin && (
                       <Button
                         onClick={() => generateBracketMutation.mutate()}
                         disabled={generateBracketMutation.isPending || participants.length < 2}
-                        className="mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
+                        className="mt-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
                       >
                         <Play className="w-5 h-5 mr-2" />
                         Generar Bracket
@@ -274,8 +274,8 @@ export default function DetalleTorneo() {
                     )}
                   </Card>
                 ) : (
-                  <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
-                    <h3 className="text-xl font-black text-white mb-4">Bracket del Torneo</h3>
+                  <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-4 rounded-2xl">
+                    <h3 className="text-lg font-black text-white mb-3">Bracket del Torneo</h3>
                     <div className="space-y-4">
                       {matches.map(match => (
                         <div key={match.id} className="bg-black/30 p-4 rounded-xl">
