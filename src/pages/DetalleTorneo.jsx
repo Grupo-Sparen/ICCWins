@@ -195,26 +195,26 @@ export default function DetalleTorneo() {
               </div>
 
               {tournament.description && (
-                <div className="mb-6">
-                  <h3 className="text-white font-bold text-xl mb-2">Descripción</h3>
-                  <p className="text-gray-300 whitespace-pre-wrap">{tournament.description}</p>
+                <div className="mb-3">
+                  <h3 className="text-white font-bold mb-1">Descripción</h3>
+                  <p className="text-gray-300 text-sm whitespace-pre-wrap">{tournament.description}</p>
                 </div>
               )}
 
               {tournament.prizes && (
-                <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-6 mb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="w-6 h-6 text-yellow-400" />
-                    <h3 className="text-white font-bold text-xl">Premios</h3>
+                <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-4 mb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Trophy className="w-5 h-5 text-yellow-400" />
+                    <h3 className="text-white font-bold">Premios</h3>
                   </div>
-                  <p className="text-white whitespace-pre-wrap">{tournament.prizes}</p>
+                  <p className="text-white text-sm whitespace-pre-wrap">{tournament.prizes}</p>
                 </div>
               )}
 
               {tournament.rules && (
-                <div className="bg-black/30 p-4 rounded-xl mb-6">
-                  <h3 className="text-white font-bold mb-2">Reglas</h3>
-                  <p className="text-gray-300 whitespace-pre-wrap">{tournament.rules}</p>
+                <div className="bg-black/30 p-3 rounded-xl mb-3">
+                  <h3 className="text-white font-bold text-sm mb-1">Reglas</h3>
+                  <p className="text-gray-300 text-sm whitespace-pre-wrap">{tournament.rules}</p>
                 </div>
               )}
 
