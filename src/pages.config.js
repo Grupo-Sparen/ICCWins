@@ -8,6 +8,8 @@ import Premios from './pages/Premios';
 import Suscripcion from './pages/Suscripcion';
 import Batallas from './pages/Batallas';
 import Torneos from './pages/Torneos';
+import CrearBatalla from './pages/CrearBatalla';
+import CrearTorneo from './pages/CrearTorneo';
 import __Layout from './Layout.jsx';
 
 
@@ -22,6 +24,8 @@ export const PAGES = {
     "Suscripcion": Suscripcion,
     "Batallas": Batallas,
     "Torneos": Torneos,
+    "CrearBatalla": CrearBatalla,
+    "CrearTorneo": CrearTorneo,
 }
 
 export const pagesConfig = {
