@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon } from "lucide-react";
+import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -167,6 +167,13 @@ export default function Admin() {
     mutationFn: ({ id }) => base44.entities.Participation.update(id, { payment_status: "confirmed" }),
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-participations"]);
+    }
+  });
+
+  const confirmSubscriptionPaymentMutation = useMutation({
+    mutationFn: ({ id }) => base44.entities.Subscription.update(id, { status: "active" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscriptions"]);
     }
   });
 
@@ -535,6 +542,10 @@ export default function Admin() {
             <TabsTrigger value="gaming" className="data-[state=active]:bg-cyan-600">
               <Gamepad2 className="w-4 h-4 mr-2" />
               Gaming
+            </TabsTrigger>
+            <TabsTrigger value="subscription-payments" className="data-[state=active]:bg-orange-600">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Pagos Suscripciones
             </TabsTrigger>
           </TabsList>
 
@@ -1687,6 +1698,66 @@ export default function Admin() {
                   </div>
                 </Card>
               ))}
+            </div>
+          </TabsContent>
+
+          {/* Subscription Payments Tab */}
+          <TabsContent value="subscription-payments">
+            <h3 className="text-xl font-black text-white mb-6">Pagos de Suscripciones</h3>
+            <div className="grid gap-4">
+              {subscriptions.map((subscription) => {
+                const isManualPayment = subscription.payment_method && subscription.payment_method.includes("Manual");
+                const isPending = subscription.status === "pending";
+                
+                return (
+                  <Card key={subscription.id} className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-lg font-black text-white">{subscription.user_name}</h3>
+                        <p className="text-gray-400 text-sm">{subscription.user_email}</p>
+                        <p className="text-orange-400 font-bold mt-2">{subscription.plan_name}</p>
+                        <div className="flex gap-4 text-sm mt-2">
+                          <span className="text-gray-500">
+                            {subscription.currency} {subscription.amount_paid}
+                          </span>
+                          <span className="text-gray-500">•</span>
+                          <span className="text-gray-400">{subscription.payment_method}</span>
+                        </div>
+                        {subscription.start_date && subscription.end_date && (
+                          <p className="text-gray-500 text-xs mt-1">
+                            Período: {new Date(subscription.start_date).toLocaleDateString('es-ES')} - {new Date(subscription.end_date).toLocaleDateString('es-ES')}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          subscription.status === "active" ? "bg-green-600 text-white" :
+                          subscription.status === "pending" ? "bg-yellow-600 text-black" :
+                          subscription.status === "cancelled" ? "bg-red-600 text-white" :
+                          "bg-gray-600 text-white"
+                        }`}>
+                          {subscription.status.toUpperCase()}
+                        </span>
+                        {isPending && isManualPayment && (
+                          <Button
+                            onClick={() => {
+                              if (confirm(`¿Confirmar pago de ${subscription.user_name}?`)) {
+                                confirmSubscriptionPaymentMutation.mutate({ id: subscription.id });
+                              }
+                            }}
+                            disabled={confirmSubscriptionPaymentMutation.isPending}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Confirmar Pago
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
         </Tabs>
