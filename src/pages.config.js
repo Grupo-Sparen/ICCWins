@@ -1,4 +1,3 @@
-import Admin from './pages/Admin';
 import Gaming from './pages/Gaming';
 import Ganadores from './pages/Ganadores';
 import Home from './pages/Home';
@@ -7,11 +6,11 @@ import Participar from './pages/Participar';
 import Podcast from './pages/Podcast';
 import Premios from './pages/Premios';
 import Suscripcion from './pages/Suscripcion';
+import Admin from './pages/Admin';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Admin": Admin,
     "Gaming": Gaming,
     "Ganadores": Ganadores,
     "Home": Home,
@@ -20,6 +19,7 @@ export const PAGES = {
     "Podcast": Podcast,
     "Premios": Premios,
     "Suscripcion": Suscripcion,
+    "Admin": Admin,
 }
 
 export const pagesConfig = {

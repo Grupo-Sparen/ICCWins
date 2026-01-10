@@ -106,12 +106,23 @@ export default function Admin() {
     queryFn: () => base44.entities.SubscriptionPlan.list("-created_date")
   });
 
+  const { data: subscriptions = [] } = useQuery({
+    queryKey: ["admin-subscriptions"],
+    queryFn: () => base44.entities.Subscription.list("-created_date")
+  });
+
   // Stats
   const totalRevenue = participations
     .filter(p => p.payment_status === "confirmed")
     .reduce((sum, p) => sum + (p.amount_paid || 0), 0);
 
   const pendingPayments = participations.filter(p => p.payment_status === "pending").length;
+
+  const subscriptionRevenue = subscriptions
+    .filter(s => s.status === "active" || s.status === "pending")
+    .reduce((sum, s) => sum + (s.amount_paid || 0), 0);
+
+  const totalSubscribers = subscriptions.filter(s => s.status === "active").length;
 
   // Mutations
   const createPrizeMutation = useMutation({
@@ -497,7 +508,7 @@ export default function Admin() {
 
         {/* Overview Stats */}
         {activeTab === "overview" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
               <Trophy className="w-10 h-10 text-purple-400 mb-3" />
               <div className="text-3xl font-black text-white mb-1">{prizes.length}</div>
@@ -517,9 +528,21 @@ export default function Admin() {
             </Card>
 
             <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
-              <div className="text-sm text-gray-400 mb-1">Ingresos Totales</div>
+              <div className="text-sm text-gray-400 mb-1">Ingresos por Premios</div>
               <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalRevenue}</div>
               <div className="text-xs text-yellow-400 font-bold">{pendingPayments} pagos pendientes</div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+              <Crown className="w-10 h-10 text-orange-400 mb-3" />
+              <div className="text-sm text-gray-400 mb-1">Ingresos por Suscripciones</div>
+              <div className="text-3xl font-black text-orange-400 mb-1">S/ {subscriptionRevenue}</div>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-pink-900/30 to-transparent border border-pink-500/20 p-6 rounded-2xl">
+              <Users className="w-10 h-10 text-pink-400 mb-3" />
+              <div className="text-3xl font-black text-white mb-1">{totalSubscribers}</div>
+              <div className="text-gray-400 font-semibold text-sm">Suscriptores Activos</div>
             </Card>
           </div>
         )}
@@ -580,6 +603,14 @@ export default function Admin() {
                 <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
                   <span className="text-gray-400">Contenido Gaming</span>
                   <span className="text-white font-bold">{gaming.length}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
+                  <span className="text-gray-400">Suscriptores Activos</span>
+                  <span className="text-pink-400 font-bold">{totalSubscribers}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
+                  <span className="text-gray-400">Ingresos por Suscripciones</span>
+                  <span className="text-orange-400 font-bold">S/ {subscriptionRevenue}</span>
                 </div>
               </div>
             </Card>
