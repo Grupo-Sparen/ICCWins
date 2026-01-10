@@ -17,6 +17,18 @@ export default function Admin() {
   const [showWinnerForm, setShowWinnerForm] = useState(false);
   const [showPodcastForm, setShowPodcastForm] = useState(false);
   const [showGamingForm, setShowGamingForm] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const [prizeForm, setPrizeForm] = useState({
+    title: "",
+    description: "",
+    image_url: "",
+    participation_cost: "",
+    draw_date: "",
+    status: "active",
+    featured: false,
+    total_participants: 0
+  });
 
   // Queries
   const { data: prizes = [] } = useQuery({
@@ -50,6 +62,49 @@ export default function Admin() {
     .reduce((sum, p) => sum + (p.amount_paid || 0), 0);
 
   const pendingPayments = participations.filter(p => p.payment_status === "pending").length;
+
+  // Mutations
+  const createPrizeMutation = useMutation({
+    mutationFn: (data) => base44.entities.Prize.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-prizes"]);
+      setShowPrizeForm(false);
+      setPrizeForm({
+        title: "",
+        description: "",
+        image_url: "",
+        participation_cost: "",
+        draw_date: "",
+        status: "active",
+        featured: false,
+        total_participants: 0
+      });
+    }
+  });
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setPrizeForm({ ...prizeForm, image_url: result.file_url });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleCreatePrize = (e) => {
+    e.preventDefault();
+    createPrizeMutation.mutate({
+      ...prizeForm,
+      participation_cost: parseFloat(prizeForm.participation_cost),
+      total_participants: parseInt(prizeForm.total_participants) || 0
+    });
+  };
 
   return (
     <div className="min-h-screen pt-40 pb-20 bg-gradient-to-b from-[#0A0A0F] to-[#0F0F1E]">
@@ -167,11 +222,124 @@ export default function Admin() {
 
             {showPrizeForm && (
               <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-2 border-purple-500/40 p-8 rounded-2xl mb-6 shadow-xl">
-                <h3 className="text-2xl font-black text-white mb-3">Crear Nuevo Premio</h3>
-                <p className="text-gray-300 text-sm mb-6">Usa el panel de datos para crear premios manualmente</p>
-                <Button variant="outline" className="border-purple-400 text-purple-300 hover:bg-purple-500/20 font-bold">
-                  Ir a Gestión de Datos
-                </Button>
+                <h3 className="text-2xl font-black text-white mb-6">Crear Nuevo Premio</h3>
+                
+                <form onSubmit={handleCreatePrize} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Título *</Label>
+                      <Input
+                        required
+                        value={prizeForm.title}
+                        onChange={(e) => setPrizeForm({ ...prizeForm, title: e.target.value })}
+                        className="bg-black/30 border-purple-500/30 text-white"
+                        placeholder="PlayStation 5"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Costo de Participación (S/) *</Label>
+                      <Input
+                        required
+                        type="number"
+                        step="0.01"
+                        value={prizeForm.participation_cost}
+                        onChange={(e) => setPrizeForm({ ...prizeForm, participation_cost: e.target.value })}
+                        className="bg-black/30 border-purple-500/30 text-white"
+                        placeholder="29.90"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-white font-bold">Descripción *</Label>
+                    <Textarea
+                      required
+                      value={prizeForm.description}
+                      onChange={(e) => setPrizeForm({ ...prizeForm, description: e.target.value })}
+                      className="bg-black/30 border-purple-500/30 text-white min-h-24"
+                      placeholder="Descripción completa del premio..."
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Fecha de Sorteo *</Label>
+                      <Input
+                        required
+                        type="date"
+                        value={prizeForm.draw_date}
+                        onChange={(e) => setPrizeForm({ ...prizeForm, draw_date: e.target.value })}
+                        className="bg-black/30 border-purple-500/30 text-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Estado *</Label>
+                      <Select
+                        value={prizeForm.status}
+                        onValueChange={(value) => setPrizeForm({ ...prizeForm, status: value })}
+                      >
+                        <SelectTrigger className="bg-black/30 border-purple-500/30 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Activo</SelectItem>
+                          <SelectItem value="upcoming">Próximamente</SelectItem>
+                          <SelectItem value="finished">Finalizado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-white font-bold">Imagen del Premio</Label>
+                    <div className="flex gap-4 items-start">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage}
+                        className="bg-black/30 border-purple-500/30 text-white"
+                      />
+                      {uploadingImage && <span className="text-purple-400 text-sm">Subiendo...</span>}
+                    </div>
+                    {prizeForm.image_url && (
+                      <img src={prizeForm.image_url} alt="Preview" className="w-32 h-32 object-cover rounded-xl mt-2" />
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      checked={prizeForm.featured}
+                      onChange={(e) => setPrizeForm({ ...prizeForm, featured: e.target.checked })}
+                      className="w-5 h-5 rounded"
+                    />
+                    <Label htmlFor="featured" className="text-white font-bold cursor-pointer">
+                      Premio Destacado
+                    </Label>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="submit"
+                      disabled={createPrizeMutation.isPending}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+                    >
+                      {createPrizeMutation.isPending ? "Creando..." : "Crear Premio"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowPrizeForm(false)}
+                      className="border-purple-500/30 text-white"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
               </Card>
             )}
 
