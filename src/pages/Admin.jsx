@@ -113,6 +113,16 @@ export default function Admin() {
     queryFn: () => base44.entities.Subscription.list("-created_date")
   });
 
+  const { data: battles = [] } = useQuery({
+    queryKey: ["admin-battles"],
+    queryFn: () => base44.entities.Battle.list("-created_date")
+  });
+
+  const { data: tournaments = [] } = useQuery({
+    queryKey: ["admin-tournaments"],
+    queryFn: () => base44.entities.Tournament.list("-created_date")
+  });
+
   // Stats
   const totalRevenue = participations
     .filter(p => p.payment_status === "confirmed")
@@ -496,6 +506,101 @@ export default function Admin() {
     });
     setShowGamingForm(true);
   };
+
+  // Battle mutations
+  const updateBattleMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Battle.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-battles"]);
+    }
+  });
+
+  const registerBattleResultMutation = useMutation({
+    mutationFn: async ({ battleId, winnerId }) => {
+      const battle = battles.find(b => b.id === battleId);
+      await base44.entities.Battle.update(battleId, {
+        status: "completed",
+        winner_id: winnerId
+      });
+
+      const creatorStats = await base44.entities.BattleStats.filter({ user_id: battle.creator_id }).then(s => s[0]);
+      const opponentStats = await base44.entities.BattleStats.filter({ user_id: battle.opponent_id }).then(s => s[0]);
+
+      if (creatorStats) {
+        const won = winnerId === battle.creator_id ? 1 : 0;
+        const lost = winnerId === battle.creator_id ? 0 : 1;
+        const total = creatorStats.total_battles + 1;
+        const winRate = ((creatorStats.battles_won + won) / total) * 100;
+        
+        await base44.entities.BattleStats.update(creatorStats.id, {
+          battles_won: creatorStats.battles_won + won,
+          battles_lost: creatorStats.battles_lost + lost,
+          total_battles: total,
+          win_rate: winRate
+        });
+      } else {
+        const won = winnerId === battle.creator_id ? 1 : 0;
+        await base44.entities.BattleStats.create({
+          user_id: battle.creator_id,
+          user_name: battle.creator_name,
+          battles_won: won,
+          battles_lost: 1 - won,
+          total_battles: 1,
+          win_rate: won * 100
+        });
+      }
+
+      if (opponentStats) {
+        const won = winnerId === battle.opponent_id ? 1 : 0;
+        const lost = winnerId === battle.opponent_id ? 0 : 1;
+        const total = opponentStats.total_battles + 1;
+        const winRate = ((opponentStats.battles_won + won) / total) * 100;
+        
+        await base44.entities.BattleStats.update(opponentStats.id, {
+          battles_won: opponentStats.battles_won + won,
+          battles_lost: opponentStats.battles_lost + lost,
+          total_battles: total,
+          win_rate: winRate
+        });
+      } else {
+        const won = winnerId === battle.opponent_id ? 1 : 0;
+        await base44.entities.BattleStats.create({
+          user_id: battle.opponent_id,
+          user_name: battle.opponent_name,
+          battles_won: won,
+          battles_lost: 1 - won,
+          total_battles: 1,
+          win_rate: won * 100
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-battles"]);
+      alert("Resultado registrado exitosamente");
+    }
+  });
+
+  const deleteBattleMutation = useMutation({
+    mutationFn: (id) => base44.entities.Battle.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-battles"]);
+    }
+  });
+
+  // Tournament mutations
+  const updateTournamentMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Tournament.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-tournaments"]);
+    }
+  });
+
+  const deleteTournamentMutation = useMutation({
+    mutationFn: (id) => base44.entities.Tournament.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-tournaments"]);
+    }
+  });
 
   return (
     <div className="min-h-screen pt-40 pb-20 bg-gradient-to-b from-[#0A0A0F] to-[#0F0F1E]">
@@ -1761,33 +1866,318 @@ export default function Admin() {
 
           {/* Batallas Tab */}
           <TabsContent value="batallas">
-            <h3 className="text-xl font-black text-white mb-6">Gestión de Batallas</h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-white">Gestión de Batallas</h3>
+              <a href="/CrearBatalla">
+                <Button className="bg-red-600 hover:bg-red-700 text-white font-bold">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Nueva Batalla
+                </Button>
+              </a>
+            </div>
+
             <div className="grid gap-4">
-              <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl text-center">
-                <Swords className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-400">Las batallas se gestionan desde la página principal de Batallas</p>
-                <a href="/Batallas" className="inline-block mt-4">
-                  <Button className="bg-red-600 hover:bg-red-700 text-white font-bold">
-                    Ir a Batallas
-                  </Button>
-                </a>
-              </Card>
+              {battles.length === 0 ? (
+                <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-12 rounded-2xl text-center">
+                  <Swords className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-black text-white mb-2">No hay batallas</h3>
+                  <p className="text-gray-400 mb-6">Crea la primera batalla para comenzar</p>
+                  <a href="/CrearBatalla">
+                    <Button className="bg-red-600 hover:bg-red-700 text-white font-bold">
+                      <Plus className="w-5 h-5 mr-2" />
+                      Crear Batalla
+                    </Button>
+                  </a>
+                </Card>
+              ) : (
+                battles.map((battle) => (
+                  <Card key={battle.id} className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <Swords className="w-6 h-6 text-red-400" />
+                          <h3 className="text-xl font-black text-white">
+                            {battle.creator_name} vs {battle.opponent_name || "Pendiente"}
+                          </h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            battle.status === "pending" ? "bg-gray-600 text-white" :
+                            battle.status === "invited" ? "bg-yellow-600 text-black" :
+                            battle.status === "confirmed" ? "bg-green-600 text-white" :
+                            battle.status === "completed" ? "bg-blue-600 text-white" :
+                            "bg-red-600 text-white"
+                          }`}>
+                            {battle.status.toUpperCase()}
+                          </span>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3 mb-4">
+                          <div className="bg-black/30 p-3 rounded-xl">
+                            <p className="text-gray-400 text-xs mb-1">Fecha y Hora</p>
+                            <p className="text-white font-bold text-sm">
+                              {new Date(battle.date_time).toLocaleString('es-ES')}
+                            </p>
+                          </div>
+                          {battle.prize && (
+                            <div className="bg-yellow-600/20 border border-yellow-500/30 p-3 rounded-xl">
+                              <p className="text-yellow-400 text-xs mb-1">Premio</p>
+                              <p className="text-white font-bold text-sm">{battle.prize}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="bg-black/30 p-3 rounded-xl mb-3">
+                          <p className="text-gray-400 text-xs mb-1">Reglas</p>
+                          <p className="text-white text-sm">{battle.rules}</p>
+                        </div>
+
+                        {battle.status === "completed" && battle.winner_id && (
+                          <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 flex items-center gap-3">
+                            <Trophy className="w-5 h-5 text-yellow-400" />
+                            <div>
+                              <p className="text-yellow-400 font-bold text-xs">GANADOR</p>
+                              <p className="text-white font-black">
+                                {battle.winner_id === battle.creator_id ? battle.creator_name : battle.opponent_name}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {battle.status === "confirmed" && !battle.winner_id && (
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              onClick={() => {
+                                if (confirm(`¿${battle.creator_name} ganó la batalla?`)) {
+                                  registerBattleResultMutation.mutate({ battleId: battle.id, winnerId: battle.creator_id });
+                                }
+                              }}
+                              disabled={registerBattleResultMutation.isPending}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                            >
+                              {battle.creator_name} Ganó
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                if (confirm(`¿${battle.opponent_name} ganó la batalla?`)) {
+                                  registerBattleResultMutation.mutate({ battleId: battle.id, winnerId: battle.opponent_id });
+                                }
+                              }}
+                              disabled={registerBattleResultMutation.isPending}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                            >
+                              {battle.opponent_name} Ganó
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <a href={`/DetalleBatalla?id=${battle.id}`}>
+                          <Button variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/20">
+                            Ver Detalles
+                          </Button>
+                        </a>
+                        {battle.status === "pending" && (
+                          <Button
+                            onClick={() => {
+                              if (confirm("¿Estás seguro de cancelar esta batalla?")) {
+                                updateBattleMutation.mutate({ id: battle.id, data: { status: "cancelled" } });
+                              }
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"
+                          >
+                            Cancelar
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => {
+                            if (confirm("¿Estás seguro de eliminar esta batalla?")) {
+                              deleteBattleMutation.mutate(battle.id);
+                            }
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
           {/* Torneos Tab */}
           <TabsContent value="torneos">
-            <h3 className="text-xl font-black text-white mb-6">Gestión de Torneos</h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-white">Gestión de Torneos</h3>
+              <a href="/CrearTorneo">
+                <Button className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Nuevo Torneo
+                </Button>
+              </a>
+            </div>
+
             <div className="grid gap-4">
-              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl text-center">
-                <Trophy className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
-                <p className="text-gray-400">Los torneos se gestionan desde la página principal de Torneos</p>
-                <a href="/Torneos" className="inline-block mt-4">
-                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
-                    Ir a Torneos
-                  </Button>
-                </a>
-              </Card>
+              {tournaments.length === 0 ? (
+                <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-12 rounded-2xl text-center">
+                  <Trophy className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-black text-white mb-2">No hay torneos</h3>
+                  <p className="text-gray-400 mb-6">Crea el primer torneo para comenzar</p>
+                  <a href="/CrearTorneo">
+                    <Button className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
+                      <Plus className="w-5 h-5 mr-2" />
+                      Crear Torneo
+                    </Button>
+                  </a>
+                </Card>
+              ) : (
+                tournaments.map((tournament) => (
+                  <Card key={tournament.id} className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-4 flex-1">
+                        {tournament.image_url && (
+                          <img src={tournament.image_url} alt={tournament.name} className="w-24 h-24 object-cover rounded-xl" />
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-xl font-black text-white">{tournament.name}</h3>
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              tournament.status === "upcoming" ? "bg-gray-600 text-white" :
+                              tournament.status === "registration_open" ? "bg-green-600 text-white" :
+                              tournament.status === "in_progress" ? "bg-yellow-600 text-black" :
+                              tournament.status === "completed" ? "bg-blue-600 text-white" :
+                              "bg-red-600 text-white"
+                            }`}>
+                              {tournament.status === "upcoming" ? "PRÓXIMO" :
+                               tournament.status === "registration_open" ? "INSCRIPCIONES ABIERTAS" :
+                               tournament.status === "in_progress" ? "EN CURSO" :
+                               tournament.status === "completed" ? "COMPLETADO" : "CANCELADO"}
+                            </span>
+                          </div>
+
+                          <p className="text-gray-400 text-sm mb-3">{tournament.description}</p>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                            <div className="bg-black/30 p-2 rounded-xl">
+                              <p className="text-gray-400 text-xs mb-1">Juego</p>
+                              <p className="text-white font-bold text-sm">{tournament.game}</p>
+                            </div>
+                            <div className="bg-black/30 p-2 rounded-xl">
+                              <p className="text-gray-400 text-xs mb-1">Formato</p>
+                              <p className="text-white font-bold text-sm capitalize">{tournament.format.replace('_', ' ')}</p>
+                            </div>
+                            <div className="bg-black/30 p-2 rounded-xl">
+                              <p className="text-gray-400 text-xs mb-1">Participantes</p>
+                              <p className="text-white font-bold text-sm">
+                                {tournament.current_participants}/{tournament.max_participants}
+                              </p>
+                            </div>
+                            <div className="bg-black/30 p-2 rounded-xl">
+                              <p className="text-gray-400 text-xs mb-1">Entrada</p>
+                              <p className="text-white font-bold text-sm">
+                                {tournament.entry_fee > 0 ? `S/ ${tournament.entry_fee}` : "Gratis"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 text-xs text-gray-400">
+                            <span>Inicio: {new Date(tournament.start_date).toLocaleDateString('es-ES')}</span>
+                            <span>•</span>
+                            <span>Fin: {new Date(tournament.end_date).toLocaleDateString('es-ES')}</span>
+                          </div>
+
+                          {tournament.winner_id && (
+                            <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 mt-3 flex items-center gap-3">
+                              <Trophy className="w-5 h-5 text-yellow-400" />
+                              <div>
+                                <p className="text-yellow-400 font-bold text-xs">CAMPEÓN</p>
+                                <p className="text-white font-black">{tournament.winner_name}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <a href={`/DetalleTorneo?id=${tournament.id}`}>
+                          <Button variant="outline" size="sm" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 whitespace-nowrap">
+                            Ver Detalles
+                          </Button>
+                        </a>
+                        
+                        {tournament.status === "registration_open" && (
+                          <Button
+                            onClick={() => {
+                              if (confirm("¿Cerrar inscripciones e iniciar torneo?")) {
+                                updateTournamentMutation.mutate({ id: tournament.id, data: { status: "in_progress" } });
+                              }
+                            }}
+                            disabled={updateTournamentMutation.isPending}
+                            variant="outline"
+                            size="sm"
+                            className="border-green-500/30 text-green-400 hover:bg-green-500/20 whitespace-nowrap"
+                          >
+                            Iniciar Torneo
+                          </Button>
+                        )}
+
+                        {tournament.status === "in_progress" && (
+                          <Button
+                            onClick={() => {
+                              if (confirm("¿Marcar torneo como completado?")) {
+                                updateTournamentMutation.mutate({ id: tournament.id, data: { status: "completed" } });
+                              }
+                            }}
+                            disabled={updateTournamentMutation.isPending}
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-500/30 text-blue-400 hover:bg-blue-500/20 whitespace-nowrap"
+                          >
+                            Completar
+                          </Button>
+                        )}
+
+                        {(tournament.status === "upcoming" || tournament.status === "registration_open") && (
+                          <Button
+                            onClick={() => {
+                              if (confirm("¿Cancelar este torneo?")) {
+                                updateTournamentMutation.mutate({ id: tournament.id, data: { status: "cancelled" } });
+                              }
+                            }}
+                            disabled={updateTournamentMutation.isPending}
+                            variant="outline"
+                            size="sm"
+                            className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20 whitespace-nowrap"
+                          >
+                            Cancelar
+                          </Button>
+                        )}
+
+                        <Button
+                          onClick={() => {
+                            if (confirm("¿Estás seguro de eliminar este torneo?")) {
+                              deleteTournamentMutation.mutate(tournament.id);
+                            }
+                          }}
+                          disabled={deleteTournamentMutation.isPending}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
         </Tabs>
