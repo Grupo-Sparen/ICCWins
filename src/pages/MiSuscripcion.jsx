@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Crown, Calendar, CreditCard, CheckCircle, XCircle, AlertCircle, Gift, Trophy } from "lucide-react";
+import { Crown, Calendar, CreditCard, CheckCircle, XCircle, AlertCircle, Gift, Trophy, User, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -56,6 +56,59 @@ export default function MiSuscripcion() {
             </div>
           </div>
         </div>
+
+        {/* User Profile Card */}
+        <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-3xl mb-8">
+          <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
+            <User className="w-8 h-8 text-purple-400" />
+            Mi Perfil
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <User className="w-5 h-5 text-gray-400 mt-1" />
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Nombre Completo</div>
+                  <div className="text-white font-bold">{user?.full_name || "No especificado"}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-gray-400 mt-1" />
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Email</div>
+                  <div className="text-white font-bold">{user?.email}</div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Calendar className="w-5 h-5 text-gray-400 mt-1" />
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Miembro Desde</div>
+                  <div className="text-white font-bold">
+                    {new Date(user?.created_date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Crown className="w-5 h-5 text-gray-400 mt-1" />
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">Estado</div>
+                  <div className="text-white font-bold">
+                    {activeSubscription ? (
+                      <span className="text-green-400 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        Suscriptor Activo
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">Sin suscripción</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         {activeSubscription ? (
           <div className="space-y-8">
@@ -203,25 +256,65 @@ export default function MiSuscripcion() {
           </Card>
         )}
 
-        {/* Subscription History */}
-        {subscriptions.length > 1 && (
+        {/* Payment History */}
+        {subscriptions.length > 0 && (
           <Card className="bg-gradient-to-br from-gray-900/30 to-transparent border border-gray-500/20 p-8 rounded-3xl mt-8">
-            <h3 className="text-2xl font-black text-white mb-6">Historial</h3>
-            <div className="space-y-4">
-              {subscriptions.filter(s => s.status !== "active").map((sub) => (
-                <div key={sub.id} className="bg-black/30 p-4 rounded-xl flex items-center justify-between">
-                  <div>
-                    <h4 className="text-white font-bold">{sub.plan_name}</h4>
-                    <p className="text-gray-400 text-sm">
-                      {new Date(sub.start_date).toLocaleDateString('es-ES')} - {new Date(sub.end_date).toLocaleDateString('es-ES')}
-                    </p>
+            <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
+              <CreditCard className="w-8 h-8 text-gray-400" />
+              Historial de Pagos
+            </h3>
+            <div className="space-y-3">
+              {subscriptions.map((sub) => (
+                <div key={sub.id} className="bg-black/30 p-5 rounded-xl">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h4 className="text-white font-bold text-lg">{sub.plan_name}</h4>
+                      <p className="text-gray-400 text-sm mt-1">
+                        {new Date(sub.start_date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-black text-white">
+                        {sub.currency === "PEN" ? "S/" : "$"} {sub.amount_paid}
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-bold mt-2 inline-block ${
+                        sub.status === "active" ? "bg-green-600 text-white" :
+                        sub.status === "expired" ? "bg-gray-600 text-white" :
+                        sub.status === "cancelled" ? "bg-red-600 text-white" :
+                        "bg-yellow-600 text-black"
+                      }`}>
+                        {sub.status === "active" ? "ACTIVO" :
+                         sub.status === "expired" ? "EXPIRADO" :
+                         sub.status === "cancelled" ? "CANCELADO" :
+                         sub.status.toUpperCase()}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    sub.status === "expired" ? "bg-gray-600 text-white" :
-                    sub.status === "cancelled" ? "bg-red-600 text-white" :
-                    "bg-yellow-600 text-black"
-                  }`}>
-                    {sub.status.toUpperCase()}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-gray-700">
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Método de Pago</div>
+                      <div className="text-gray-300 text-sm font-semibold">{sub.payment_method || "Yape"}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Fecha de Inicio</div>
+                      <div className="text-gray-300 text-sm font-semibold">
+                        {new Date(sub.start_date).toLocaleDateString('es-ES')}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Fecha de Fin</div>
+                      <div className="text-gray-300 text-sm font-semibold">
+                        {new Date(sub.end_date).toLocaleDateString('es-ES')}
+                      </div>
+                    </div>
+                    {sub.next_billing_date && sub.status === "active" && (
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Próximo Cobro</div>
+                        <div className="text-cyan-400 text-sm font-semibold">
+                          {new Date(sub.next_billing_date).toLocaleDateString('es-ES')}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
