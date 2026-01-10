@@ -141,16 +141,16 @@ export default function DetalleTorneo() {
                       tournament.current_participants < tournament.max_participants;
 
   return (
-    <div className="min-h-screen py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
         {/* Header */}
         {tournament.image_url && (
-          <div className="mb-8 rounded-3xl overflow-hidden">
-            <img src={tournament.image_url} alt={tournament.name} className="w-full h-64 object-cover" />
+          <div className="mb-6 rounded-2xl overflow-hidden h-48">
+            <img src={tournament.image_url} alt={tournament.name} className="w-full h-full object-cover" />
           </div>
         )}
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="bg-gradient-to-br from-cyan-900/30 to-purple-900/20 border border-cyan-500/30 p-8 rounded-2xl">
