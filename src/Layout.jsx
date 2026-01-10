@@ -105,7 +105,7 @@ function LayoutContent({ children, currentPageName }) {
               ))}
               
               <Link
-                to={createPageUrl("Admin")}
+                to={createPageUrl("AdminDashboard")}
                 className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
               >
                 <Shield className="w-4 h-4" />
@@ -143,7 +143,7 @@ function LayoutContent({ children, currentPageName }) {
                 </Link>
               ))}
               <Link
-                to={createPageUrl("Admin")}
+                to={createPageUrl("AdminDashboard")}
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg"
               >
