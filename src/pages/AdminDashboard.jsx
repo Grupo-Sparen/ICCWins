@@ -1147,13 +1147,17 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
               <Swords className="w-6 h-6 text-red-400" />
-              Crear Nueva Batalla
+              {editingPodcast ? "Editar Batalla" : "Crear Nueva Batalla"}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={(e) => {
             e.preventDefault();
-            createBattleMutation.mutate(battleForm);
+            if (editingPodcast) {
+              updateBattleMutation.mutate({ id: editingPodcast.id, data: battleForm });
+            } else {
+              createBattleMutation.mutate(battleForm);
+            }
           }} className="space-y-4">
             <div className="space-y-2">
               <Label className="text-white font-bold">Oponente *</Label>
