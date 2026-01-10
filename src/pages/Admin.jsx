@@ -2451,13 +2451,25 @@ export default function Admin() {
 
               <div className="space-y-2">
                 <Label className="text-white font-bold">Plataforma *</Label>
-                <Input
-                  required
+                <Select
                   value={tournamentForm.platform}
-                  onChange={(e) => setTournamentForm({ ...tournamentForm, platform: e.target.value })}
-                  className="bg-black/30 border-cyan-500/30 text-white"
-                  placeholder="Discord, Twitch, etc."
-                />
+                  onValueChange={(value) => setTournamentForm({ ...tournamentForm, platform: value })}
+                >
+                  <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                    <SelectValue placeholder="Selecciona plataforma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Discord">Discord</SelectItem>
+                    <SelectItem value="Twitch">Twitch</SelectItem>
+                    <SelectItem value="YouTube">YouTube</SelectItem>
+                    <SelectItem value="Facebook Gaming">Facebook Gaming</SelectItem>
+                    <SelectItem value="Steam">Steam</SelectItem>
+                    <SelectItem value="Epic Games">Epic Games</SelectItem>
+                    <SelectItem value="Battlefy">Battlefy</SelectItem>
+                    <SelectItem value="Challonge">Challonge</SelectItem>
+                    <SelectItem value="Otros">Otros</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -2513,14 +2525,22 @@ export default function Admin() {
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="text-white font-bold">Participantes Máximos *</Label>
-                  <Input
-                    required
-                    type="number"
-                    value={tournamentForm.max_participants}
-                    onChange={(e) => setTournamentForm({ ...tournamentForm, max_participants: e.target.value })}
-                    className="bg-black/30 border-cyan-500/30 text-white"
-                    placeholder="16"
-                  />
+                  <Select
+                    value={tournamentForm.max_participants.toString()}
+                    onValueChange={(value) => setTournamentForm({ ...tournamentForm, max_participants: value })}
+                  >
+                    <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                      <SelectValue placeholder="Selecciona cantidad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="4">4 participantes</SelectItem>
+                      <SelectItem value="8">8 participantes</SelectItem>
+                      <SelectItem value="16">16 participantes</SelectItem>
+                      <SelectItem value="32">32 participantes</SelectItem>
+                      <SelectItem value="64">64 participantes</SelectItem>
+                      <SelectItem value="128">128 participantes</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -2564,24 +2584,55 @@ export default function Admin() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-white font-bold">Premios</Label>
-                <Textarea
-                  value={tournamentForm.prizes}
-                  onChange={(e) => setTournamentForm({ ...tournamentForm, prizes: e.target.value })}
-                  className="bg-black/30 border-cyan-500/30 text-white min-h-20"
-                  placeholder="1er lugar: $500, 2do lugar: $300..."
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Premios</Label>
+                  <Textarea
+                    value={tournamentForm.prizes}
+                    onChange={(e) => setTournamentForm({ ...tournamentForm, prizes: e.target.value })}
+                    className="bg-black/30 border-cyan-500/30 text-white min-h-20"
+                    placeholder="1er lugar: $500, 2do lugar: $300..."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Reglas</Label>
+                  <Textarea
+                    value={tournamentForm.rules}
+                    onChange={(e) => setTournamentForm({ ...tournamentForm, rules: e.target.value })}
+                    className="bg-black/30 border-cyan-500/30 text-white min-h-20"
+                    placeholder="Reglas del torneo..."
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-white font-bold">Reglas</Label>
-                <Textarea
-                  value={tournamentForm.rules}
-                  onChange={(e) => setTournamentForm({ ...tournamentForm, rules: e.target.value })}
-                  className="bg-black/30 border-cyan-500/30 text-white min-h-20"
-                  placeholder="Reglas del torneo..."
-                />
+                <Label className="text-white font-bold">Imagen del Torneo</Label>
+                <div className="flex gap-4 items-start">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingImage(true);
+                      try {
+                        const result = await base44.integrations.Core.UploadFile({ file });
+                        setTournamentForm({ ...tournamentForm, image_url: result.file_url });
+                      } catch (error) {
+                        console.error("Error uploading image:", error);
+                      } finally {
+                        setUploadingImage(false);
+                      }
+                    }}
+                    disabled={uploadingImage}
+                    className="bg-black/30 border-cyan-500/30 text-white"
+                  />
+                  {uploadingImage && <span className="text-cyan-400 text-sm">Subiendo...</span>}
+                </div>
+                {tournamentForm.image_url && (
+                  <img src={tournamentForm.image_url} alt="Preview" className="w-32 h-32 object-cover rounded-xl mt-2" />
+                )}
               </div>
 
               <DialogFooter className="gap-2">
