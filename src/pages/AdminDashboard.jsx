@@ -1500,18 +1500,23 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
               <Trophy className="w-6 h-6 text-blue-400" />
-              Crear Nuevo Torneo
+              {editingGaming ? "Editar Torneo" : "Crear Nuevo Torneo"}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={(e) => {
             e.preventDefault();
-            createTournamentMutation.mutate({
+            const data = {
               ...tournamentForm,
               max_participants: parseInt(tournamentForm.max_participants),
               entry_fee: parseFloat(tournamentForm.entry_fee) || 0,
-              status: "upcoming"
-            });
+              status: editingGaming ? tournamentForm.status || "upcoming" : "upcoming"
+            };
+            if (editingGaming) {
+              updateTournamentMutation.mutate({ id: editingGaming.id, data });
+            } else {
+              createTournamentMutation.mutate(data);
+            }
           }} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
