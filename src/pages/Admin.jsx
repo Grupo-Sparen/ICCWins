@@ -29,6 +29,7 @@ export default function Admin() {
     featured: false,
     total_participants: 0
   });
+  const [editingPrize, setEditingPrize] = useState(null);
 
   // Queries
   const { data: prizes = [] } = useQuery({
@@ -69,6 +70,26 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-prizes"]);
       setShowPrizeForm(false);
+      setEditingPrize(null);
+      setPrizeForm({
+        title: "",
+        description: "",
+        image_url: "",
+        participation_cost: "",
+        draw_date: "",
+        status: "active",
+        featured: false,
+        total_participants: 0
+      });
+    }
+  });
+
+  const updatePrizeMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Prize.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-prizes"]);
+      setShowPrizeForm(false);
+      setEditingPrize(null);
       setPrizeForm({
         title: "",
         description: "",
@@ -99,11 +120,32 @@ export default function Admin() {
 
   const handleCreatePrize = (e) => {
     e.preventDefault();
-    createPrizeMutation.mutate({
+    const data = {
       ...prizeForm,
       participation_cost: parseFloat(prizeForm.participation_cost),
       total_participants: parseInt(prizeForm.total_participants) || 0
+    };
+    
+    if (editingPrize) {
+      updatePrizeMutation.mutate({ id: editingPrize.id, data });
+    } else {
+      createPrizeMutation.mutate(data);
+    }
+  };
+
+  const handleEditPrize = (prize) => {
+    setEditingPrize(prize);
+    setPrizeForm({
+      title: prize.title,
+      description: prize.description,
+      image_url: prize.image_url || "",
+      participation_cost: prize.participation_cost.toString(),
+      draw_date: prize.draw_date,
+      status: prize.status,
+      featured: prize.featured || false,
+      total_participants: prize.total_participants || 0
     });
+    setShowPrizeForm(true);
   };
 
   return (
@@ -222,7 +264,9 @@ export default function Admin() {
 
             {showPrizeForm && (
               <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-2 border-purple-500/40 p-8 rounded-2xl mb-6 shadow-xl">
-                <h3 className="text-2xl font-black text-white mb-6">Crear Nuevo Premio</h3>
+                <h3 className="text-2xl font-black text-white mb-6">
+                  {editingPrize ? "Editar Premio" : "Crear Nuevo Premio"}
+                </h3>
                 
                 <form onSubmit={handleCreatePrize} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
@@ -325,15 +369,30 @@ export default function Admin() {
                   <div className="flex gap-3 pt-4">
                     <Button
                       type="submit"
-                      disabled={createPrizeMutation.isPending}
+                      disabled={createPrizeMutation.isPending || updatePrizeMutation.isPending}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
                     >
-                      {createPrizeMutation.isPending ? "Creando..." : "Crear Premio"}
+                      {(createPrizeMutation.isPending || updatePrizeMutation.isPending) 
+                        ? (editingPrize ? "Actualizando..." : "Creando...") 
+                        : (editingPrize ? "Actualizar Premio" : "Crear Premio")}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setShowPrizeForm(false)}
+                      onClick={() => {
+                        setShowPrizeForm(false);
+                        setEditingPrize(null);
+                        setPrizeForm({
+                          title: "",
+                          description: "",
+                          image_url: "",
+                          participation_cost: "",
+                          draw_date: "",
+                          status: "active",
+                          featured: false,
+                          total_participants: 0
+                        });
+                      }}
                       className="border-purple-500/30 text-white"
                     >
                       Cancelar
@@ -368,6 +427,15 @@ export default function Admin() {
                         </div>
                       </div>
                     </div>
+                    <Button
+                      onClick={() => handleEditPrize(prize)}
+                      variant="outline"
+                      size="sm"
+                      className="border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Editar
+                    </Button>
                   </div>
                 </Card>
               ))}
