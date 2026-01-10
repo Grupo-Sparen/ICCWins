@@ -3,18 +3,29 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Zap, Users, Gift, Play, ArrowRight, CheckCircle, Sparkles, Star } from "lucide-react";
+import { Trophy, Zap, Users, Gift, Play, ArrowRight, CheckCircle, Sparkles, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import useEmblaCarousel from "embla-carousel-react";
 
 export default function Home() {
-  const { data: featuredPrize } = useQuery({
-    queryKey: ["featuredPrize"],
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
+
+  const { data: activePrizes = [] } = useQuery({
+    queryKey: ["activePrizes"],
     queryFn: async () => {
-      const prizes = await base44.entities.Prize.filter({ featured: true, status: "active" }, "-created_date", 1);
-      return prizes[0] || null;
+      const prizes = await base44.entities.Prize.filter({ status: "active" }, "-created_date");
+      return prizes;
     }
   });
+
+  const scrollPrev = React.useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = React.useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   const { data: recentWinners } = useQuery({
     queryKey: ["recentWinners"],
@@ -90,47 +101,74 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Content - Featured Prize */}
+            {/* Right Content - Active Prizes Slider */}
             <div className="lg:pl-8">
-              {featuredPrize ? (
-                <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border-2 border-purple-500/30 p-8 rounded-3xl card-hover backdrop-blur-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Trophy className="w-6 h-6 text-yellow-400" />
-                    <span className="text-yellow-400 font-black text-sm uppercase tracking-wide">Próximo Premio</span>
-                  </div>
-                  
-                  <div className="relative mb-6 rounded-2xl overflow-hidden">
-                    <img 
-                      src={featuredPrize.image_url || "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600"} 
-                      alt={featuredPrize.title}
-                      className="w-full h-64 object-cover"
-                    />
-                    <div className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full font-black text-sm">
-                      🔥 ACTIVO
+              {activePrizes.length > 0 ? (
+                <div className="relative">
+                  <div className="overflow-hidden rounded-3xl" ref={emblaRef}>
+                    <div className="flex">
+                      {activePrizes.map((prize) => (
+                        <div key={prize.id} className="flex-[0_0_100%] min-w-0 pl-4 first:pl-0">
+                          <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border-2 border-purple-500/30 p-8 rounded-3xl card-hover backdrop-blur-sm">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Trophy className="w-6 h-6 text-yellow-400" />
+                              <span className="text-yellow-400 font-black text-sm uppercase tracking-wide">Premio Activo</span>
+                            </div>
+
+                            <div className="relative mb-6 rounded-2xl overflow-hidden">
+                              <img 
+                                src={prize.image_url || "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=600"} 
+                                alt={prize.title}
+                                className="w-full h-64 object-cover"
+                              />
+                              <div className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full font-black text-sm">
+                                🔥 ACTIVO
+                              </div>
+                            </div>
+
+                            <h3 className="text-3xl font-black text-white mb-3">{prize.title}</h3>
+                            <p className="text-gray-300 mb-6 line-clamp-2">{prize.description}</p>
+
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                              <div className="bg-black/30 p-4 rounded-xl">
+                                <div className="text-xs text-gray-400 font-semibold mb-1">Costo</div>
+                                <div className="text-2xl font-black text-purple-400">S/ {prize.participation_cost}</div>
+                              </div>
+                              <div className="bg-black/30 p-4 rounded-xl">
+                                <div className="text-xs text-gray-400 font-semibold mb-1">Sorteo</div>
+                                <div className="text-lg font-bold text-white">{new Date(prize.draw_date).toLocaleDateString('es-ES')}</div>
+                              </div>
+                            </div>
+
+                            <Link to={createPageUrl("Participar") + "?prize=" + prize.id} className="block">
+                              <Button className="w-full h-12 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-black text-lg rounded-xl">
+                                <Gift className="w-5 h-5 mr-2" />
+                                ¡Quiero Participar!
+                              </Button>
+                            </Link>
+                          </Card>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <h3 className="text-3xl font-black text-white mb-3">{featuredPrize.title}</h3>
-                  <p className="text-gray-300 mb-6">{featuredPrize.description}</p>
-
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-black/30 p-4 rounded-xl">
-                      <div className="text-xs text-gray-400 font-semibold mb-1">Costo</div>
-                      <div className="text-2xl font-black text-purple-400">S/ {featuredPrize.participation_cost}</div>
-                    </div>
-                    <div className="bg-black/30 p-4 rounded-xl">
-                      <div className="text-xs text-gray-400 font-semibold mb-1">Sorteo</div>
-                      <div className="text-lg font-bold text-white">{new Date(featuredPrize.draw_date).toLocaleDateString('es-ES')}</div>
-                    </div>
-                  </div>
-
-                  <Link to={createPageUrl("Participar")} className="block">
-                    <Button className="w-full h-12 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-black text-lg rounded-xl">
-                      <Gift className="w-5 h-5 mr-2" />
-                      ¡Quiero Participar!
-                    </Button>
-                  </Link>
-                </Card>
+                  {activePrizes.length > 1 && (
+                    <>
+                      <button
+                        onClick={scrollPrev}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg z-10"
+                      >
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+                      <button
+                        onClick={scrollNext}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg z-10"
+                      >
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+                    </>
+                  )}
+                </div>
               ) : (
                 <Card className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 border-2 border-purple-500/30 p-12 rounded-3xl text-center">
                   <Trophy className="w-20 h-20 text-purple-400 mx-auto mb-4" />
