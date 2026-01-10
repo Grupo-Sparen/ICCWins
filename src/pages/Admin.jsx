@@ -56,13 +56,13 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-              <Shield className="w-7 h-7 text-white" />
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center glow-purple">
+              <Shield className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-black text-white">Panel de Administración</h1>
-              <p className="text-gray-400 font-semibold">Gestiona tu plataforma gaming</p>
+              <h1 className="text-4xl font-black text-white mb-2">Panel de Administración</h1>
+              <p className="text-lg text-gray-300 font-semibold">Gestiona tu plataforma gaming</p>
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function Admin() {
             <div className="mb-6">
               <Button
                 onClick={() => setShowPrizeForm(!showPrizeForm)}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+                className="h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Nuevo Premio
@@ -166,10 +166,10 @@ export default function Admin() {
             </div>
 
             {showPrizeForm && (
-              <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl mb-6">
-                <h3 className="text-xl font-black text-white mb-4">Crear Nuevo Premio</h3>
-                <p className="text-gray-400 text-sm mb-4">Usa el panel de datos para crear premios manualmente</p>
-                <Button variant="outline" className="border-purple-500/30 text-white">
+              <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-2 border-purple-500/40 p-8 rounded-2xl mb-6 shadow-xl">
+                <h3 className="text-2xl font-black text-white mb-3">Crear Nuevo Premio</h3>
+                <p className="text-gray-300 text-sm mb-6">Usa el panel de datos para crear premios manualmente</p>
+                <Button variant="outline" className="border-purple-400 text-purple-300 hover:bg-purple-500/20 font-bold">
                   Ir a Gestión de Datos
                 </Button>
               </Card>
@@ -211,7 +211,7 @@ export default function Admin() {
             <div className="mb-6">
               <Button
                 onClick={() => setShowWinnerForm(!showWinnerForm)}
-                className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-black font-bold"
+                className="h-12 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-black font-bold shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Registrar Ganador
@@ -277,7 +277,7 @@ export default function Admin() {
             <div className="mb-6">
               <Button
                 onClick={() => setShowPodcastForm(!showPodcastForm)}
-                className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold"
+                className="h-12 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Nuevo Episodio
@@ -311,7 +311,7 @@ export default function Admin() {
             <div className="mb-6">
               <Button
                 onClick={() => setShowGamingForm(!showGamingForm)}
-                className="bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold"
+                className="h-12 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Nuevo Contenido
