@@ -325,6 +325,91 @@ export default function AdminDashboard() {
     }
   });
 
+  // Mutations - Suscripciones
+  const createSubscriptionMutation = useMutation({
+    mutationFn: (data) => base44.entities.SubscriptionPlan.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscription-plans"]);
+      setShowSubscriptionForm(false);
+      setEditingSubscription(null);
+    }
+  });
+
+  const updateSubscriptionMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.SubscriptionPlan.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscription-plans"]);
+      setShowSubscriptionForm(false);
+      setEditingSubscription(null);
+    }
+  });
+
+  const deleteSubscriptionMutation = useMutation({
+    mutationFn: (id) => base44.entities.SubscriptionPlan.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscription-plans"]);
+    }
+  });
+
+  // Mutations - Podcast
+  const createPodcastMutation = useMutation({
+    mutationFn: (data) => base44.entities.PodcastEpisode.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-podcasts"]);
+      setShowPodcastForm(false);
+      setEditingPodcast(null);
+    }
+  });
+
+  const updatePodcastMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.PodcastEpisode.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-podcasts"]);
+      setShowPodcastForm(false);
+      setEditingPodcast(null);
+    }
+  });
+
+  const deletePodcastMutation = useMutation({
+    mutationFn: (id) => base44.entities.PodcastEpisode.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-podcasts"]);
+    }
+  });
+
+  // Mutations - Gaming
+  const createGamingMutation = useMutation({
+    mutationFn: (data) => base44.entities.StreamingContent.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-gaming"]);
+      setShowGamingForm(false);
+      setEditingGaming(null);
+    }
+  });
+
+  const updateGamingMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.StreamingContent.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-gaming"]);
+      setShowGamingForm(false);
+      setEditingGaming(null);
+    }
+  });
+
+  const deleteGamingMutation = useMutation({
+    mutationFn: (id) => base44.entities.StreamingContent.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-gaming"]);
+    }
+  });
+
+  const confirmSubscriptionPaymentMutation = useMutation({
+    mutationFn: ({ id }) => base44.entities.Subscription.update(id, { status: "active" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-subscriptions"]);
+    }
+  });
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
