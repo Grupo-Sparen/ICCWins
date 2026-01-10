@@ -534,10 +534,6 @@ export default function Admin() {
               <Trophy className="w-4 h-4 mr-2" />
               Premios
             </TabsTrigger>
-            <TabsTrigger value="winners" className="data-[state=active]:bg-yellow-600">
-              <Crown className="w-4 h-4 mr-2" />
-              Ganadores
-            </TabsTrigger>
             <TabsTrigger value="participations" className="data-[state=active]:bg-green-600">
               <Users className="w-4 h-4 mr-2" />
               Participaciones
@@ -802,36 +798,6 @@ export default function Admin() {
                       <Edit className="w-4 h-4 mr-2" />
                       Editar
                     </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Winners Tab */}
-          <TabsContent value="winners">
-            <div className="mb-6">
-              <Button
-                onClick={() => setShowWinnerForm(!showWinnerForm)}
-                className="h-12 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-black font-bold shadow-lg"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Registrar Ganador
-              </Button>
-            </div>
-
-            <div className="grid gap-4">
-              {winners.map((winner) => (
-                <Card key={winner.id} className="bg-gradient-to-br from-yellow-900/20 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-2xl font-black text-white">
-                      {winner.winner_name[0]}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-black text-white">{winner.winner_name}</h3>
-                      <p className="text-yellow-400 font-bold">{winner.prize_title}</p>
-                      <p className="text-gray-500 text-sm">{new Date(winner.winner_date).toLocaleDateString('es-ES')}</p>
-                    </div>
                   </div>
                 </Card>
               ))}
