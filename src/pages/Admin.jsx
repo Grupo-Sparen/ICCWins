@@ -50,6 +50,30 @@ export default function Admin() {
   });
   const [editingSubscription, setEditingSubscription] = useState(null);
 
+  const [podcastForm, setPodcastForm] = useState({
+    title: "",
+    description: "",
+    cover_image_url: "",
+    audio_url: "",
+    video_url: "",
+    duration: "",
+    guests: "",
+    topics: [],
+    publish_date: ""
+  });
+  const [editingPodcast, setEditingPodcast] = useState(null);
+
+  const [gamingForm, setGamingForm] = useState({
+    title: "",
+    description: "",
+    thumbnail_url: "",
+    embed_url: "",
+    platform: "youtube",
+    category: "highlights",
+    publish_date: ""
+  });
+  const [editingGaming, setEditingGaming] = useState(null);
+
   // Queries
   const { data: prizes = [] } = useQuery({
     queryKey: ["admin-prizes"],
@@ -280,6 +304,153 @@ export default function Admin() {
       ...subscriptionForm,
       benefits: subscriptionForm.benefits.filter((_, i) => i !== index)
     });
+  };
+
+  // Podcast mutations
+  const createPodcastMutation = useMutation({
+    mutationFn: (data) => base44.entities.PodcastEpisode.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-podcasts"]);
+      setShowPodcastForm(false);
+      setEditingPodcast(null);
+      setPodcastForm({
+        title: "",
+        description: "",
+        cover_image_url: "",
+        audio_url: "",
+        video_url: "",
+        duration: "",
+        guests: "",
+        topics: [],
+        publish_date: ""
+      });
+    }
+  });
+
+  const updatePodcastMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.PodcastEpisode.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-podcasts"]);
+      setShowPodcastForm(false);
+      setEditingPodcast(null);
+      setPodcastForm({
+        title: "",
+        description: "",
+        cover_image_url: "",
+        audio_url: "",
+        video_url: "",
+        duration: "",
+        guests: "",
+        topics: [],
+        publish_date: ""
+      });
+    }
+  });
+
+  const deletePodcastMutation = useMutation({
+    mutationFn: (id) => base44.entities.PodcastEpisode.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-podcasts"]);
+    }
+  });
+
+  const handleCreatePodcast = (e) => {
+    e.preventDefault();
+    const data = {
+      ...podcastForm,
+      topics: podcastForm.topics.filter(t => t.trim() !== "")
+    };
+    
+    if (editingPodcast) {
+      updatePodcastMutation.mutate({ id: editingPodcast.id, data });
+    } else {
+      createPodcastMutation.mutate(data);
+    }
+  };
+
+  const handleEditPodcast = (episode) => {
+    setEditingPodcast(episode);
+    setPodcastForm({
+      title: episode.title,
+      description: episode.description,
+      cover_image_url: episode.cover_image_url || "",
+      audio_url: episode.audio_url || "",
+      video_url: episode.video_url || "",
+      duration: episode.duration || "",
+      guests: episode.guests || "",
+      topics: episode.topics || [],
+      publish_date: episode.publish_date
+    });
+    setShowPodcastForm(true);
+  };
+
+  // Gaming mutations
+  const createGamingMutation = useMutation({
+    mutationFn: (data) => base44.entities.StreamingContent.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-gaming"]);
+      setShowGamingForm(false);
+      setEditingGaming(null);
+      setGamingForm({
+        title: "",
+        description: "",
+        thumbnail_url: "",
+        embed_url: "",
+        platform: "youtube",
+        category: "highlights",
+        publish_date: ""
+      });
+    }
+  });
+
+  const updateGamingMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.StreamingContent.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-gaming"]);
+      setShowGamingForm(false);
+      setEditingGaming(null);
+      setGamingForm({
+        title: "",
+        description: "",
+        thumbnail_url: "",
+        embed_url: "",
+        platform: "youtube",
+        category: "highlights",
+        publish_date: ""
+      });
+    }
+  });
+
+  const deleteGamingMutation = useMutation({
+    mutationFn: (id) => base44.entities.StreamingContent.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-gaming"]);
+    }
+  });
+
+  const handleCreateGaming = (e) => {
+    e.preventDefault();
+    const data = { ...gamingForm };
+    
+    if (editingGaming) {
+      updateGamingMutation.mutate({ id: editingGaming.id, data });
+    } else {
+      createGamingMutation.mutate(data);
+    }
+  };
+
+  const handleEditGaming = (content) => {
+    setEditingGaming(content);
+    setGamingForm({
+      title: content.title,
+      description: content.description || "",
+      thumbnail_url: content.thumbnail_url || "",
+      embed_url: content.embed_url,
+      platform: content.platform,
+      category: content.category,
+      publish_date: content.publish_date
+    });
+    setShowGamingForm(true);
   };
 
   return (
@@ -688,7 +859,21 @@ export default function Admin() {
           <TabsContent value="podcast">
             <div className="mb-6">
               <Button
-                onClick={() => setShowPodcastForm(!showPodcastForm)}
+                onClick={() => {
+                  setShowPodcastForm(!showPodcastForm);
+                  setEditingPodcast(null);
+                  setPodcastForm({
+                    title: "",
+                    description: "",
+                    cover_image_url: "",
+                    audio_url: "",
+                    video_url: "",
+                    duration: "",
+                    guests: "",
+                    topics: [],
+                    publish_date: ""
+                  });
+                }}
                 className="h-12 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
@@ -696,21 +881,179 @@ export default function Admin() {
               </Button>
             </div>
 
+            {showPodcastForm && (
+              <Card className="bg-gradient-to-br from-pink-900/50 to-purple-800/30 border-2 border-pink-500/40 p-8 rounded-2xl mb-6 shadow-xl">
+                <h3 className="text-2xl font-black text-white mb-6">
+                  {editingPodcast ? "Editar Episodio" : "Crear Nuevo Episodio"}
+                </h3>
+                
+                <form onSubmit={handleCreatePodcast} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Título *</Label>
+                      <Input
+                        required
+                        value={podcastForm.title}
+                        onChange={(e) => setPodcastForm({ ...podcastForm, title: e.target.value })}
+                        className="bg-black/30 border-pink-500/30 text-white"
+                        placeholder="Episodio #1: Título"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Fecha de Publicación *</Label>
+                      <Input
+                        required
+                        type="date"
+                        value={podcastForm.publish_date}
+                        onChange={(e) => setPodcastForm({ ...podcastForm, publish_date: e.target.value })}
+                        className="bg-black/30 border-pink-500/30 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-white font-bold">Descripción *</Label>
+                    <Textarea
+                      required
+                      value={podcastForm.description}
+                      onChange={(e) => setPodcastForm({ ...podcastForm, description: e.target.value })}
+                      className="bg-black/30 border-pink-500/30 text-white min-h-24"
+                      placeholder="Descripción del episodio..."
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Duración</Label>
+                      <Input
+                        value={podcastForm.duration}
+                        onChange={(e) => setPodcastForm({ ...podcastForm, duration: e.target.value })}
+                        className="bg-black/30 border-pink-500/30 text-white"
+                        placeholder="45 min"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Invitados</Label>
+                      <Input
+                        value={podcastForm.guests}
+                        onChange={(e) => setPodcastForm({ ...podcastForm, guests: e.target.value })}
+                        className="bg-black/30 border-pink-500/30 text-white"
+                        placeholder="Juan Pérez, María García"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">URL de Portada</Label>
+                      <Input
+                        value={podcastForm.cover_image_url}
+                        onChange={(e) => setPodcastForm({ ...podcastForm, cover_image_url: e.target.value })}
+                        className="bg-black/30 border-pink-500/30 text-white"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">URL de Audio/Embed</Label>
+                      <Input
+                        value={podcastForm.audio_url}
+                        onChange={(e) => setPodcastForm({ ...podcastForm, audio_url: e.target.value })}
+                        className="bg-black/30 border-pink-500/30 text-white"
+                        placeholder="https://spotify.com/..."
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">URL de Video</Label>
+                      <Input
+                        value={podcastForm.video_url}
+                        onChange={(e) => setPodcastForm({ ...podcastForm, video_url: e.target.value })}
+                        className="bg-black/30 border-pink-500/30 text-white"
+                        placeholder="https://youtube.com/..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="submit"
+                      disabled={createPodcastMutation.isPending || updatePodcastMutation.isPending}
+                      className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-bold"
+                    >
+                      {(createPodcastMutation.isPending || updatePodcastMutation.isPending) 
+                        ? (editingPodcast ? "Actualizando..." : "Creando...") 
+                        : (editingPodcast ? "Actualizar Episodio" : "Crear Episodio")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowPodcastForm(false);
+                        setEditingPodcast(null);
+                        setPodcastForm({
+                          title: "",
+                          description: "",
+                          cover_image_url: "",
+                          audio_url: "",
+                          video_url: "",
+                          duration: "",
+                          guests: "",
+                          topics: [],
+                          publish_date: ""
+                        });
+                      }}
+                      className="border-pink-500/30 text-black"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            )}
+
             <div className="grid gap-4">
               {podcasts.map((episode) => (
                 <Card key={episode.id} className="bg-gradient-to-br from-pink-900/20 to-transparent border border-pink-500/20 p-6 rounded-2xl">
-                  <div className="flex gap-4">
-                    {episode.cover_image_url && (
-                      <img src={episode.cover_image_url} alt={episode.title} className="w-24 h-24 object-cover rounded-xl" />
-                    )}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-black text-white mb-1">{episode.title}</h3>
-                      <p className="text-gray-400 text-sm mb-2">{episode.description}</p>
-                      <div className="flex gap-3 text-sm text-gray-500">
-                        <span>{new Date(episode.publish_date).toLocaleDateString('es-ES')}</span>
-                        {episode.duration && <><span>•</span><span>{episode.duration}</span></>}
-                        {episode.guests && <><span>•</span><span className="text-purple-400">{episode.guests}</span></>}
+                  <div className="flex items-start justify-between">
+                    <div className="flex gap-4 flex-1">
+                      {episode.cover_image_url && (
+                        <img src={episode.cover_image_url} alt={episode.title} className="w-24 h-24 object-cover rounded-xl" />
+                      )}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-black text-white mb-1">{episode.title}</h3>
+                        <p className="text-gray-400 text-sm mb-2">{episode.description}</p>
+                        <div className="flex gap-3 text-sm text-gray-500">
+                          <span>{new Date(episode.publish_date).toLocaleDateString('es-ES')}</span>
+                          {episode.duration && <><span>•</span><span>{episode.duration}</span></>}
+                          {episode.guests && <><span>•</span><span className="text-purple-400">{episode.guests}</span></>}
+                        </div>
                       </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleEditPodcast(episode)}
+                        variant="outline"
+                        size="sm"
+                        className="border-pink-500/30 text-pink-400 hover:bg-pink-500/20"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Editar
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Estás seguro de eliminar este episodio?")) {
+                            deletePodcastMutation.mutate(episode.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </Card>
@@ -722,7 +1065,19 @@ export default function Admin() {
           <TabsContent value="gaming">
             <div className="mb-6">
               <Button
-                onClick={() => setShowGamingForm(!showGamingForm)}
+                onClick={() => {
+                  setShowGamingForm(!showGamingForm);
+                  setEditingGaming(null);
+                  setGamingForm({
+                    title: "",
+                    description: "",
+                    thumbnail_url: "",
+                    embed_url: "",
+                    platform: "youtube",
+                    category: "highlights",
+                    publish_date: ""
+                  });
+                }}
                 className="h-12 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
@@ -730,27 +1085,187 @@ export default function Admin() {
               </Button>
             </div>
 
+            {showGamingForm && (
+              <Card className="bg-gradient-to-br from-cyan-900/50 to-purple-800/30 border-2 border-cyan-500/40 p-8 rounded-2xl mb-6 shadow-xl">
+                <h3 className="text-2xl font-black text-white mb-6">
+                  {editingGaming ? "Editar Contenido" : "Crear Nuevo Contenido"}
+                </h3>
+                
+                <form onSubmit={handleCreateGaming} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Título *</Label>
+                      <Input
+                        required
+                        value={gamingForm.title}
+                        onChange={(e) => setGamingForm({ ...gamingForm, title: e.target.value })}
+                        className="bg-black/30 border-cyan-500/30 text-white"
+                        placeholder="Título del contenido"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Fecha de Publicación *</Label>
+                      <Input
+                        required
+                        type="date"
+                        value={gamingForm.publish_date}
+                        onChange={(e) => setGamingForm({ ...gamingForm, publish_date: e.target.value })}
+                        className="bg-black/30 border-cyan-500/30 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-white font-bold">Descripción</Label>
+                    <Textarea
+                      value={gamingForm.description}
+                      onChange={(e) => setGamingForm({ ...gamingForm, description: e.target.value })}
+                      className="bg-black/30 border-cyan-500/30 text-white min-h-20"
+                      placeholder="Descripción del contenido..."
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Plataforma *</Label>
+                      <Select
+                        value={gamingForm.platform}
+                        onValueChange={(value) => setGamingForm({ ...gamingForm, platform: value })}
+                      >
+                        <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="youtube">YouTube</SelectItem>
+                          <SelectItem value="twitch">Twitch</SelectItem>
+                          <SelectItem value="tiktok">TikTok</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Categoría *</Label>
+                      <Select
+                        value={gamingForm.category}
+                        onValueChange={(value) => setGamingForm({ ...gamingForm, category: value })}
+                      >
+                        <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="highlights">Highlights</SelectItem>
+                          <SelectItem value="streams">Streams</SelectItem>
+                          <SelectItem value="gaming_news">Gaming News</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">URL de Embed *</Label>
+                      <Input
+                        required
+                        value={gamingForm.embed_url}
+                        onChange={(e) => setGamingForm({ ...gamingForm, embed_url: e.target.value })}
+                        className="bg-black/30 border-cyan-500/30 text-white"
+                        placeholder="https://youtube.com/embed/..."
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">URL de Miniatura</Label>
+                      <Input
+                        value={gamingForm.thumbnail_url}
+                        onChange={(e) => setGamingForm({ ...gamingForm, thumbnail_url: e.target.value })}
+                        className="bg-black/30 border-cyan-500/30 text-white"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="submit"
+                      disabled={createGamingMutation.isPending || updateGamingMutation.isPending}
+                      className="bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold"
+                    >
+                      {(createGamingMutation.isPending || updateGamingMutation.isPending) 
+                        ? (editingGaming ? "Actualizando..." : "Creando...") 
+                        : (editingGaming ? "Actualizar Contenido" : "Crear Contenido")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowGamingForm(false);
+                        setEditingGaming(null);
+                        setGamingForm({
+                          title: "",
+                          description: "",
+                          thumbnail_url: "",
+                          embed_url: "",
+                          platform: "youtube",
+                          category: "highlights",
+                          publish_date: ""
+                        });
+                      }}
+                      className="border-cyan-500/30 text-black"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            )}
+
             <div className="grid gap-4">
               {gaming.map((content) => (
                 <Card key={content.id} className="bg-gradient-to-br from-cyan-900/20 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
-                  <div className="flex gap-4">
-                    {content.thumbnail_url && (
-                      <img src={content.thumbnail_url} alt={content.title} className="w-32 h-24 object-cover rounded-xl" />
-                    )}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${
-                          content.platform === "youtube" ? "bg-red-600" :
-                          content.platform === "twitch" ? "bg-purple-600" : "bg-pink-600"
-                        } text-white`}>
-                          {content.platform.toUpperCase()}
-                        </span>
-                        <span className="px-2 py-1 bg-cyan-600/30 text-cyan-400 rounded text-xs font-bold">
-                          {content.category}
-                        </span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex gap-4 flex-1">
+                      {content.thumbnail_url && (
+                        <img src={content.thumbnail_url} alt={content.title} className="w-32 h-24 object-cover rounded-xl" />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`px-2 py-1 rounded text-xs font-bold ${
+                            content.platform === "youtube" ? "bg-red-600" :
+                            content.platform === "twitch" ? "bg-purple-600" : "bg-pink-600"
+                          } text-white`}>
+                            {content.platform.toUpperCase()}
+                          </span>
+                          <span className="px-2 py-1 bg-cyan-600/30 text-cyan-400 rounded text-xs font-bold">
+                            {content.category}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-black text-white mb-1">{content.title}</h3>
+                        <p className="text-gray-400 text-sm">{content.description}</p>
                       </div>
-                      <h3 className="text-lg font-black text-white mb-1">{content.title}</h3>
-                      <p className="text-gray-400 text-sm">{content.description}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleEditGaming(content)}
+                        variant="outline"
+                        size="sm"
+                        className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Editar
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (confirm("¿Estás seguro de eliminar este contenido?")) {
+                            deleteGamingMutation.mutate(content.id);
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500/30 text-red-400 hover:bg-red-500/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </Card>
