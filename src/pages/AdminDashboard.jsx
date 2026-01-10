@@ -1224,17 +1224,27 @@ export default function AdminDashboard() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowBattleForm(false)}
+                onClick={() => {
+                  setShowBattleForm(false);
+                  setEditingPodcast(null);
+                  setBattleForm({
+                    opponent_id: "",
+                    opponent_name: "",
+                    date_time: "",
+                    rules: "",
+                    prize: ""
+                  });
+                }}
                 className="border-gray-500/30 text-black"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={createBattleMutation.isPending}
+                disabled={createBattleMutation.isPending || updateBattleMutation.isPending}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
               >
-                {createBattleMutation.isPending ? "Creando..." : "Crear Batalla"}
+                {createBattleMutation.isPending || updateBattleMutation.isPending ? "Procesando..." : (editingPodcast ? "Actualizar Batalla" : "Crear Batalla")}
               </Button>
             </DialogFooter>
           </form>
