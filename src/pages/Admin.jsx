@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -24,6 +25,7 @@ export default function Admin() {
   const [showGamingForm, setShowGamingForm] = useState(false);
   const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [confirmPaymentDialog, setConfirmPaymentDialog] = useState({ open: false, subscription: null });
 
   const [prizeForm, setPrizeForm] = useState({
     title: "",
@@ -1740,11 +1742,7 @@ export default function Admin() {
                         </span>
                         {isPending && isManualPayment && (
                           <Button
-                            onClick={() => {
-                              if (confirm(`¿Confirmar pago de ${subscription.user_name}?`)) {
-                                confirmSubscriptionPaymentMutation.mutate({ id: subscription.id });
-                              }
-                            }}
+                            onClick={() => setConfirmPaymentDialog({ open: true, subscription })}
                             disabled={confirmSubscriptionPaymentMutation.isPending}
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white font-bold"
@@ -1761,6 +1759,54 @@ export default function Admin() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Confirmation Dialog */}
+        <Dialog open={confirmPaymentDialog.open} onOpenChange={(open) => setConfirmPaymentDialog({ open, subscription: null })}>
+          <DialogContent className="bg-gradient-to-br from-purple-900 to-gray-900 border-2 border-green-500/40">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black text-white">Confirmar Pago</DialogTitle>
+              <DialogDescription className="text-gray-300">
+                ¿Estás seguro de confirmar el pago de {confirmPaymentDialog.subscription?.user_name}?
+              </DialogDescription>
+            </DialogHeader>
+            {confirmPaymentDialog.subscription && (
+              <div className="bg-black/30 p-4 rounded-xl space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Usuario:</span>
+                  <span className="text-white font-bold">{confirmPaymentDialog.subscription.user_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Plan:</span>
+                  <span className="text-white font-bold">{confirmPaymentDialog.subscription.plan_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Monto:</span>
+                  <span className="text-green-400 font-bold">{confirmPaymentDialog.subscription.currency} {confirmPaymentDialog.subscription.amount_paid}</span>
+                </div>
+              </div>
+            )}
+            <DialogFooter className="gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setConfirmPaymentDialog({ open: false, subscription: null })}
+                className="border-gray-500/30 text-black hover:bg-white/10 hover:text-black"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  confirmSubscriptionPaymentMutation.mutate({ id: confirmPaymentDialog.subscription.id });
+                  setConfirmPaymentDialog({ open: false, subscription: null });
+                }}
+                disabled={confirmSubscriptionPaymentMutation.isPending}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Confirmar Pago
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
