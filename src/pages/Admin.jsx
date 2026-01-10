@@ -17,6 +17,7 @@ import { es } from "date-fns/locale";
 export default function Admin() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
+  const [selectedPrizeForParticipants, setSelectedPrizeForParticipants] = useState(null);
   const [showPrizeForm, setShowPrizeForm] = useState(false);
   const [showWinnerForm, setShowWinnerForm] = useState(false);
   const [showPodcastForm, setShowPodcastForm] = useState(false);
@@ -155,6 +156,31 @@ export default function Admin() {
     mutationFn: ({ id }) => base44.entities.Participation.update(id, { payment_status: "confirmed" }),
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-participations"]);
+    }
+  });
+
+  const selectWinnerMutation = useMutation({
+    mutationFn: async ({ participation, prize }) => {
+      // Create winner record
+      await base44.entities.Winner.create({
+        prize_id: prize.id,
+        prize_title: prize.title,
+        winner_name: participation.user_name,
+        winner_photo_url: "",
+        winner_country: participation.country || "",
+        draw_video_url: "",
+        winner_date: new Date().toISOString().split('T')[0]
+      });
+      // Update participation as winner
+      await base44.entities.Participation.update(participation.id, { is_winner: true });
+      // Update prize status to finished
+      await base44.entities.Prize.update(prize.id, { status: "finished" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-prizes"]);
+      queryClient.invalidateQueries(["admin-participations"]);
+      queryClient.invalidateQueries(["admin-winners"]);
+      setSelectedPrizeForParticipants(null);
     }
   });
 
@@ -516,6 +542,10 @@ export default function Admin() {
               <Users className="w-4 h-4 mr-2" />
               Participaciones
             </TabsTrigger>
+            <TabsTrigger value="draw" className="data-[state=active]:bg-orange-600">
+              <Trophy className="w-4 h-4 mr-2" />
+              Sorteos
+            </TabsTrigger>
             <TabsTrigger value="podcast" className="data-[state=active]:bg-pink-600">
               <Mic className="w-4 h-4 mr-2" />
               Podcast
@@ -806,6 +836,112 @@ export default function Admin() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* Draw Tab */}
+          <TabsContent value="draw">
+            {!selectedPrizeForParticipants ? (
+              <div>
+                <h3 className="text-xl font-black text-white mb-6">Selecciona un Premio para Ver Participantes</h3>
+                <div className="grid gap-4">
+                  {prizes.map((prize) => {
+                    const prizeParticipants = participations.filter(p => p.prize_id === prize.id && p.payment_status === "confirmed");
+                    return (
+                      <Card key={prize.id} className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-xl font-black text-white mb-2">{prize.title}</h3>
+                            <p className="text-gray-400 text-sm mb-2">Sorteo: {new Date(prize.draw_date).toLocaleDateString('es-ES')}</p>
+                            <div className="flex gap-4 text-sm">
+                              <span className="text-green-400 font-bold">{prizeParticipants.length} participantes confirmados</span>
+                              <span className="text-gray-500">•</span>
+                              <span className={`font-bold ${
+                                prize.status === "active" ? "text-green-400" : 
+                                prize.status === "upcoming" ? "text-cyan-400" : "text-gray-400"
+                              }`}>
+                                {prize.status === "active" ? "ACTIVO" : 
+                                 prize.status === "upcoming" ? "PRÓXIMAMENTE" : "FINALIZADO"}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => setSelectedPrizeForParticipants(prize)}
+                            disabled={prizeParticipants.length === 0}
+                            className="bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                          >
+                            Ver Participantes
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-6">
+                  <Button
+                    onClick={() => setSelectedPrizeForParticipants(null)}
+                    variant="outline"
+                    className="border-orange-500/30 text-orange-400 mb-4"
+                  >
+                    ← Volver a Premios
+                  </Button>
+                  <Card className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                    <h2 className="text-2xl font-black text-white mb-2">{selectedPrizeForParticipants.title}</h2>
+                    <p className="text-gray-400">Sorteo: {new Date(selectedPrizeForParticipants.draw_date).toLocaleDateString('es-ES')}</p>
+                  </Card>
+                </div>
+
+                <h3 className="text-xl font-black text-white mb-4">Participantes Confirmados</h3>
+                <div className="grid gap-4">
+                  {participations
+                    .filter(p => p.prize_id === selectedPrizeForParticipants.id && p.payment_status === "confirmed")
+                    .map((participation) => (
+                      <Card key={participation.id} className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="text-lg font-black text-white">{participation.user_name}</h3>
+                            <p className="text-gray-400 text-sm">{participation.user_email}</p>
+                            {participation.country && (
+                              <p className="text-purple-400 font-bold mt-1">{participation.country}</p>
+                            )}
+                            <p className="text-gray-500 text-sm mt-1">Pagó: S/ {participation.amount_paid}</p>
+                            {participation.is_winner && (
+                              <span className="inline-block mt-2 px-3 py-1 bg-yellow-600 text-black text-xs font-bold rounded-full">
+                                🏆 GANADOR
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            {participation.payment_screenshot_url && (
+                              <a href={participation.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
+                                <Button variant="outline" size="sm" className="border-purple-500/30 text-purple-400">
+                                  Ver Comprobante
+                                </Button>
+                              </a>
+                            )}
+                            {!participation.is_winner && (
+                              <Button
+                                onClick={() => {
+                                  if (confirm(`¿Confirmar a ${participation.user_name} como ganador de ${selectedPrizeForParticipants.title}?`)) {
+                                    selectWinnerMutation.mutate({ participation, prize: selectedPrizeForParticipants });
+                                  }
+                                }}
+                                disabled={selectWinnerMutation.isPending}
+                                className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold"
+                              >
+                                <Trophy className="w-4 h-4 mr-2" />
+                                Seleccionar Ganador
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* Participations Tab */}
