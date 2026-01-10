@@ -152,17 +152,17 @@ export default function DetalleTorneo() {
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-gradient-to-br from-cyan-900/30 to-purple-900/20 border border-cyan-500/30 p-8 rounded-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <Trophy className="w-10 h-10 text-cyan-400" />
-                <div>
-                  <h1 className="text-4xl font-black text-white">{tournament.name}</h1>
-                  <p className="text-cyan-400 font-bold text-xl">{tournament.game}</p>
-                </div>
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <Trophy className="w-10 h-10 text-cyan-400" />
+              <div>
+                <h1 className="text-3xl font-black text-white">{tournament.name}</h1>
+                <p className="text-cyan-400 font-bold">{tournament.game}</p>
               </div>
+            </div>
 
-              <div className="grid md:grid-cols-3 gap-4 mb-6">
+            <Card className="bg-gradient-to-br from-cyan-900/30 to-purple-900/20 border border-cyan-500/30 p-6 rounded-2xl">
+              <div className="grid md:grid-cols-3 gap-4 mb-4">
                 <div className="bg-black/30 p-4 rounded-xl">
                   <div className="flex items-center gap-2 text-gray-400 mb-1">
                     <Calendar className="w-4 h-4" />
