@@ -113,6 +113,18 @@ export default function Admin() {
 
   const pendingPayments = participations.filter(p => p.payment_status === "pending").length;
 
+  const { data: subscriptions = [] } = useQuery({
+    queryKey: ["admin-subscriptions"],
+    queryFn: () => base44.entities.Subscription.list("-created_date")
+  });
+
+  const subscriptionRevenue = subscriptions
+    .filter(s => s.status === "active" || s.status === "expired")
+    .reduce((sum, s) => sum + (s.amount_paid || 0), 0);
+
+  const totalIncome = totalRevenue + subscriptionRevenue;
+  const activeSubscriptions = subscriptions.filter(s => s.status === "active").length;
+
   // Mutations
   const createPrizeMutation = useMutation({
     mutationFn: (data) => base44.entities.Prize.create(data),
@@ -518,7 +530,7 @@ export default function Admin() {
 
             <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
               <div className="text-sm text-gray-400 mb-1">Ingresos Totales</div>
-              <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalRevenue}</div>
+              <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalIncome.toFixed(2)}</div>
               <div className="text-xs text-yellow-400 font-bold">{pendingPayments} pagos pendientes</div>
             </Card>
           </div>
@@ -580,6 +592,22 @@ export default function Admin() {
                 <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
                   <span className="text-gray-400">Contenido Gaming</span>
                   <span className="text-white font-bold">{gaming.length}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-cyan-900/50 to-purple-900/50 border border-cyan-500/30 rounded-xl">
+                  <span className="text-cyan-300 font-bold">💰 Ingresos por Participaciones</span>
+                  <span className="text-cyan-400 font-black text-lg">S/ {totalRevenue.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border border-purple-500/30 rounded-xl">
+                  <span className="text-purple-300 font-bold">💎 Ingresos por Suscripciones</span>
+                  <span className="text-purple-400 font-black text-lg">S/ {subscriptionRevenue.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-900/50 to-cyan-900/50 border border-green-500/30 rounded-xl">
+                  <span className="text-green-300 font-bold">📊 Ingresos Totales</span>
+                  <span className="text-green-400 font-black text-2xl">S/ {totalIncome.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-black/30 rounded-xl">
+                  <span className="text-gray-400">Suscripciones Activas</span>
+                  <span className="text-purple-400 font-bold">{activeSubscriptions}</span>
                 </div>
               </div>
             </Card>
