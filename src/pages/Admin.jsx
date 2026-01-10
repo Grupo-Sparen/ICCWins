@@ -512,6 +512,10 @@ export default function Admin() {
             <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600">
               Dashboard
             </TabsTrigger>
+            <TabsTrigger value="draw" className="data-[state=active]:bg-orange-600">
+              <Trophy className="w-4 h-4 mr-2" />
+              Sorteos
+            </TabsTrigger>
             <TabsTrigger value="prizes" className="data-[state=active]:bg-purple-600">
               <Trophy className="w-4 h-4 mr-2" />
               Premios
@@ -519,10 +523,6 @@ export default function Admin() {
             <TabsTrigger value="participations" className="data-[state=active]:bg-green-600">
               <Users className="w-4 h-4 mr-2" />
               Participaciones
-            </TabsTrigger>
-            <TabsTrigger value="draw" className="data-[state=active]:bg-orange-600">
-              <Trophy className="w-4 h-4 mr-2" />
-              Sorteos
             </TabsTrigger>
             <TabsTrigger value="podcast" className="data-[state=active]:bg-pink-600">
               <Mic className="w-4 h-4 mr-2" />
