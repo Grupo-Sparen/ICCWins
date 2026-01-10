@@ -63,7 +63,7 @@ export default function DetalleTorneo() {
     onSuccess: () => {
       queryClient.invalidateQueries(["tournament", tournamentId]);
       queryClient.invalidateQueries(["tournament-participants", tournamentId]);
-      alert("¡Inscripción exitosa!");
+      setShowSuccessModal(true);
     }
   });
 
