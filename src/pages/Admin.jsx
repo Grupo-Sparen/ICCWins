@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard } from "lucide-react";
+import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1805,9 +1805,42 @@ export default function Admin() {
                 Confirmar Pago
               </Button>
             </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
-  );
-}
+            </DialogContent>
+            </Dialog>
+
+            {/* Batallas Tab */}
+            <TabsContent value="batallas">
+            <h3 className="text-xl font-black text-white mb-6">Gestión de Batallas</h3>
+            <div className="grid gap-4">
+            {/* Aquí se mostrarían las batallas desde la query */}
+            <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl text-center">
+              <Swords className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <p className="text-gray-400">Las batallas se gestionan desde la página principal de Batallas</p>
+              <a href="/Batallas" className="inline-block mt-4">
+                <Button className="bg-red-600 hover:bg-red-700 text-white font-bold">
+                  Ir a Batallas
+                </Button>
+              </a>
+            </Card>
+            </div>
+            </TabsContent>
+
+            {/* Torneos Tab */}
+            <TabsContent value="torneos">
+            <h3 className="text-xl font-black text-white mb-6">Gestión de Torneos</h3>
+            <div className="grid gap-4">
+            <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl text-center">
+              <Trophy className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
+              <p className="text-gray-400">Los torneos se gestionan desde la página principal de Torneos</p>
+              <a href="/Torneos" className="inline-block mt-4">
+                <Button className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
+                  Ir a Torneos
+                </Button>
+              </a>
+            </Card>
+            </div>
+            </TabsContent>
+            </div>
+            </div>
+            );
+            }
