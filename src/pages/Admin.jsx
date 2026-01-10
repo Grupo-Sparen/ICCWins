@@ -1758,6 +1758,38 @@ export default function Admin() {
               })}
             </div>
           </TabsContent>
+
+          {/* Batallas Tab */}
+          <TabsContent value="batallas">
+            <h3 className="text-xl font-black text-white mb-6">Gestión de Batallas</h3>
+            <div className="grid gap-4">
+              <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl text-center">
+                <Swords className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                <p className="text-gray-400">Las batallas se gestionan desde la página principal de Batallas</p>
+                <a href="/Batallas" className="inline-block mt-4">
+                  <Button className="bg-red-600 hover:bg-red-700 text-white font-bold">
+                    Ir a Batallas
+                  </Button>
+                </a>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Torneos Tab */}
+          <TabsContent value="torneos">
+            <h3 className="text-xl font-black text-white mb-6">Gestión de Torneos</h3>
+            <div className="grid gap-4">
+              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl text-center">
+                <Trophy className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
+                <p className="text-gray-400">Los torneos se gestionan desde la página principal de Torneos</p>
+                <a href="/Torneos" className="inline-block mt-4">
+                  <Button className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
+                    Ir a Torneos
+                  </Button>
+                </a>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
 
         {/* Confirmation Dialog */}
