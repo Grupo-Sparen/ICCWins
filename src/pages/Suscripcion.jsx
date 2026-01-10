@@ -61,6 +61,23 @@ export default function Suscripcion() {
     queryFn: () => base44.entities.SubscriptionPlan.filter({ active: true }, "-created_date")
   });
 
+  const { data: userSubscription } = useQuery({
+    queryKey: ["user-subscription"],
+    queryFn: async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user) return null;
+        const subs = await base44.entities.Subscription.filter({ 
+          user_email: user.email, 
+          status: "active" 
+        }, "-created_date", 1);
+        return subs[0] || null;
+      } catch {
+        return null;
+      }
+    }
+  });
+
   const formatPrice = (plan) => {
     if (!plan) return "";
     const price = currency === "PEN" ? plan.price_pen : plan.price_usd;
@@ -207,9 +224,10 @@ export default function Suscripcion() {
 
               <Button 
                 onClick={() => setSelectedPlan(plan)}
-                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl"
+                disabled={userSubscription?.plan_id === plan.id}
+                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t.subscribe}
+                {userSubscription?.plan_id === plan.id ? (language === "es" ? "Plan Actual" : "Current Plan") : t.subscribe}
               </Button>
             </Card>
           ))}
@@ -254,9 +272,10 @@ export default function Suscripcion() {
 
               <Button 
                 onClick={() => setSelectedPlan(plan)}
-                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl"
+                disabled={userSubscription?.plan_id === plan.id}
+                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t.subscribe}
+                {userSubscription?.plan_id === plan.id ? (language === "es" ? "Plan Actual" : "Current Plan") : t.subscribe}
               </Button>
             </Card>
           ))}
