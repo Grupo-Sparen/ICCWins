@@ -514,7 +514,7 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="subscriptions" className="data-[state=active]:bg-yellow-600">
               <Crown className="w-4 h-4 mr-2" />
-              Suscripciones
+              Planes de Suscripciones
             </TabsTrigger>
             <TabsTrigger value="draw" className="data-[state=active]:bg-orange-600">
               <Trophy className="w-4 h-4 mr-2" />
