@@ -952,6 +952,15 @@ export default function AdminDashboard() {
                       <Button
                         onClick={() => {
                           setEditingGaming(content);
+                          setGamingForm({
+                            title: content.title,
+                            description: content.description || "",
+                            thumbnail_url: content.thumbnail_url || "",
+                            embed_url: content.embed_url,
+                            platform: content.platform,
+                            category: content.category,
+                            publish_date: content.publish_date
+                          });
                           setShowGamingForm(true);
                         }}
                         variant="outline"
