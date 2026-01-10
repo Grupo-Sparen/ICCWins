@@ -312,13 +312,25 @@ export default function Admin() {
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label className="text-white font-bold">Fecha de Sorteo *</Label>
-                      <Input
-                        required
-                        type="date"
-                        value={prizeForm.draw_date}
-                        onChange={(e) => setPrizeForm({ ...prizeForm, draw_date: e.target.value })}
-                        className="bg-black/30 border-purple-500/30 text-white"
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal bg-black/30 border-purple-500/30 text-white hover:bg-black/40 hover:text-white"
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {prizeForm.draw_date ? format(new Date(prizeForm.draw_date), 'PPP') : <span>Seleccionar fecha</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={prizeForm.draw_date ? new Date(prizeForm.draw_date) : undefined}
+                            onSelect={(date) => setPrizeForm({ ...prizeForm, draw_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
                     <div className="space-y-2">
