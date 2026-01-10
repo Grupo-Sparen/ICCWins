@@ -506,47 +506,6 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Overview Stats */}
-        {activeTab === "overview" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
-              <Trophy className="w-10 h-10 text-purple-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{prizes.length}</div>
-              <div className="text-gray-400 font-semibold text-sm">Premios Totales</div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-900/30 to-transparent border border-green-500/20 p-6 rounded-2xl">
-              <Users className="w-10 h-10 text-green-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{participations.length}</div>
-              <div className="text-gray-400 font-semibold text-sm">Participaciones</div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
-              <Crown className="w-10 h-10 text-yellow-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{winners.length}</div>
-              <div className="text-gray-400 font-semibold text-sm">Ganadores</div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
-              <div className="text-sm text-gray-400 mb-1">Ingresos por Premios</div>
-              <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalRevenue}</div>
-              <div className="text-xs text-yellow-400 font-bold">{pendingPayments} pagos pendientes</div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
-              <Crown className="w-10 h-10 text-orange-400 mb-3" />
-              <div className="text-sm text-gray-400 mb-1">Ingresos por Suscripciones</div>
-              <div className="text-3xl font-black text-orange-400 mb-1">S/ {subscriptionRevenue}</div>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-pink-900/30 to-transparent border border-pink-500/20 p-6 rounded-2xl">
-              <Users className="w-10 h-10 text-pink-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{totalSubscribers}</div>
-              <div className="text-gray-400 font-semibold text-sm">Suscriptores Activos</div>
-            </Card>
-          </div>
-        )}
-
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="bg-purple-900/30 border border-purple-500/30 p-1 mb-8 flex-wrap h-auto">
@@ -581,6 +540,45 @@ export default function Admin() {
 
           {/* Overview Tab */}
           <TabsContent value="overview">
+            {/* Overview Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
+                <Trophy className="w-10 h-10 text-purple-400 mb-3" />
+                <div className="text-3xl font-black text-white mb-1">{prizes.length}</div>
+                <div className="text-gray-400 font-semibold text-sm">Premios Totales</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-900/30 to-transparent border border-green-500/20 p-6 rounded-2xl">
+                <Users className="w-10 h-10 text-green-400 mb-3" />
+                <div className="text-3xl font-black text-white mb-1">{participations.length}</div>
+                <div className="text-gray-400 font-semibold text-sm">Participaciones</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
+                <Crown className="w-10 h-10 text-yellow-400 mb-3" />
+                <div className="text-3xl font-black text-white mb-1">{winners.length}</div>
+                <div className="text-gray-400 font-semibold text-sm">Ganadores</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                <div className="text-sm text-gray-400 mb-1">Ingresos por Premios</div>
+                <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalRevenue}</div>
+                <div className="text-xs text-yellow-400 font-bold">{pendingPayments} pagos pendientes</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                <Crown className="w-10 h-10 text-orange-400 mb-3" />
+                <div className="text-sm text-gray-400 mb-1">Ingresos por Suscripciones</div>
+                <div className="text-3xl font-black text-orange-400 mb-1">S/ {subscriptionRevenue}</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-pink-900/30 to-transparent border border-pink-500/20 p-6 rounded-2xl">
+                <Users className="w-10 h-10 text-pink-400 mb-3" />
+                <div className="text-3xl font-black text-white mb-1">{totalSubscribers}</div>
+                <div className="text-gray-400 font-semibold text-sm">Suscriptores Activos</div>
+              </Card>
+            </div>
+
             <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-3xl">
               <h2 className="text-2xl font-black text-white mb-6">Resumen General</h2>
               <div className="space-y-4">
