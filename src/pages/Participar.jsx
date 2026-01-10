@@ -283,7 +283,7 @@ export default function Participar() {
                 <Button
                   onClick={() => setStep(1)}
                   variant="outline"
-                  className="flex-1 h-12 border-purple-500/30 text-black hover:text-black font-bold"
+                  className="flex-1 h-12 border-purple-500/30 text-black hover:text-black hover:bg-white/10 font-bold"
                 >
                   Volver
                 </Button>
@@ -339,7 +339,7 @@ export default function Participar() {
               <Button
                 onClick={() => setStep(2)}
                 variant="outline"
-                className="flex-1 h-12 border-purple-500/30 text-white font-bold"
+                className="flex-1 h-12 border-purple-500/30 text-black hover:text-black hover:bg-white/10 font-bold"
               >
                 Volver
               </Button>

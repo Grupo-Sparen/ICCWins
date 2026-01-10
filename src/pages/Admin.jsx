@@ -127,6 +127,13 @@ export default function Admin() {
     }
   });
 
+  const confirmPaymentMutation = useMutation({
+    mutationFn: ({ id }) => base44.entities.Participation.update(id, { payment_status: "confirmed" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-participations"]);
+    }
+  });
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -642,7 +649,7 @@ export default function Admin() {
                       <p className="text-purple-400 font-bold mt-2">{participation.prize_title}</p>
                       <p className="text-gray-500 text-sm">S/ {participation.amount_paid}</p>
                     </div>
-                    <div>
+                    <div className="flex flex-col items-end gap-2">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                         participation.payment_status === "confirmed" ? "bg-green-600 text-white" :
                         participation.payment_status === "pending" ? "bg-yellow-600 text-black" :
@@ -650,10 +657,21 @@ export default function Admin() {
                       }`}>
                         {participation.payment_status.toUpperCase()}
                       </span>
+                      {participation.payment_status === "pending" && (
+                        <Button
+                          onClick={() => confirmPaymentMutation.mutate({ id: participation.id })}
+                          disabled={confirmPaymentMutation.isPending}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                        >
+                          <Check className="w-4 h-4 mr-1" />
+                          Confirmar Pago
+                        </Button>
+                      )}
                     </div>
                   </div>
                   {participation.payment_screenshot_url && (
-                    <div className="mt-4">
+                    <div className="mt-4 flex gap-2">
                       <a href={participation.payment_screenshot_url} target="_blank" rel="noopener noreferrer">
                         <Button variant="outline" size="sm" className="border-purple-500/30 text-purple-400">
                           Ver Comprobante
