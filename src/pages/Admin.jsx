@@ -846,13 +846,14 @@ export default function Admin() {
                 <div className="grid gap-4">
                   {prizes.map((prize) => {
                     const prizeParticipants = participations.filter(p => p.prize_id === prize.id && p.payment_status === "confirmed");
+                    const prizeWinner = winners.find(w => w.prize_id === prize.id);
                     return (
                       <Card key={prize.id} className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
                         <div className="flex items-start justify-between">
-                          <div>
+                          <div className="flex-1">
                             <h3 className="text-xl font-black text-white mb-2">{prize.title}</h3>
                             <p className="text-gray-400 text-sm mb-2">Sorteo: {new Date(prize.draw_date).toLocaleDateString('es-ES')}</p>
-                            <div className="flex gap-4 text-sm">
+                            <div className="flex gap-4 text-sm mb-3">
                               <span className="text-green-400 font-bold">{prizeParticipants.length} participantes confirmados</span>
                               <span className="text-gray-500">•</span>
                               <span className={`font-bold ${
@@ -863,6 +864,20 @@ export default function Admin() {
                                  prize.status === "upcoming" ? "PRÓXIMAMENTE" : "FINALIZADO"}
                               </span>
                             </div>
+                            {prizeWinner && (
+                              <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 mt-3">
+                                <div className="flex items-center gap-3">
+                                  <Trophy className="w-5 h-5 text-yellow-400" />
+                                  <div>
+                                    <p className="text-yellow-400 font-bold text-xs mb-1">GANADOR</p>
+                                    <p className="text-white font-black">{prizeWinner.winner_name}</p>
+                                    {prizeWinner.winner_country && (
+                                      <p className="text-gray-400 text-xs">{prizeWinner.winner_country}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <Button
                             onClick={() => setSelectedPrizeForParticipants(prize)}
