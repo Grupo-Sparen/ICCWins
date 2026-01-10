@@ -585,25 +585,45 @@ export default function AdminDashboard() {
                 {battles.map((battle) => (
                   <Card key={battle.id} className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
                     <div className="flex items-start justify-between">
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-xl font-black text-white mb-2">
                           {battle.creator_name} vs {battle.opponent_name}
                         </h3>
                         <p className="text-gray-400 mb-2">{new Date(battle.date_time).toLocaleString('es-ES')}</p>
                         <p className="text-gray-300 text-sm">{battle.rules}</p>
                       </div>
-                      <Button
-                        onClick={() => {
-                          if (confirm("¿Eliminar batalla?")) {
-                            deleteBattleMutation.mutate(battle.id);
-                          }
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="border-red-500/30 text-red-400"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => {
+                            setEditingPodcast(null);
+                            setBattleForm({
+                              opponent_id: battle.opponent_id,
+                              opponent_name: battle.opponent_name,
+                              date_time: battle.date_time,
+                              rules: battle.rules,
+                              prize: battle.prize || ""
+                            });
+                            setShowBattleForm(true);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-blue-500/30 text-blue-400"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            if (confirm("¿Eliminar batalla?")) {
+                              deleteBattleMutation.mutate(battle.id);
+                            }
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500/30 text-red-400"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))}
