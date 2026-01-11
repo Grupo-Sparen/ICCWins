@@ -289,10 +289,28 @@ export default function AdminDashboard() {
     queryFn: () => base44.entities.Tournament.list("-created_date")
   });
 
-  const { data: allMatches = [] } = useQuery({
+  const { data: allMatches = [], isLoading: matchesLoading, error: matchesError } = useQuery({
     queryKey: ["admin-matches", selectedTournament?.id],
-    queryFn: () => selectedTournament ? base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number") : [],
-    enabled: !!selectedTournament
+    queryFn: async () => {
+      if (!selectedTournament) return [];
+      console.log("📡 FETCHING MATCHES FOR TOURNAMENT:", selectedTournament.id);
+      try {
+        const matches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id });
+        console.log("✅ MATCHES FETCHED:", matches.length, matches);
+        // Ordenar manualmente por round y match_number
+        return matches.sort((a, b) => {
+          if (a.round !== b.round) return a.round - b.round;
+          return a.match_number - b.match_number;
+        });
+      } catch (error) {
+        console.error("❌ ERROR FETCHING MATCHES:", error);
+        throw error;
+      }
+    },
+    enabled: !!selectedTournament,
+    onError: (error) => {
+      console.error("❌ Query error for matches:", error);
+    }
   });
 
   const { data: tournamentParticipants = [] } = useQuery({
@@ -2520,7 +2538,17 @@ export default function AdminDashboard() {
               </div>
 
               {/* Generate Bracket Button or Show Matches */}
-              {allMatches.length === 0 ? (
+              {matchesLoading ? (
+                <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-6 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-3"></div>
+                  <p className="text-gray-400">Cargando bracket...</p>
+                </div>
+              ) : matchesError ? (
+                <div className="bg-red-600/20 border border-red-500/30 rounded-xl p-6 text-center">
+                  <p className="text-red-400 font-bold">Error cargando matches</p>
+                  <p className="text-gray-400 text-sm mt-2">{matchesError.message}</p>
+                </div>
+              ) : allMatches.length === 0 ? (
                 <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-6 text-center">
                   <Trophy className="w-12 h-12 text-purple-400 mx-auto mb-3" />
                   <h3 className="text-lg font-black text-white mb-2">Bracket no generado</h3>

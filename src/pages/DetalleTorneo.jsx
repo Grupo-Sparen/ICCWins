@@ -40,10 +40,28 @@ export default function DetalleTorneo() {
     enabled: !!tournamentId
   });
 
-  const { data: matches = [] } = useQuery({
+  const { data: matches = [], isLoading: matchesLoading, error: matchesError } = useQuery({
     queryKey: ["tournament-matches", tournamentId],
-    queryFn: () => base44.entities.Match.filter({ tournament_id: tournamentId }, "round,match_number"),
-    enabled: !!tournamentId
+    queryFn: async () => {
+      if (!tournamentId) return [];
+      console.log("📡 FETCHING MATCHES FOR TOURNAMENT:", tournamentId);
+      try {
+        const matches = await base44.entities.Match.filter({ tournament_id: tournamentId });
+        console.log("✅ MATCHES FETCHED:", matches.length, matches);
+        // Ordenar manualmente por round y match_number
+        return matches.sort((a, b) => {
+          if (a.round !== b.round) return a.round - b.round;
+          return a.match_number - b.match_number;
+        });
+      } catch (error) {
+        console.error("❌ ERROR FETCHING MATCHES:", error);
+        throw error;
+      }
+    },
+    enabled: !!tournamentId,
+    onError: (error) => {
+      console.error("❌ Query error for matches:", error);
+    }
   });
 
   const registerMutation = useMutation({
@@ -348,7 +366,17 @@ export default function DetalleTorneo() {
               </TabsContent>
 
               <TabsContent value="bracket">
-                {matches.length === 0 ? (
+                {matchesLoading ? (
+                  <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-2xl text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-3"></div>
+                    <p className="text-gray-400">Cargando bracket...</p>
+                  </Card>
+                ) : matchesError ? (
+                  <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-8 rounded-2xl text-center">
+                    <p className="text-red-400 font-bold">Error cargando matches</p>
+                    <p className="text-gray-400 text-sm mt-2">{matchesError.message}</p>
+                  </Card>
+                ) : matches.length === 0 ? (
                   <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-2xl text-center">
                     <Trophy className="w-12 h-12 text-purple-400 mx-auto mb-3" />
                     <h3 className="text-lg font-black text-white mb-2">Bracket no generado</h3>
