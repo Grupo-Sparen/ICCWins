@@ -511,6 +511,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePodcastImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setPodcastForm({ ...podcastForm, cover_image_url: result.file_url });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   // Render Sections
   const renderSection = () => {
     switch(activeSection) {
@@ -1382,7 +1396,7 @@ export default function AdminDashboard() {
               />
             </div>
 
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-white font-bold">Duración</Label>
                 <Input
@@ -1401,15 +1415,23 @@ export default function AdminDashboard() {
                   placeholder="Juan, María"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-white font-bold">URL de Portada</Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Imagen de Portada</Label>
+              <div className="flex gap-4 items-start">
                 <Input
-                  value={podcastForm.cover_image_url}
-                  onChange={(e) => setPodcastForm({ ...podcastForm, cover_image_url: e.target.value })}
-                  className="bg-black/30 border-pink-500/30 text-white"
-                  placeholder="https://..."
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePodcastImageUpload}
+                  disabled={uploadingImage}
+                  className="bg-black/30 border-pink-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-pink-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-pink-700"
                 />
+                {uploadingImage && <span className="text-pink-400 text-sm mt-2">Subiendo...</span>}
               </div>
+              {podcastForm.cover_image_url && (
+                <img src={podcastForm.cover_image_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-4" />
+              )}
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
