@@ -2444,8 +2444,9 @@ export default function AdminDashboard() {
                           status: "in_progress"
                         });
 
-                        queryClient.invalidateQueries(["admin-tournaments"]);
-                        queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                        await queryClient.invalidateQueries(["admin-tournaments"]);
+                        await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                        await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
 
                         const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
                         setSelectedTournament(updatedTournament);
