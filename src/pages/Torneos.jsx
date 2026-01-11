@@ -225,6 +225,15 @@ export default function Torneos() {
                           <Countdown targetDate={tournament.start_date} />
                         )}
 
+                        {canRegister && (
+                          <Button
+                            onClick={(e) => handleRegister(tournament, e)}
+                            className="w-full h-12 bg-gradient-to-r from-green-600 to-cyan-600 hover:from-green-700 hover:to-cyan-700 text-white font-black mt-3"
+                          >
+                            Inscribirme Ahora
+                          </Button>
+                        )}
+
                         {tournament.status === "completed" && tournament.winner_name && (
                           <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 text-center">
                             <Trophy className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
@@ -235,17 +244,6 @@ export default function Torneos() {
                       </div>
                     </Card>
                   </Link>
-                  
-                  {canRegister && (
-                    <div className="absolute bottom-6 left-6 right-6">
-                      <Button
-                        onClick={(e) => handleRegister(tournament, e)}
-                        className="w-full h-12 bg-gradient-to-r from-green-600 to-cyan-600 hover:from-green-700 hover:to-cyan-700 text-white font-black"
-                      >
-                        Inscribirme Ahora
-                      </Button>
-                    </div>
-                  )}
                 </div>
               );
             })}
