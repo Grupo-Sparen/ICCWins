@@ -340,6 +340,12 @@ export default function Torneos() {
                           </Button>
                         )}
 
+                        {isRegistered && (
+                          <div className="bg-green-600/20 border border-green-500/30 rounded-xl p-3 text-center mt-3">
+                            <div className="text-green-400 font-bold text-sm">✓ Ya estás inscrito</div>
+                          </div>
+                        )}
+
                         {tournament.status === "completed" && tournament.winner_name && (
                           <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 text-center">
                             <Trophy className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
