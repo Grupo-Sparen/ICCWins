@@ -3,13 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Trophy, Upload } from "lucide-react";
+import { Trophy, Upload, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export default function CrearTorneo() {
   const navigate = useNavigate();
@@ -133,22 +137,86 @@ export default function CrearTorneo() {
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <Label className="text-white font-bold mb-2">Fecha de Inicio *</Label>
-                <Input
-                  type="datetime-local"
-                  value={tournamentForm.start_date}
-                  onChange={(e) => setTournamentForm({ ...tournamentForm, start_date: e.target.value })}
-                  className="bg-black/30 border-cyan-500/30 text-white"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-black/30 border-cyan-500/30 text-white hover:bg-black/40 hover:text-white"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {tournamentForm.start_date ? format(new Date(tournamentForm.start_date), 'PPP', { locale: es }) : <span className="text-gray-400">Fecha</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={tournamentForm.start_date ? new Date(tournamentForm.start_date) : undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            const currentTime = tournamentForm.start_date ? new Date(tournamentForm.start_date) : new Date();
+                            date.setHours(currentTime.getHours(), currentTime.getMinutes());
+                            setTournamentForm({ ...tournamentForm, start_date: date.toISOString() });
+                          }
+                        }}
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <Input
+                    type="time"
+                    value={tournamentForm.start_date ? format(new Date(tournamentForm.start_date), 'HH:mm') : ""}
+                    onChange={(e) => {
+                      const [hours, minutes] = e.target.value.split(':');
+                      const date = tournamentForm.start_date ? new Date(tournamentForm.start_date) : new Date();
+                      date.setHours(parseInt(hours), parseInt(minutes));
+                      setTournamentForm({ ...tournamentForm, start_date: date.toISOString() });
+                    }}
+                    className="bg-black/30 border-cyan-500/30 text-white"
+                  />
+                </div>
               </div>
 
               <div>
                 <Label className="text-white font-bold mb-2">Fecha de Fin *</Label>
-                <Input
-                  type="datetime-local"
-                  value={tournamentForm.end_date}
-                  onChange={(e) => setTournamentForm({ ...tournamentForm, end_date: e.target.value })}
-                  className="bg-black/30 border-cyan-500/30 text-white"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-black/30 border-cyan-500/30 text-white hover:bg-black/40 hover:text-white"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {tournamentForm.end_date ? format(new Date(tournamentForm.end_date), 'PPP', { locale: es }) : <span className="text-gray-400">Fecha</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={tournamentForm.end_date ? new Date(tournamentForm.end_date) : undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            const currentTime = tournamentForm.end_date ? new Date(tournamentForm.end_date) : new Date();
+                            date.setHours(currentTime.getHours(), currentTime.getMinutes());
+                            setTournamentForm({ ...tournamentForm, end_date: date.toISOString() });
+                          }
+                        }}
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <Input
+                    type="time"
+                    value={tournamentForm.end_date ? format(new Date(tournamentForm.end_date), 'HH:mm') : ""}
+                    onChange={(e) => {
+                      const [hours, minutes] = e.target.value.split(':');
+                      const date = tournamentForm.end_date ? new Date(tournamentForm.end_date) : new Date();
+                      date.setHours(parseInt(hours), parseInt(minutes));
+                      setTournamentForm({ ...tournamentForm, end_date: date.toISOString() });
+                    }}
+                    className="bg-black/30 border-cyan-500/30 text-white"
+                  />
+                </div>
               </div>
             </div>
 
