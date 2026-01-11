@@ -43,7 +43,7 @@ export default function DetalleTorneo() {
   const { data: matches = [] } = useQuery({
     queryKey: ["tournament-matches", tournamentId],
     queryFn: () => base44.entities.Match.filter({ tournament_id: tournamentId }, "round,match_number"),
-    enabled: !!tournamentId && tournament?.bracket_generated
+    enabled: !!tournamentId
   });
 
   const registerMutation = useMutation({
