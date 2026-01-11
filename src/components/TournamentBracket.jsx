@@ -127,8 +127,10 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult }
 
         {/* Winner Column */}
         {maxRound > 0 && (() => {
-          const finalMatch = roundsData[maxRound]?.[0];
-          const winner = finalMatch?.winner_name;
+          const finalMatches = roundsData[maxRound] || [];
+          // Solo mostrar ganador si TODOS los matches de la final están completados
+          const allFinalCompleted = finalMatches.length > 0 && finalMatches.every(m => m.status === "completed");
+          const winner = allFinalCompleted ? finalMatches[0]?.winner_name : null;
 
           return (
             <div className="flex flex-col gap-4 min-w-[220px]">
