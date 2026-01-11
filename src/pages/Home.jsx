@@ -206,7 +206,7 @@ export default function Home() {
               <div className="w-16 h-16 bg-gradient-to-br from-cyan-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 glow-cyan">
                 <span className="text-3xl font-black text-white">2</span>
               </div>
-              <h3 className="text-2xl font-black text-white mb-4">Paga con Yape</h3>
+              <h3 className="text-2xl font-black text-white mb-4">Realiza tu pago</h3>
               <p className="text-gray-400 leading-relaxed">
                 Haz un solo pago único del premio que quieras. Súper fácil y seguro con Yape.
               </p>
