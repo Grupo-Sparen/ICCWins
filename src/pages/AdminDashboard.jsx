@@ -5,6 +5,99 @@ import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2
 import TournamentBracket from "../components/TournamentBracket";
 import toast, { Toaster } from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
+
+// Componente para generar bracket
+function GenerateBracketButton({ selectedTournament, tournamentParticipants, queryClient, setSelectedTournament }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const participants = tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id);
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    try {
+      if (participants.length < 2) {
+        throw new Error("Se necesitan al menos 2 participantes para generar el bracket");
+      }
+
+      // Validar que sea potencia de 2
+      const isPowerOfTwo = (n) => n > 0 && (n & (n - 1)) === 0;
+      if (!isPowerOfTwo(participants.length)) {
+        throw new Error(`Se necesita un número de participantes que sea potencia de 2 (2, 4, 8, 16, 32...). Actualmente hay ${participants.length} participantes.`);
+      }
+
+      const shuffled = [...participants].sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < shuffled.length; i += 2) {
+        const player1 = shuffled[i];
+        const player2 = shuffled[i + 1];
+
+        await base44.entities.Match.create({
+          tournament_id: selectedTournament.id,
+          round: 1,
+          round_name: "Ronda 1",
+          match_number: Math.floor(i / 2) + 1,
+          player1_id: player1.user_id,
+          player1_name: player1.player_username,
+          player2_id: player2?.user_id,
+          player2_name: player2?.player_username,
+          status: "pending"
+        });
+      }
+
+      await base44.entities.Tournament.update(selectedTournament.id, {
+        bracket_generated: true,
+        status: "in_progress"
+      });
+
+      await queryClient.invalidateQueries(["admin-tournaments"]);
+      await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+      await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
+
+      const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
+      setSelectedTournament(updatedTournament);
+
+      toast.success("¡Bracket generado exitosamente!", {
+        duration: 3000,
+        style: {
+          background: '#10B981',
+          color: '#fff',
+          fontWeight: 'bold'
+        }
+      });
+    } catch (error) {
+      console.error("Error generando bracket:", error);
+      toast.error(error.message || "Error al generar bracket", {
+        duration: 4000,
+        style: {
+          background: '#EF4444',
+          color: '#fff',
+          fontWeight: 'bold'
+        }
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={handleGenerate}
+      disabled={isGenerating || participants.length < 2}
+      className="bg-purple-600 hover:bg-purple-700 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {isGenerating ? (
+        <>
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          Generando Bracket...
+        </>
+      ) : (
+        <>
+          <Trophy className="w-5 h-5 mr-2" />
+          Generar Bracket con Inscritos Actuales
+        </>
+      )}
+    </Button>
+  );
+}
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -2412,73 +2505,12 @@ export default function AdminDashboard() {
                       ? "Se necesitan al menos 2 participantes para generar el bracket"
                       : `Hay ${tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id).length} participantes inscritos`}
                   </p>
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const participants = await base44.entities.TournamentParticipant.filter({ tournament_id: selectedTournament.id });
-
-                        if (participants.length < 2) {
-                          alert("Se necesitan al menos 2 participantes para generar el bracket");
-                          return;
-                        }
-
-                        const shuffled = [...participants].sort(() => Math.random() - 0.5);
-
-                        for (let i = 0; i < shuffled.length; i += 2) {
-                          const player1 = shuffled[i];
-                          const player2 = shuffled[i + 1];
-
-                          await base44.entities.Match.create({
-                            tournament_id: selectedTournament.id,
-                            round: 1,
-                            round_name: "Ronda 1",
-                            match_number: Math.floor(i / 2) + 1,
-                            player1_id: player1.user_id,
-                            player1_name: player1.player_username,
-                            player2_id: player2?.user_id,
-                            player2_name: player2?.player_username,
-                            status: "pending"
-                          });
-                        }
-
-                        await base44.entities.Tournament.update(selectedTournament.id, {
-                          bracket_generated: true,
-                          status: "in_progress"
-                        });
-
-                        await queryClient.invalidateQueries(["admin-tournaments"]);
-                        await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
-                        await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
-
-                        const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
-                        setSelectedTournament(updatedTournament);
-
-                        toast.success("¡Bracket generado exitosamente!", {
-                          duration: 3000,
-                          style: {
-                            background: '#10B981',
-                            color: '#fff',
-                            fontWeight: 'bold'
-                          }
-                        });
-                      } catch (error) {
-                        console.error("Error generando bracket:", error);
-                        toast.error("Error al generar bracket: " + error.message, {
-                          duration: 4000,
-                          style: {
-                            background: '#EF4444',
-                            color: '#fff',
-                            fontWeight: 'bold'
-                          }
-                        });
-                      }
-                    }}
-                    disabled={tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id).length < 2}
-                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
-                  >
-                    <Trophy className="w-5 h-5 mr-2" />
-                    Generar Bracket con Inscritos Actuales
-                  </Button>
+                  <GenerateBracketButton 
+                    selectedTournament={selectedTournament}
+                    tournamentParticipants={tournamentParticipants}
+                    queryClient={queryClient}
+                    setSelectedTournament={setSelectedTournament}
+                  />
                 </div>
               ) : (
                 <TournamentBracket 
@@ -2499,7 +2531,77 @@ export default function AdminDashboard() {
                         status: "completed"
                       });
 
-                      queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                      // Verificar si se completó toda la ronda
+                      const allMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number");
+                      const currentRound = match.round;
+                      const currentRoundMatches = allMatches.filter(m => m.round === currentRound);
+                      const allCompleted = currentRoundMatches.every(m => m.status === "completed");
+
+                      if (allCompleted) {
+                        // Avanzar a la siguiente ronda
+                        const winners = currentRoundMatches.map(m => ({
+                          id: m.winner_id,
+                          name: m.winner_name
+                        }));
+
+                        // Verificar si es la final
+                        if (winners.length === 1) {
+                          // Es el campeón
+                          await base44.entities.Tournament.update(selectedTournament.id, {
+                            status: "completed",
+                            winner_id: winners[0].id,
+                            winner_name: winners[0].name
+                          });
+                          
+                          const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
+                          setSelectedTournament(updatedTournament);
+                          
+                          toast.success(`🏆 ${winners[0].name} es el campeón del torneo!`, {
+                            duration: 5000,
+                            style: {
+                              background: '#10B981',
+                              color: '#fff',
+                              fontWeight: 'bold'
+                            }
+                          });
+                        } else {
+                          // Crear siguiente ronda
+                          const nextRound = currentRound + 1;
+                          const roundNames = {
+                            2: "Final",
+                            3: "Semifinales",
+                            4: "Cuartos de Final",
+                            5: "Octavos de Final"
+                          };
+                          
+                          for (let i = 0; i < winners.length; i += 2) {
+                            await base44.entities.Match.create({
+                              tournament_id: selectedTournament.id,
+                              round: nextRound,
+                              round_name: roundNames[nextRound] || `Ronda ${nextRound}`,
+                              match_number: Math.floor(i / 2) + 1,
+                              player1_id: winners[i].id,
+                              player1_name: winners[i].name,
+                              player2_id: winners[i + 1]?.id,
+                              player2_name: winners[i + 1]?.name,
+                              status: "pending"
+                            });
+                          }
+                          
+                          toast.success(`✨ ${roundNames[nextRound] || `Ronda ${nextRound}`} generada automáticamente`, {
+                            duration: 3000,
+                            style: {
+                              background: '#8B5CF6',
+                              color: '#fff',
+                              fontWeight: 'bold'
+                            }
+                          });
+                        }
+                      }
+
+                      await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                      await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
+                      await queryClient.invalidateQueries(["admin-tournaments"]);
                     }
                   }}
                   onMarkInProgress={async (match) => {
