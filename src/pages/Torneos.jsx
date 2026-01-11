@@ -7,6 +7,7 @@ import { Trophy, Calendar, Users, DollarSign, Plus, Gamepad2 } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Countdown from "../components/Countdown";
 
 export default function Torneos() {
   const [statusFilter, setStatusFilter] = useState("registration_open");
@@ -145,11 +146,15 @@ export default function Torneos() {
                       </div>
 
                       {tournament.status === "registration_open" && spotsLeft > 0 && (
-                        <div className="bg-green-600/20 border border-green-500/30 rounded-xl p-3 text-center">
+                        <div className="bg-green-600/20 border border-green-500/30 rounded-xl p-3 text-center mb-3">
                           <div className="text-green-400 font-bold text-sm">
                             {spotsLeft} {spotsLeft === 1 ? "cupo disponible" : "cupos disponibles"}
                           </div>
                         </div>
+                      )}
+
+                      {(tournament.status === "registration_open" || tournament.status === "upcoming") && new Date(tournament.start_date) > new Date() && (
+                        <Countdown targetDate={tournament.start_date} />
                       )}
 
                       {tournament.status === "completed" && tournament.winner_name && (

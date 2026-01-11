@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Mic, Play, Calendar, Clock, Users, Headphones } from "lucide-react";
@@ -86,7 +88,7 @@ export default function Podcast() {
                 {/* Cover Image */}
                 <div className="relative overflow-hidden">
                   <img 
-                    src={episode.cover_image_url || "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=600"} 
+                    src={episode.cover_image_url || "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600"} 
                     alt={episode.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -171,9 +173,11 @@ export default function Podcast() {
               <p className="text-gray-300 mb-6">
                 Si tienes una historia increíble del mundo gaming, escríbenos y podrías ser nuestro próximo invitado.
               </p>
-              <Button className="h-12 px-8 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black rounded-xl">
-                Contactar
-              </Button>
+              <a href="mailto:info@iccwins.com">
+                <Button className="h-12 px-8 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black rounded-xl">
+                  Contactar
+                </Button>
+              </a>
             </Card>
           </div>
         )}

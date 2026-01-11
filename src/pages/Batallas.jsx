@@ -7,6 +7,7 @@ import { Swords, Calendar, Trophy, Users, Plus, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Countdown from "../components/Countdown";
 
 export default function Batallas() {
   const [statusFilter, setStatusFilter] = useState("all");
@@ -130,7 +131,7 @@ export default function Batallas() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-2 text-sm mb-4">
                       <div className="flex items-center gap-2 text-gray-400">
                         <Calendar className="w-4 h-4" />
                         {new Date(battle.date_time).toLocaleDateString('es-ES', {
@@ -147,6 +148,10 @@ export default function Batallas() {
                         </div>
                       )}
                     </div>
+
+                    {battle.status === "confirmed" && new Date(battle.date_time) > new Date() && (
+                      <Countdown targetDate={battle.date_time} />
+                    )}
 
                     {battle.status === "completed" && battle.winner_id && (
                       <div className="mt-4 bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 text-center">

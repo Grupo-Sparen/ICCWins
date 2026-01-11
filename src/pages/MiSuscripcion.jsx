@@ -24,6 +24,11 @@ export default function MiSuscripcion() {
 
   const activeSubscription = subscriptions.find(s => s.status === "active");
 
+  const { data: allSubscriptionPlans = [] } = useQuery({
+    queryKey: ["subscription-plans"],
+    queryFn: () => base44.entities.SubscriptionPlan.list()
+  });
+
   const cancelMutation = useMutation({
     mutationFn: (subId) => base44.entities.Subscription.update(subId, { auto_renew: false }),
     onSuccess: () => {
@@ -110,74 +115,86 @@ export default function MiSuscripcion() {
           </div>
         </Card>
 
-        {activeSubscription ? (
+        {activeSubscription || subscriptions.find(s => s.status === "pending") ? (
           <div className="space-y-8">
-            {/* Active Subscription Card */}
-            <Card className="bg-gradient-to-br from-green-900/30 to-purple-900/30 border-2 border-green-500/30 p-8 rounded-3xl">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-cyan-500 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-white">{activeSubscription.plan_name}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-green-400 font-bold text-sm">ACTIVA</span>
+            {/* Active or Pending Subscription Card */}
+            {(activeSubscription || subscriptions.find(s => s.status === "pending")) && (
+              <Card className={`bg-gradient-to-br ${activeSubscription ? 'from-green-900/30 to-purple-900/30 border-2 border-green-500/30' : 'from-yellow-900/30 to-orange-900/30 border-2 border-yellow-500/30'} p-8 rounded-3xl`}>
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${activeSubscription ? 'from-green-500 to-cyan-500' : 'from-yellow-500 to-orange-500'} rounded-full flex items-center justify-center`}>
+                      {activeSubscription ? <CheckCircle className="w-8 h-8 text-white" /> : <AlertCircle className="w-8 h-8 text-white" />}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black text-white">{(activeSubscription || subscriptions.find(s => s.status === "pending")).plan_name}</h2>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className={`w-2 h-2 ${activeSubscription ? 'bg-green-400' : 'bg-yellow-400'} rounded-full animate-pulse`}></div>
+                        <span className={`${activeSubscription ? 'text-green-400' : 'text-yellow-400'} font-bold text-sm`}>
+                          {activeSubscription ? 'ACTIVA' : 'PENDIENTE DE CONFIRMACIÓN'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="text-right">
-                  <div className="text-3xl font-black text-white">
-                    {activeSubscription.currency === "PEN" ? "S/" : "$"}
-                    {activeSubscription.amount_paid}
+                  
+                  <div className="text-right">
+                    <div className="text-3xl font-black text-white">
+                      {(activeSubscription || subscriptions.find(s => s.status === "pending")).currency === "PEN" ? "S/" : "$"}
+                      {(activeSubscription || subscriptions.find(s => s.status === "pending")).amount_paid}
+                    </div>
+                    <div className="text-sm text-gray-400 font-semibold">por período</div>
                   </div>
-                  <div className="text-sm text-gray-400 font-semibold">por período</div>
                 </div>
-              </div>
 
               <div className="grid md:grid-cols-3 gap-4 mb-6">
                 <Card className="bg-black/30 p-4 rounded-xl">
                   <Calendar className="w-5 h-5 text-purple-400 mb-2" />
                   <div className="text-xs text-gray-400 mb-1">Inicio</div>
                   <div className="text-white font-bold">
-                    {new Date(activeSubscription.start_date).toLocaleDateString('es-ES')}
+                    {new Date((activeSubscription || subscriptions.find(s => s.status === "pending")).start_date).toLocaleDateString('es-ES')}
                   </div>
                 </Card>
 
-                <Card className="bg-black/30 p-4 rounded-xl">
-                  <Calendar className="w-5 h-5 text-cyan-400 mb-2" />
-                  <div className="text-xs text-gray-400 mb-1">Próximo Cobro</div>
-                  <div className="text-white font-bold">
-                    {new Date(activeSubscription.next_billing_date).toLocaleDateString('es-ES')}
-                  </div>
-                </Card>
+                {activeSubscription && activeSubscription.next_billing_date && (
+                  <Card className="bg-black/30 p-4 rounded-xl">
+                    <Calendar className="w-5 h-5 text-cyan-400 mb-2" />
+                    <div className="text-xs text-gray-400 mb-1">Próximo Cobro</div>
+                    <div className="text-white font-bold">
+                      {new Date(activeSubscription.next_billing_date).toLocaleDateString('es-ES')}
+                    </div>
+                  </Card>
+                )}
 
                 <Card className="bg-black/30 p-4 rounded-xl">
                   <CreditCard className="w-5 h-5 text-green-400 mb-2" />
                   <div className="text-xs text-gray-400 mb-1">Método de Pago</div>
-                  <div className="text-white font-bold">{activeSubscription.payment_method || "Yape"}</div>
+                  <div className="text-white font-bold">{(activeSubscription || subscriptions.find(s => s.status === "pending")).payment_method || "Yape"}</div>
                 </Card>
               </div>
 
-              {activeSubscription.auto_renew ? (
+              {activeSubscription && activeSubscription.auto_renew ? (
                 <div className="bg-green-900/30 border border-green-500/30 p-4 rounded-xl mb-4">
                   <div className="flex items-center gap-2 text-green-400 font-bold text-sm">
                     <CheckCircle className="w-4 h-4" />
                     Renovación automática activada
                   </div>
                 </div>
-              ) : (
+              ) : activeSubscription ? (
                 <div className="bg-yellow-900/30 border border-yellow-500/30 p-4 rounded-xl mb-4">
                   <div className="flex items-center gap-2 text-yellow-400 font-bold text-sm">
                     <AlertCircle className="w-4 h-4" />
                     Tu suscripción se cancelará al final del período
                   </div>
                 </div>
+              ) : (
+                <div className="bg-yellow-900/30 border border-yellow-500/30 p-4 rounded-xl mb-4">
+                  <div className="flex items-center gap-2 text-yellow-400 font-bold text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    Tu suscripción está pendiente de aprobación por el administrador
+                  </div>
+                </div>
               )}
 
-              {activeSubscription.auto_renew && (
+              {activeSubscription && activeSubscription.auto_renew && (
                 <Button
                   onClick={() => cancelMutation.mutate(activeSubscription.id)}
                   variant="outline"
@@ -188,6 +205,7 @@ export default function MiSuscripcion() {
                 </Button>
               )}
             </Card>
+            )}
 
             {/* Benefits */}
             <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-3xl">
