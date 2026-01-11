@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords, Menu, LogOut, Home } from "lucide-react";
+import TournamentBracket from "../components/TournamentBracket";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -2321,98 +2322,35 @@ export default function AdminDashboard() {
 
               {/* Matches List */}
               {selectedTournament.bracket_generated && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-black text-white">Partidos</h3>
-                  {allMatches.length === 0 ? (
-                    <div className="text-center text-gray-400 py-8">
-                      No hay partidos generados
-                    </div>
-                  ) : (
-                    allMatches.map(match => (
-                      <Card key={match.id} className="bg-black/30 p-4 rounded-xl border border-purple-500/20">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="text-xs text-purple-400 font-bold">
-                            {match.round_name} - Match {match.match_number}
-                          </div>
-                          <div className={`text-xs font-bold px-2 py-1 rounded ${
-                            match.status === "completed" ? "bg-green-600/20 text-green-400" : 
-                            match.status === "in_progress" ? "bg-blue-600/20 text-blue-400" : 
-                            "bg-gray-600/20 text-gray-400"
-                          }`}>
-                            {match.status === "completed" ? "Completado" : 
-                             match.status === "in_progress" ? "En Progreso" : 
-                             "Pendiente"}
-                          </div>
-                        </div>
+                <TournamentBracket 
+                  matches={allMatches} 
+                  isAdmin={true}
+                  onRegisterResult={async (match) => {
+                    const score1 = prompt("Puntaje de " + match.player1_name);
+                    const score2 = prompt("Puntaje de " + match.player2_name);
+                    if (score1 !== null && score2 !== null) {
+                      const winnerId = parseInt(score1) > parseInt(score2) ? match.player1_id : match.player2_id;
+                      const winnerName = parseInt(score1) > parseInt(score2) ? match.player1_name : match.player2_name;
 
-                        <div className="grid grid-cols-3 gap-4 items-center">
-                          <div className={`text-right ${match.winner_id === match.player1_id ? "text-yellow-400 font-black" : "text-white font-bold"}`}>
-                            {match.player1_name || "TBD"}
-                          </div>
+                      await base44.entities.Match.update(match.id, {
+                        winner_id: winnerId,
+                        winner_name: winnerName,
+                        player1_score: parseInt(score1),
+                        player2_score: parseInt(score2),
+                        status: "completed"
+                      });
 
-                          <div className="text-center">
-                            {match.status === "completed" ? (
-                              <div className="text-white font-bold">
-                                {match.player1_score} - {match.player2_score}
-                              </div>
-                            ) : (
-                              <div className="text-gray-400 text-sm">VS</div>
-                            )}
-                          </div>
-
-                          <div className={`text-left ${match.winner_id === match.player2_id ? "text-yellow-400 font-black" : "text-white font-bold"}`}>
-                            {match.player2_name || "TBD"}
-                          </div>
-                        </div>
-
-                        {match.status === "pending" && match.player1_id && match.player2_id && (
-                          <div className="mt-4 pt-4 border-t border-purple-500/20">
-                            <div className="grid grid-cols-2 gap-3">
-                              <Button
-                                onClick={async () => {
-                                  const score1 = prompt("Puntaje de " + match.player1_name);
-                                  const score2 = prompt("Puntaje de " + match.player2_name);
-                                  if (score1 !== null && score2 !== null) {
-                                    const winnerId = parseInt(score1) > parseInt(score2) ? match.player1_id : match.player2_id;
-                                    const winnerName = parseInt(score1) > parseInt(score2) ? match.player1_name : match.player2_name;
-
-                                    await base44.entities.Match.update(match.id, {
-                                      winner_id: winnerId,
-                                      winner_name: winnerName,
-                                      player1_score: parseInt(score1),
-                                      player2_score: parseInt(score2),
-                                      status: "completed"
-                                    });
-
-                                    queryClient.invalidateQueries(["admin-matches"]);
-                                  }
-                                }}
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white font-bold"
-                              >
-                                Registrar Resultado
-                              </Button>
-                              <Button
-                                onClick={async () => {
-                                  await base44.entities.Match.update(match.id, {
-                                    status: "in_progress"
-                                  });
-                                  queryClient.invalidateQueries(["admin-matches"]);
-                                }}
-                                size="sm"
-                                variant="outline"
-                                className="border-blue-500/30 text-blue-400"
-                              >
-                                Marcar En Progreso
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </Card>
-                      ))
-                      )}
-                      </div>
-                      )}
+                      queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                    }
+                  }}
+                  onMarkInProgress={async (match) => {
+                    await base44.entities.Match.update(match.id, {
+                      status: "in_progress"
+                    });
+                    queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                  }}
+                />
+              )}
             </div>
           )}
 

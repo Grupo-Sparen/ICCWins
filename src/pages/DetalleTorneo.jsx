@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import TournamentBracket from "../components/TournamentBracket";
 
 export default function DetalleTorneo() {
   const queryClient = useQueryClient();
@@ -100,20 +101,31 @@ export default function DetalleTorneo() {
     }
   });
 
-  const registerMatchResultMutation = useMutation({
-    mutationFn: async ({ matchId, winnerId, winnerName, score1, score2 }) => {
-      await base44.entities.Match.update(matchId, {
+  const handleRegisterResult = async (match) => {
+    const score1 = prompt("Puntaje de " + match.player1_name);
+    const score2 = prompt("Puntaje de " + match.player2_name);
+    if (score1 !== null && score2 !== null) {
+      const winnerId = parseInt(score1) > parseInt(score2) ? match.player1_id : match.player2_id;
+      const winnerName = parseInt(score1) > parseInt(score2) ? match.player1_name : match.player2_name;
+      
+      await base44.entities.Match.update(match.id, {
         winner_id: winnerId,
         winner_name: winnerName,
-        player1_score: score1,
-        player2_score: score2,
+        player1_score: parseInt(score1),
+        player2_score: parseInt(score2),
         status: "completed"
       });
-    },
-    onSuccess: () => {
+
       queryClient.invalidateQueries(["tournament-matches", tournamentId]);
     }
-  });
+  };
+
+  const handleMarkInProgress = async (match) => {
+    await base44.entities.Match.update(match.id, {
+      status: "in_progress"
+    });
+    queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+  };
 
   if (isLoading) {
     return (
@@ -274,34 +286,12 @@ export default function DetalleTorneo() {
                     )}
                   </Card>
                 ) : (
-                  <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-4 rounded-2xl">
-                    <h3 className="text-lg font-black text-white mb-3">Bracket del Torneo</h3>
-                    <div className="space-y-4">
-                      {matches.map(match => (
-                        <div key={match.id} className="bg-black/30 p-4 rounded-xl">
-                          <div className="text-xs text-gray-400 mb-2">{match.round_name} - Match {match.match_number}</div>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex-1">
-                              <div className={`font-bold ${match.winner_id === match.player1_id ? "text-yellow-400" : "text-white"}`}>
-                                {match.player1_name || "TBD"}
-                              </div>
-                            </div>
-                            <div className="px-4 text-gray-400">VS</div>
-                            <div className="flex-1 text-right">
-                              <div className={`font-bold ${match.winner_id === match.player2_id ? "text-yellow-400" : "text-white"}`}>
-                                {match.player2_name || "TBD"}
-                              </div>
-                            </div>
-                          </div>
-                          {match.status === "completed" && (
-                            <div className="text-center text-sm text-gray-400">
-                              Resultado: {match.player1_score} - {match.player2_score}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
+                  <TournamentBracket 
+                    matches={matches} 
+                    isAdmin={isAdmin}
+                    onRegisterResult={handleRegisterResult}
+                    onMarkInProgress={handleMarkInProgress}
+                  />
                 )}
               </TabsContent>
             </Tabs>
