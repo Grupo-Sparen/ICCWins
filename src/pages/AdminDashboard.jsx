@@ -101,6 +101,7 @@ export default function AdminDashboard() {
     rules: "",
     prize: ""
   });
+  const [editingBattle, setEditingBattle] = useState(null);
 
   const [tournamentForm, setTournamentForm] = useState({
     name: "",
@@ -116,6 +117,7 @@ export default function AdminDashboard() {
     rules: "",
     image_url: ""
   });
+  const [editingTournament, setEditingTournament] = useState(null);
 
   // Queries
   const { data: prizes = [] } = useQuery({
@@ -304,6 +306,15 @@ export default function AdminDashboard() {
     mutationFn: ({ id, data }) => base44.entities.Battle.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-battles"]);
+      setShowBattleForm(false);
+      setEditingBattle(null);
+      setBattleForm({
+        opponent_id: "",
+        opponent_name: "",
+        date_time: "",
+        rules: "",
+        prize: ""
+      });
     }
   });
 
@@ -341,6 +352,22 @@ export default function AdminDashboard() {
     mutationFn: ({ id, data }) => base44.entities.Tournament.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-tournaments"]);
+      setShowTournamentForm(false);
+      setEditingTournament(null);
+      setTournamentForm({
+        name: "",
+        game: "",
+        platform: "",
+        start_date: "",
+        end_date: "",
+        prizes: "",
+        max_participants: "",
+        entry_fee: 0,
+        format: "single_elimination",
+        description: "",
+        rules: "",
+        image_url: ""
+      });
     }
   });
 
@@ -621,7 +648,7 @@ export default function AdminDashboard() {
                       <div className="flex gap-2">
                         <Button
                           onClick={() => {
-                            setEditingPodcast(null);
+                            setEditingBattle(battle);
                             setBattleForm({
                               opponent_id: battle.opponent_id,
                               opponent_name: battle.opponent_name,
@@ -689,6 +716,7 @@ export default function AdminDashboard() {
                       <div className="flex gap-2">
                         <Button
                           onClick={() => {
+                            setEditingTournament(tournament);
                             setTournamentForm({
                               name: tournament.name,
                               game: tournament.game,
@@ -1165,14 +1193,14 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
               <Swords className="w-6 h-6 text-red-400" />
-              {battleForm.opponent_id ? "Editar Batalla" : "Crear Nueva Batalla"}
+              {editingBattle ? "Editar Batalla" : "Crear Nueva Batalla"}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={(e) => {
             e.preventDefault();
-            if (battleForm.opponent_id && tiktokers.find(t => t.id === battleForm.opponent_id)) {
-              updateBattleMutation.mutate({ id: battleForm.opponent_id, data: battleForm });
+            if (editingBattle) {
+              updateBattleMutation.mutate({ id: editingBattle.id, data: battleForm });
             } else {
               createBattleMutation.mutate(battleForm);
             }
@@ -1261,6 +1289,7 @@ export default function AdminDashboard() {
                 variant="outline"
                 onClick={() => {
                   setShowBattleForm(false);
+                  setEditingBattle(null);
                   setBattleForm({
                     opponent_id: "",
                     opponent_name: "",
@@ -1279,7 +1308,7 @@ export default function AdminDashboard() {
                 disabled={createBattleMutation.isPending || updateBattleMutation.isPending}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
               >
-                {createBattleMutation.isPending || updateBattleMutation.isPending ? "Procesando..." : (battleForm.opponent_id ? "Actualizar Batalla" : "Crear Batalla")}
+                {createBattleMutation.isPending || updateBattleMutation.isPending ? "Procesando..." : (editingBattle ? "Actualizar Batalla" : "Crear Batalla")}
               </Button>
             </DialogFooter>
           </form>
@@ -1862,7 +1891,7 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
               <Trophy className="w-6 h-6 text-blue-400" />
-              {tournamentForm.name && editingGaming ? "Editar Torneo" : "Crear Nuevo Torneo"}
+              {editingTournament ? "Editar Torneo" : "Crear Nuevo Torneo"}
             </DialogTitle>
           </DialogHeader>
 
@@ -1872,10 +1901,10 @@ export default function AdminDashboard() {
               ...tournamentForm,
               max_participants: parseInt(tournamentForm.max_participants),
               entry_fee: parseFloat(tournamentForm.entry_fee) || 0,
-              status: editingGaming ? tournamentForm.status || "upcoming" : "upcoming"
+              status: editingTournament ? tournamentForm.status || "upcoming" : "upcoming"
             };
-            if (editingGaming) {
-              updateTournamentMutation.mutate({ id: editingGaming.id, data });
+            if (editingTournament) {
+              updateTournamentMutation.mutate({ id: editingTournament.id, data });
             } else {
               createTournamentMutation.mutate(data);
             }
@@ -2091,7 +2120,7 @@ export default function AdminDashboard() {
                 variant="outline"
                 onClick={() => {
                   setShowTournamentForm(false);
-                  setEditingGaming(null);
+                  setEditingTournament(null);
                   setTournamentForm({
                     name: "",
                     game: "",
@@ -2116,7 +2145,7 @@ export default function AdminDashboard() {
                 disabled={createTournamentMutation.isPending || updateTournamentMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
               >
-                {createTournamentMutation.isPending || updateTournamentMutation.isPending ? "Procesando..." : (editingGaming ? "Actualizar Torneo" : "Crear Torneo")}
+                {createTournamentMutation.isPending || updateTournamentMutation.isPending ? "Procesando..." : (editingTournament ? "Actualizar Torneo" : "Crear Torneo")}
               </Button>
             </DialogFooter>
           </form>
