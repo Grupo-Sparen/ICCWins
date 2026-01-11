@@ -1256,7 +1256,7 @@ export default function AdminDashboard() {
                     prize: ""
                   });
                 }}
-                className="border-gray-500/30 text-white"
+                className="border-gray-500/30 text-black"
               >
                 Cancelar
               </Button>
@@ -2024,7 +2024,7 @@ export default function AdminDashboard() {
                     image_url: ""
                   });
                 }}
-                className="border-gray-500/30 text-white"
+                className="border-gray-500/30 text-black"
               >
                 Cancelar
               </Button>
@@ -2058,7 +2058,7 @@ export default function AdminDashboard() {
             <Button
               onClick={() => setConfirmDelete({ open: false, type: null, id: null, name: null })}
               variant="outline"
-              className="border-gray-500/30 text-white"
+              className="border-gray-500/30 text-black"
             >
               Cancelar
             </Button>
