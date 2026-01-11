@@ -167,6 +167,12 @@ export default function AdminDashboard() {
     queryFn: () => base44.entities.Tournament.list("-created_date")
   });
 
+  const { data: allMatches = [] } = useQuery({
+    queryKey: ["admin-matches"],
+    queryFn: () => base44.entities.Match.list("round,match_number"),
+    enabled: !!selectedTournament
+  });
+
   const { data: tiktokers = [] } = useQuery({
     queryKey: ["verified-tiktokers"],
     queryFn: async () => {
@@ -2315,22 +2321,17 @@ export default function AdminDashboard() {
                 <div className="space-y-4">
                   <h3 className="text-lg font-black text-white">Partidos</h3>
                   {(() => {
-                    const [matches, setMatches] = React.useState([]);
+                    const tournamentMatches = allMatches.filter(m => m.tournament_id === selectedTournament.id);
 
-                    React.useEffect(() => {
-                      base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number")
-                        .then(setMatches);
-                    }, [selectedTournament.id]);
-
-                    if (matches.length === 0) {
+                    if (tournamentMatches.length === 0) {
                       return (
                         <div className="text-center text-gray-400 py-8">
-                          Cargando partidos...
+                          No hay partidos generados
                         </div>
                       );
                     }
 
-                    return matches.map(match => (
+                    return tournamentMatches.map(match => (
                       <Card key={match.id} className="bg-black/30 p-4 rounded-xl border border-purple-500/20">
                         <div className="flex items-center justify-between mb-3">
                           <div className="text-xs text-purple-400 font-bold">
@@ -2386,8 +2387,7 @@ export default function AdminDashboard() {
                                       status: "completed"
                                     });
 
-                                    const updatedMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number");
-                                    setMatches(updatedMatches);
+                                    queryClient.invalidateQueries(["admin-matches"]);
                                   }
                                 }}
                                 size="sm"
@@ -2400,8 +2400,7 @@ export default function AdminDashboard() {
                                   await base44.entities.Match.update(match.id, {
                                     status: "in_progress"
                                   });
-                                  const updatedMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number");
-                                  setMatches(updatedMatches);
+                                  queryClient.invalidateQueries(["admin-matches"]);
                                 }}
                                 size="sm"
                                 variant="outline"
