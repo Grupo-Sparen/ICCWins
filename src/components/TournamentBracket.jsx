@@ -4,6 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
 
 export default function TournamentBracket({ matches, isAdmin, onRegisterResult, onMarkInProgress }) {
+  // Si no hay matches, mostrar mensaje
+  if (!matches || matches.length === 0) {
+    return (
+      <div className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-12 rounded-2xl text-center">
+        <div className="text-gray-400">No hay partidos generados aún</div>
+      </div>
+    );
+  }
+
   // Organizar partidos por rondas
   const roundsData = {};
   matches.forEach(match => {
@@ -14,7 +23,7 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult, 
   });
 
   const rounds = Object.keys(roundsData).sort((a, b) => parseInt(a) - parseInt(b));
-  const maxRound = Math.max(...rounds.map(r => parseInt(r)));
+  const maxRound = rounds.length > 0 ? Math.max(...rounds.map(r => parseInt(r))) : 1;
 
   // Nombres de rondas
   const getRoundName = (round, totalRounds) => {
