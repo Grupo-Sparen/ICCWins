@@ -2412,41 +2412,49 @@ export default function AdminDashboard() {
                   </p>
                   <Button
                     onClick={async () => {
-                      const participants = await base44.entities.TournamentParticipant.filter({ tournament_id: selectedTournament.id });
-                      if (participants.length < 2) {
-                        alert("Se necesitan al menos 2 participantes para generar el bracket");
-                        return;
-                      }
+                      try {
+                        const participants = await base44.entities.TournamentParticipant.filter({ tournament_id: selectedTournament.id });
 
-                      const shuffled = [...participants].sort(() => Math.random() - 0.5);
+                        if (participants.length < 2) {
+                          alert("Se necesitan al menos 2 participantes para generar el bracket");
+                          return;
+                        }
 
-                      for (let i = 0; i < shuffled.length; i += 2) {
-                        const player1 = shuffled[i];
-                        const player2 = shuffled[i + 1];
+                        const shuffled = [...participants].sort(() => Math.random() - 0.5);
 
-                        await base44.entities.Match.create({
-                          tournament_id: selectedTournament.id,
-                          round: 1,
-                          round_name: "Ronda 1",
-                          match_number: Math.floor(i / 2) + 1,
-                          player1_id: player1.user_id,
-                          player1_name: player1.user_name,
-                          player2_id: player2?.user_id,
-                          player2_name: player2?.user_name,
-                          status: "pending"
+                        for (let i = 0; i < shuffled.length; i += 2) {
+                          const player1 = shuffled[i];
+                          const player2 = shuffled[i + 1];
+
+                          await base44.entities.Match.create({
+                            tournament_id: selectedTournament.id,
+                            round: 1,
+                            round_name: "Ronda 1",
+                            match_number: Math.floor(i / 2) + 1,
+                            player1_id: player1.user_id,
+                            player1_name: player1.player_username,
+                            player2_id: player2?.user_id,
+                            player2_name: player2?.player_username,
+                            status: "pending"
+                          });
+                        }
+
+                        await base44.entities.Tournament.update(selectedTournament.id, {
+                          bracket_generated: true,
+                          status: "in_progress"
                         });
+
+                        queryClient.invalidateQueries(["admin-tournaments"]);
+                        queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+
+                        const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
+                        setSelectedTournament(updatedTournament);
+
+                        alert("Bracket generado exitosamente!");
+                      } catch (error) {
+                        console.error("Error generando bracket:", error);
+                        alert("Error al generar bracket: " + error.message);
                       }
-
-                      await base44.entities.Tournament.update(selectedTournament.id, {
-                        bracket_generated: true,
-                        status: "in_progress"
-                      });
-
-                      queryClient.invalidateQueries(["admin-tournaments"]);
-                      queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
-
-                      const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
-                      setSelectedTournament(updatedTournament);
                     }}
                     disabled={tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id).length < 2}
                     className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
