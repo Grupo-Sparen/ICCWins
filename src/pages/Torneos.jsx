@@ -506,7 +506,7 @@ export default function Torneos() {
                       </div>
                     </button>
 
-                    {registrationData.country === "Peru" && (
+                    {registrationData.country === "Perú" && (
                       <button
                         onClick={() => setPaymentMethod("yape")}
                         className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
