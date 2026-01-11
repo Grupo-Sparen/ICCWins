@@ -58,16 +58,21 @@ Deno.serve(async (req) => {
           console.log('✅ Subscription created for:', metadata.userEmail);
         }
       } else if (metadata.type === 'tournament') {
-        const user = await base44.entities.User.filter({ email: metadata.userEmail }).then(u => u[0]);
+        const user = await base44.asServiceRole.entities.User.filter({ email: metadata.userEmail }).then(u => u[0]);
 
         if (user) {
+          console.log('👤 Found user:', user.id, user.email);
+          
           // Update tournament participant payment status
           const participants = await base44.asServiceRole.entities.TournamentParticipant.filter({
             tournament_id: metadata.tournamentId,
             user_id: user.id,
           });
 
+          console.log('🔍 Found participants:', participants.length);
+
           if (participants.length > 0) {
+            console.log('💳 Updating participant:', participants[0].id);
             await base44.asServiceRole.entities.TournamentParticipant.update(participants[0].id, {
               payment_status: 'paid',
               amount_paid: session.amount_total / 100,
@@ -77,7 +82,11 @@ Deno.serve(async (req) => {
             });
 
             console.log('✅ Tournament payment confirmed for:', metadata.userEmail);
+          } else {
+            console.warn('⚠️ No TournamentParticipant found for user:', user.id, 'tournament:', metadata.tournamentId);
           }
+        } else {
+          console.warn('⚠️ User not found for email:', metadata.userEmail);
         }
       }
     } else if (event.type === 'invoice.paid') {
