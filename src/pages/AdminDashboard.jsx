@@ -1917,12 +1917,12 @@ export default function AdminDashboard() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-white font-bold">Fecha Inicio *</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal bg-black/30 border-blue-500/30 text-white hover:bg-black/40 hover:text-white"
+                        className="flex-1 justify-start text-left font-normal bg-black/30 border-blue-500/30 text-white hover:bg-black/40 hover:text-white"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {tournamentForm.start_date ? format(new Date(tournamentForm.start_date), 'PPP', { locale: es }) : <span className="text-gray-400">Fecha</span>}
@@ -1952,18 +1952,18 @@ export default function AdminDashboard() {
                       date.setHours(parseInt(hours), parseInt(minutes));
                       setTournamentForm({ ...tournamentForm, start_date: date.toISOString() });
                     }}
-                    className="bg-black/30 border-blue-500/30 text-white"
+                    className="bg-black/30 border-blue-500/30 text-white w-28"
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label className="text-white font-bold">Fecha Fin *</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal bg-black/30 border-blue-500/30 text-white hover:bg-black/40 hover:text-white"
+                        className="flex-1 justify-start text-left font-normal bg-black/30 border-blue-500/30 text-white hover:bg-black/40 hover:text-white"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {tournamentForm.end_date ? format(new Date(tournamentForm.end_date), 'PPP', { locale: es }) : <span className="text-gray-400">Fecha</span>}
@@ -1993,7 +1993,7 @@ export default function AdminDashboard() {
                       date.setHours(parseInt(hours), parseInt(minutes));
                       setTournamentForm({ ...tournamentForm, end_date: date.toISOString() });
                     }}
-                    className="bg-black/30 border-blue-500/30 text-white"
+                    className="bg-black/30 border-blue-500/30 text-white w-28"
                   />
                 </div>
               </div>
