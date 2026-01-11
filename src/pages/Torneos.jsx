@@ -18,10 +18,15 @@ export default function Torneos() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
-  const [paymentData, setPaymentData] = useState({
+  const [registrationData, setRegistrationData] = useState({
+    player_username: "",
+    country: "",
+    age: "",
+    phone: "",
     screenshot_url: "",
     amount_paid: ""
   });
+  const [usernameError, setUsernameError] = useState("");
   
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -43,12 +48,25 @@ export default function Torneos() {
 
   const registerMutation = useMutation({
     mutationFn: async () => {
+      // Validar que el nombre de usuario sea único
+      const existingUsers = await base44.entities.TournamentParticipant.filter({
+        player_username: registrationData.player_username
+      });
+
+      if (existingUsers.length > 0) {
+        throw new Error("Este nombre de usuario ya está en uso. Por favor elige otro.");
+      }
+
       await base44.entities.TournamentParticipant.create({
         tournament_id: selectedTournament.id,
         tournament_name: selectedTournament.name,
         user_id: user.id,
         user_name: user.full_name,
         user_email: user.email,
+        player_username: registrationData.player_username,
+        country: registrationData.country,
+        age: parseInt(registrationData.age),
+        phone: registrationData.phone,
         payment_status: selectedTournament.entry_fee > 0 ? "pending" : "free"
       });
 
@@ -60,8 +78,19 @@ export default function Torneos() {
       queryClient.invalidateQueries(["tournaments"]);
       setShowPaymentModal(false);
       setSelectedTournament(null);
-      setPaymentData({ screenshot_url: "", amount_paid: "" });
+      setRegistrationData({
+        player_username: "",
+        country: "",
+        age: "",
+        phone: "",
+        screenshot_url: "",
+        amount_paid: ""
+      });
+      setUsernameError("");
       alert("¡Inscripción exitosa! Tu pago está pendiente de confirmación.");
+    },
+    onError: (error) => {
+      setUsernameError(error.message);
     }
   });
 
@@ -71,7 +100,7 @@ export default function Torneos() {
     setUploadingScreenshot(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
-      setPaymentData({ ...paymentData, screenshot_url: result.file_url });
+      setRegistrationData({ ...registrationData, screenshot_url: result.file_url });
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
@@ -89,7 +118,15 @@ export default function Torneos() {
     }
 
     setSelectedTournament(tournament);
-    setPaymentData({ screenshot_url: "", amount_paid: tournament.entry_fee.toString() });
+    setRegistrationData({
+      player_username: "",
+      country: "",
+      age: "",
+      phone: "",
+      screenshot_url: "",
+      amount_paid: tournament.entry_fee.toString()
+    });
+    setUsernameError("");
     setShowPaymentModal(true);
   };
 
@@ -274,6 +311,57 @@ export default function Torneos() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Nombre de Usuario (Jugador) *</Label>
+              <Input
+                value={registrationData.player_username}
+                onChange={(e) => {
+                  setRegistrationData({ ...registrationData, player_username: e.target.value });
+                  setUsernameError("");
+                }}
+                className="bg-black/30 border-cyan-500/30 text-white"
+                placeholder="Tu nombre en el juego"
+              />
+              {usernameError && (
+                <div className="text-red-400 text-xs">{usernameError}</div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">País *</Label>
+                <Input
+                  value={registrationData.country}
+                  onChange={(e) => setRegistrationData({ ...registrationData, country: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white"
+                  placeholder="Perú"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Edad *</Label>
+                <Input
+                  type="number"
+                  value={registrationData.age}
+                  onChange={(e) => setRegistrationData({ ...registrationData, age: e.target.value })}
+                  className="bg-black/30 border-cyan-500/30 text-white"
+                  placeholder="18"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Teléfono *</Label>
+              <Input
+                type="tel"
+                value={registrationData.phone}
+                onChange={(e) => setRegistrationData({ ...registrationData, phone: e.target.value })}
+                className="bg-black/30 border-cyan-500/30 text-white"
+                placeholder="+51 999 999 999"
+              />
+              <div className="text-xs text-gray-400">Para coordinación de entrega de premio (no se mostrará públicamente)</div>
+            </div>
+
             {selectedTournament?.entry_fee > 0 && (
               <>
                 <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-4">
@@ -295,8 +383,8 @@ export default function Torneos() {
                     className="bg-black/30 border-cyan-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyan-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-cyan-700"
                   />
                   {uploadingScreenshot && <span className="text-cyan-400 text-sm">Subiendo...</span>}
-                  {paymentData.screenshot_url && (
-                    <img src={paymentData.screenshot_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-2" />
+                  {registrationData.screenshot_url && (
+                    <img src={registrationData.screenshot_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-2" />
                   )}
                 </div>
               </>
@@ -308,7 +396,15 @@ export default function Torneos() {
               onClick={() => {
                 setShowPaymentModal(false);
                 setSelectedTournament(null);
-                setPaymentData({ screenshot_url: "", amount_paid: "" });
+                setRegistrationData({
+                  player_username: "",
+                  country: "",
+                  age: "",
+                  phone: "",
+                  screenshot_url: "",
+                  amount_paid: ""
+                });
+                setUsernameError("");
               }}
               variant="outline"
               className="border-gray-500/30 text-black"
@@ -317,7 +413,14 @@ export default function Torneos() {
             </Button>
             <Button
               onClick={() => registerMutation.mutate()}
-              disabled={registerMutation.isPending || (selectedTournament?.entry_fee > 0 && !paymentData.screenshot_url)}
+              disabled={
+                registerMutation.isPending || 
+                !registrationData.player_username || 
+                !registrationData.country || 
+                !registrationData.age || 
+                !registrationData.phone ||
+                (selectedTournament?.entry_fee > 0 && !registrationData.screenshot_url)
+              }
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
             >
               {registerMutation.isPending ? "Procesando..." : "Confirmar Inscripción"}
