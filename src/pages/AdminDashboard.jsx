@@ -243,6 +243,7 @@ export default function AdminDashboard() {
         image_url: "",
         participation_cost: "",
         draw_date: "",
+        draw_time: "",
         status: "active",
         featured: false,
         total_participants: 0
