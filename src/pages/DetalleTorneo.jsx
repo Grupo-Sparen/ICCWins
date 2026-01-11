@@ -71,7 +71,6 @@ export default function DetalleTorneo() {
   const generateBracketMutation = useMutation({
     mutationFn: async () => {
       const shuffled = [...participants].sort(() => Math.random() - 0.5);
-      const rounds = Math.ceil(Math.log2(participants.length));
       
       for (let i = 0; i < shuffled.length; i += 2) {
         const player1 = shuffled[i];
@@ -80,12 +79,12 @@ export default function DetalleTorneo() {
         await base44.entities.Match.create({
           tournament_id: tournamentId,
           round: 1,
-          round_name: `Ronda ${1}`,
+          round_name: "Ronda 1",
           match_number: Math.floor(i / 2) + 1,
           player1_id: player1.user_id,
-          player1_name: player1.user_name,
+          player1_name: player1.player_username,
           player2_id: player2?.user_id,
-          player2_name: player2?.user_name,
+          player2_name: player2?.player_username,
           status: "pending"
         });
       }
