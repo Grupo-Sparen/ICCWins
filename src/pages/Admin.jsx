@@ -148,6 +148,11 @@ export default function Admin() {
     queryFn: () => base44.entities.Tournament.list("-created_date")
   });
 
+  const { data: tournamentParticipants = [] } = useQuery({
+    queryKey: ["admin-tournament-participants"],
+    queryFn: () => base44.entities.TournamentParticipant.list("-created_date")
+  });
+
   const { data: tiktokers = [] } = useQuery({
     queryKey: ["verified-tiktokers"],
     queryFn: async () => {
@@ -749,6 +754,10 @@ export default function Admin() {
             <TabsTrigger value="torneos" className="data-[state=active]:bg-cyan-600">
               <Trophy className="w-4 h-4 mr-2" />
               Torneos
+            </TabsTrigger>
+            <TabsTrigger value="tournament-payments" className="data-[state=active]:bg-green-600">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Pagos Torneos
             </TabsTrigger>
             </TabsList>
 
@@ -2100,6 +2109,71 @@ export default function Admin() {
                     </div>
                   </Card>
                 ))
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Tournament Payments Tab */}
+          <TabsContent value="tournament-payments">
+            <h3 className="text-xl font-black text-white mb-6">Pagos de Inscripción - Torneos</h3>
+            <div className="grid gap-4">
+              {tournamentParticipants.length === 0 ? (
+                <Card className="bg-gradient-to-br from-green-900/30 to-transparent border border-green-500/20 p-12 rounded-2xl text-center">
+                  <CreditCard className="w-16 h-16 text-green-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-black text-white mb-2">Sin pagos pendientes</h3>
+                  <p className="text-gray-400">No hay inscripciones de torneos con pagos pendientes</p>
+                </Card>
+              ) : (
+                tournamentParticipants.map((participant) => {
+                  const isPending = participant.payment_status === "pending";
+                  const isPaid = participant.payment_status === "paid";
+
+                  return (
+                    <Card key={participant.id} className="bg-gradient-to-br from-green-900/30 to-transparent border border-green-500/20 p-6 rounded-2xl">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-lg font-black text-white">{participant.user_name}</h3>
+                          <p className="text-gray-400 text-sm">{participant.user_email}</p>
+                          <p className="text-green-400 font-bold mt-2">{participant.tournament_name}</p>
+                          <div className="flex gap-4 text-sm mt-2">
+                            <span className="text-gray-500">
+                              Jugador: {participant.player_username}
+                            </span>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-gray-400">{participant.country}</span>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-gray-400">{participant.age} años</span>
+                          </div>
+                          <p className="text-green-400 font-bold mt-2 text-lg">S/ {tournaments.find(t => t.id === participant.tournament_id)?.entry_fee || 0}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            isPaid ? "bg-green-600 text-white" :
+                            isPending ? "bg-yellow-600 text-black" :
+                            "bg-gray-600 text-white"
+                          }`}>
+                            {participant.payment_status.toUpperCase()}
+                          </span>
+                          {isPending && (
+                            <Button
+                              onClick={() => {
+                                if (confirm(`¿Confirmar pago de ${participant.user_name} para ${participant.tournament_name}?`)) {
+                                  base44.entities.TournamentParticipant.update(participant.id, { payment_status: "paid" });
+                                  queryClient.invalidateQueries(["admin-tournament-participants"]);
+                                }
+                              }}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Confirmar Pago
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })
               )}
             </div>
           </TabsContent>
