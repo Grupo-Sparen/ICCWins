@@ -58,10 +58,16 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult }
                       <div className={`flex items-center justify-between mb-2 px-3 py-2 rounded-lg ${
                         match.winner_id === match.player1_id 
                           ? "bg-yellow-600/30 border border-yellow-500/50" 
+                          : match.status === "completed" && match.winner_id && match.winner_id !== match.player1_id
+                          ? "bg-gray-700/30 border border-gray-600/50"
                           : "bg-[#1A1A2E]"
                       }`}>
                         <div className={`font-bold text-sm truncate flex-1 ${
-                          match.winner_id === match.player1_id ? "text-yellow-400" : "text-white"
+                          match.winner_id === match.player1_id 
+                            ? "text-yellow-400" 
+                            : match.status === "completed" && match.winner_id && match.winner_id !== match.player1_id
+                            ? "text-gray-500"
+                            : "text-white"
                         }`}>
                           {match.player1_name || "TBD"}
                         </div>
@@ -93,10 +99,16 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult }
                       <div className={`flex items-center justify-between px-3 py-2 rounded-lg ${
                         match.winner_id === match.player2_id 
                           ? "bg-yellow-600/30 border border-yellow-500/50" 
+                          : match.status === "completed" && match.winner_id && match.winner_id !== match.player2_id
+                          ? "bg-gray-700/30 border border-gray-600/50"
                           : "bg-[#1A1A2E]"
                       }`}>
                         <div className={`font-bold text-sm truncate flex-1 ${
-                          match.winner_id === match.player2_id ? "text-yellow-400" : "text-white"
+                          match.winner_id === match.player2_id 
+                            ? "text-yellow-400" 
+                            : match.status === "completed" && match.winner_id && match.winner_id !== match.player2_id
+                            ? "text-gray-500"
+                            : "text-white"
                         }`}>
                           {match.player2_name || "TBD"}
                         </div>
