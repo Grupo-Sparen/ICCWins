@@ -558,38 +558,109 @@ export default function AdminDashboard() {
   const renderSection = () => {
     switch(activeSection) {
       case "dashboard":
+        const totalBattles = battles.length;
+        const completedBattles = battles.filter(b => b.status === "completed").length;
+        const totalTournaments = tournaments.length;
+        const activeTournaments = tournaments.filter(t => t.status === "in_progress" || t.status === "registration_open").length;
+        const totalTournamentParticipants = tournamentParticipants.length;
+        const tournamentRevenue = tournamentParticipants
+          .filter(p => p.payment_status === "paid")
+          .reduce((sum, p) => {
+            const tournament = tournaments.find(t => t.id === p.tournament_id);
+            return sum + (tournament?.entry_fee || 0);
+          }, 0);
+        const pendingTournamentPayments = tournamentParticipants.filter(p => p.payment_status === "pending").length;
+
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
-              <Trophy className="w-10 h-10 text-purple-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{prizes.length}</div>
-              <div className="text-gray-400 font-semibold text-sm">Premios Totales</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-green-900/30 to-transparent border border-green-500/20 p-6 rounded-2xl">
-              <Users className="w-10 h-10 text-green-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{participations.length}</div>
-              <div className="text-gray-400 font-semibold text-sm">Participaciones</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
-              <Trophy className="w-10 h-10 text-yellow-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{winners.length}</div>
-              <div className="text-gray-400 font-semibold text-sm">Ganadores</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
-              <div className="text-sm text-gray-400 mb-1">Ingresos por Premios</div>
-              <div className="text-3xl font-black text-cyan-400 mb-1">S/ {totalRevenue}</div>
-              <div className="text-xs text-yellow-400 font-bold">{pendingPayments} pagos pendientes</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
-              <Crown className="w-10 h-10 text-orange-400 mb-3" />
-              <div className="text-sm text-gray-400 mb-1">Ingresos por Suscripciones</div>
-              <div className="text-3xl font-black text-orange-400 mb-1">S/ {subscriptionRevenue}</div>
-            </Card>
-            <Card className="bg-gradient-to-br from-pink-900/30 to-transparent border border-pink-500/20 p-6 rounded-2xl">
-              <Users className="w-10 h-10 text-pink-400 mb-3" />
-              <div className="text-3xl font-black text-white mb-1">{totalSubscribers}</div>
-              <div className="text-gray-400 font-semibold text-sm">Suscriptores Activos</div>
-            </Card>
+          <div className="space-y-8">
+            {/* Sección Suscripciones */}
+            <div>
+              <h3 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                <Crown className="w-6 h-6 text-orange-400" />
+                Suscripciones
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                  <Crown className="w-10 h-10 text-orange-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{totalSubscribers}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Suscriptores Activos</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                  <div className="text-sm text-gray-400 mb-1">Ingresos por Suscripciones</div>
+                  <div className="text-3xl font-black text-orange-400 mb-1">S/ {subscriptionRevenue}</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-6 rounded-2xl">
+                  <Trophy className="w-10 h-10 text-purple-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{prizes.length}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Premios Totales</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
+                  <Trophy className="w-10 h-10 text-yellow-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{winners.length}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Ganadores</div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Sección Batallas */}
+            <div>
+              <h3 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                <Swords className="w-6 h-6 text-red-400" />
+                Batallas
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
+                  <Swords className="w-10 h-10 text-red-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{totalBattles}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Batallas Totales</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
+                  <CheckCircle2 className="w-10 h-10 text-green-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{completedBattles}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Batallas Completadas</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
+                  <Users className="w-10 h-10 text-pink-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{battles.filter(b => b.status === "pending" || b.status === "invited").length}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Batallas Pendientes</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
+                  <Trophy className="w-10 h-10 text-yellow-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{battles.filter(b => b.status === "confirmed").length}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Batallas Confirmadas</div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Sección Torneos */}
+            <div>
+              <h3 className="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-cyan-400" />
+                Torneos
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                  <Trophy className="w-10 h-10 text-cyan-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{totalTournaments}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Torneos Totales</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                  <Play className="w-10 h-10 text-green-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{activeTournaments}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Torneos Activos</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                  <Users className="w-10 h-10 text-blue-400 mb-3" />
+                  <div className="text-3xl font-black text-white mb-1">{totalTournamentParticipants}</div>
+                  <div className="text-gray-400 font-semibold text-sm">Total Participantes</div>
+                </Card>
+                <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-6 rounded-2xl">
+                  <div className="text-sm text-gray-400 mb-1">Ingresos por Torneos</div>
+                  <div className="text-3xl font-black text-cyan-400 mb-1">S/ {tournamentRevenue}</div>
+                  <div className="text-xs text-yellow-400 font-bold">{pendingTournamentPayments} pagos pendientes</div>
+                </Card>
+              </div>
+            </div>
           </div>
         );
 
