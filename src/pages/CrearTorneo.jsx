@@ -229,9 +229,9 @@ export default function CrearTorneo() {
                   accept="image/*"
                   onChange={handleImageUpload}
                   disabled={uploadingImage}
-                  className="bg-black/30 border-cyan-500/30 text-white"
+                  className="bg-black/30 border-cyan-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyan-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-cyan-700"
                 />
-                {uploadingImage && <span className="text-cyan-400 text-sm">Subiendo...</span>}
+                {uploadingImage && <span className="text-cyan-400 text-sm mt-2">Subiendo...</span>}
               </div>
               {tournamentForm.image_url && (
                 <img src={tournamentForm.image_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-4" />

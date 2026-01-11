@@ -470,6 +470,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleTournamentImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setTournamentForm({ ...tournamentForm, image_url: result.file_url });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   // Render Sections
   const renderSection = () => {
     switch(activeSection) {
@@ -1993,13 +2007,20 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white font-bold">URL de Imagen</Label>
-              <Input
-                value={tournamentForm.image_url}
-                onChange={(e) => setTournamentForm({ ...tournamentForm, image_url: e.target.value })}
-                className="bg-black/30 border-blue-500/30 text-white"
-                placeholder="https://..."
-              />
+              <Label className="text-white font-bold">Imagen del Torneo</Label>
+              <div className="flex gap-4 items-start">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleTournamentImageUpload}
+                  disabled={uploadingImage}
+                  className="bg-black/30 border-blue-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-blue-700"
+                />
+                {uploadingImage && <span className="text-blue-400 text-sm mt-2">Subiendo...</span>}
+              </div>
+              {tournamentForm.image_url && (
+                <img src={tournamentForm.image_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-4" />
+              )}
             </div>
 
             <DialogFooter>
