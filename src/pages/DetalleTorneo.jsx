@@ -261,8 +261,8 @@ export default function DetalleTorneo() {
                   <div className="grid md:grid-cols-3 gap-3">
                     {participants.map((participant, index) => (
                       <div key={participant.id} className="bg-black/30 p-3 rounded-xl">
-                        <div className="text-white font-bold text-sm">{index + 1}. {participant.user_name}</div>
-                        <div className="text-xs text-gray-500 mt-1">ID: {participant.user_id.substring(0, 8)}</div>
+                        <div className="text-white font-bold text-sm">{index + 1}. {participant.player_username}</div>
+                        <div className="text-xs text-gray-500 mt-1">{participant.country}</div>
                       </div>
                     ))}
                   </div>
