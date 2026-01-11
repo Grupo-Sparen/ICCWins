@@ -277,8 +277,9 @@ export default function Torneos() {
             {filteredTournaments.map(tournament => {
               const badge = getStatusBadge(tournament.status);
               const spotsLeft = tournament.max_participants - tournament.current_participants;
-              const canRegister = (tournament.status === "registration_open" || tournament.status === "upcoming") && spotsLeft > 0;
-              
+              const isRegistered = userParticipations.some(p => p.tournament_id === tournament.id);
+              const canRegister = !isRegistered && (tournament.status === "registration_open" || tournament.status === "upcoming") && spotsLeft > 0;
+
               return (
                 <div key={tournament.id} className="relative">
                   <Link to={createPageUrl(`DetalleTorneo?id=${tournament.id}`)}>
