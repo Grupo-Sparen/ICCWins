@@ -17,6 +17,7 @@ export default function DetalleTorneo() {
   const tournamentId = urlParams.get("id");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [confirmWinnerDialog, setConfirmWinnerDialog] = useState({ open: false, match: null, winnerId: null, winnerName: null });
+  const [isConfirmingWinner, setIsConfirmingWinner] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -153,12 +154,21 @@ export default function DetalleTorneo() {
   };
 
   const confirmWinner = async () => {
-    const { match, winnerId, winnerName } = confirmWinnerDialog;
-    await base44.entities.Match.update(match.id, {
-      winner_id: winnerId,
-      winner_name: winnerName,
-      status: "completed"
-    });
+    if (isConfirmingWinner) return; // Prevenir doble click
+    
+    setIsConfirmingWinner(true);
+    try {
+      const { match, winnerId, winnerName } = confirmWinnerDialog;
+      
+      // Update del match
+      await base44.entities.Match.update(match.id, {
+        winner_id: winnerId,
+        winner_name: winnerName,
+        status: "completed"
+      });
+
+      // Pequeño delay para evitar race conditions
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Verificar si se completó toda la ronda
       const allMatches = await base44.entities.Match.filter({ tournament_id: tournamentId });
@@ -207,11 +217,14 @@ export default function DetalleTorneo() {
         }
       }
 
-    // Solo invalidate, que automáticamente hará refetch
-    queryClient.invalidateQueries(["tournament-matches", tournamentId]);
-    queryClient.invalidateQueries(["tournament", tournamentId]);
-    
-    setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null });
+      // Invalidate queries
+      queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+      queryClient.invalidateQueries(["tournament", tournamentId]);
+      
+      setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null });
+    } finally {
+      setIsConfirmingWinner(false);
+    }
   };
 
 
@@ -492,9 +505,10 @@ export default function DetalleTorneo() {
             </Button>
             <Button
               onClick={confirmWinner}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold"
+              disabled={isConfirmingWinner}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold disabled:opacity-50"
             >
-              Confirmar
+              {isConfirmingWinner ? "Procesando..." : "Confirmar"}
             </Button>
           </DialogFooter>
         </DialogContent>
