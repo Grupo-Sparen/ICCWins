@@ -2144,7 +2144,18 @@ export default function Admin() {
                             <span className="text-gray-500">•</span>
                             <span className="text-gray-400">{participant.age} años</span>
                           </div>
-                          <p className="text-green-400 font-bold mt-2 text-lg">S/ {tournaments.find(t => t.id === participant.tournament_id)?.entry_fee || 0}</p>
+                          <div className="mt-3 space-y-1">
+                            <p className="text-green-400 font-bold text-lg">S/ {participant.amount_paid || tournaments.find(t => t.id === participant.tournament_id)?.entry_fee || 0}</p>
+                            {participant.payment_method && (
+                              <p className="text-gray-400 text-sm">Método: <span className="text-white capitalize">{participant.payment_method}</span></p>
+                            )}
+                            {participant.payment_date && (
+                              <p className="text-gray-400 text-sm">Pagado: <span className="text-white">{new Date(participant.payment_date).toLocaleDateString('es-ES')}</span></p>
+                            )}
+                            {participant.stripe_session_id && (
+                              <p className="text-gray-400 text-xs">Sesión: {participant.stripe_session_id.substring(0, 20)}...</p>
+                            )}
+                          </div>
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${
