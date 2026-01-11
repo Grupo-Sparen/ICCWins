@@ -94,9 +94,12 @@ export default function DetalleTorneo() {
         status: "in_progress"
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["tournament", tournamentId]);
-      queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(["tournament", tournamentId]);
+      await queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+      
+      await queryClient.refetchQueries(["tournament", tournamentId]);
+      await queryClient.refetchQueries(["tournament-matches", tournamentId]);
     }
   });
 
