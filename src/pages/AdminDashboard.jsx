@@ -306,11 +306,13 @@ export default function AdminDashboard() {
     mutationFn: ({ id, data }) => base44.entities.Battle.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-battles"]);
+      queryClient.refetchQueries(["admin-battles"]);
       setShowBattleForm(false);
       setEditingBattle(null);
       setBattleForm({
         opponent_id: "",
         opponent_name: "",
+        opponent_name_2: "",
         date_time: "",
         rules: "",
         prize: ""
@@ -352,6 +354,7 @@ export default function AdminDashboard() {
     mutationFn: ({ id, data }) => base44.entities.Tournament.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-tournaments"]);
+      queryClient.refetchQueries(["admin-tournaments"]);
       setShowTournamentForm(false);
       setEditingTournament(null);
       setTournamentForm({
