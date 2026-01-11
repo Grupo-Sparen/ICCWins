@@ -240,6 +240,7 @@ export default function AdminDashboard() {
   const [confirmDelete, setConfirmDelete] = useState({ open: false, type: null, id: null, name: null });
   const [showPaymentDetailModal, setShowPaymentDetailModal] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [confirmWinnerDialog, setConfirmWinnerDialog] = useState({ open: false, match: null, winnerId: null, winnerName: null });
 
   const [prizeForm, setPrizeForm] = useState({
     title: "",
@@ -2654,15 +2655,11 @@ export default function AdminDashboard() {
                 <TournamentBracket 
                   matches={allMatches} 
                   isAdmin={true}
-                  onRegisterResult={async (match, winnerId, winnerName) => {
+                  onRegisterResult={(match, winnerId, winnerName) => {
                     console.log("🎯 REGISTRAR GANADOR:", winnerName, "para match:", match.id);
-                    
-                    if (confirm(`¿Confirmar a ${winnerName} como ganador?`)) {
-                      await base44.entities.Match.update(match.id, {
-                        winner_id: winnerId,
-                        winner_name: winnerName,
-                        status: "completed"
-                      });
+                    setConfirmWinnerDialog({ open: true, match, winnerId, winnerName });
+                  }}
+                />
 
                       // Verificar si se completó toda la ronda
                       const allMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number");
@@ -2732,12 +2729,7 @@ export default function AdminDashboard() {
                         }
                       }
 
-                      await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
-                      await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
-                      await queryClient.invalidateQueries(["admin-tournaments"]);
-                    }
-                  }}
-                />
+
               )}
             </div>
           )}
@@ -2835,6 +2827,118 @@ export default function AdminDashboard() {
                 {confirmTournamentPaymentMutation.isPending ? "Confirmando..." : "Confirmar Pago"}
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Winner Dialog */}
+      <Dialog open={confirmWinnerDialog.open} onOpenChange={(open) => setConfirmWinnerDialog({ ...confirmWinnerDialog, open })}>
+        <DialogContent className="bg-gradient-to-br from-green-900 to-gray-900 border-2 border-green-500/40 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-green-400" />
+              Confirmar Ganador
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-300 mb-2">¿Confirmar como ganador del match?</p>
+            <p className="text-white font-bold text-xl text-center my-4">{confirmWinnerDialog.winnerName}</p>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null })}
+              variant="outline"
+              className="border-gray-500/30 text-black"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={async () => {
+                const { match, winnerId, winnerName } = confirmWinnerDialog;
+                await base44.entities.Match.update(match.id, {
+                  winner_id: winnerId,
+                  winner_name: winnerName,
+                  status: "completed"
+                });
+
+                // Verificar si se completó toda la ronda
+                const allMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id });
+                const currentRound = match.round;
+                const currentRoundMatches = allMatches.filter(m => m.round === currentRound);
+                const allCompleted = currentRoundMatches.every(m => m.status === "completed");
+
+                if (allCompleted) {
+                  // Avanzar a la siguiente ronda
+                  const winners = currentRoundMatches.map(m => ({
+                    id: m.winner_id,
+                    name: m.winner_name
+                  }));
+
+                  // Verificar si es la final
+                  if (winners.length === 1) {
+                    // Es el campeón
+                    await base44.entities.Tournament.update(selectedTournament.id, {
+                      status: "completed",
+                      winner_id: winners[0].id,
+                      winner_name: winners[0].name
+                    });
+                    
+                    const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
+                    setSelectedTournament(updatedTournament);
+                    
+                    toast.success(`🏆 ${winners[0].name} es el campeón del torneo!`, {
+                      duration: 5000,
+                      style: {
+                        background: '#10B981',
+                        color: '#fff',
+                        fontWeight: 'bold'
+                      }
+                    });
+                  } else {
+                    // Crear siguiente ronda
+                    const nextRound = currentRound + 1;
+                    const roundNames = {
+                      2: "Final",
+                      3: "Semifinales",
+                      4: "Cuartos de Final",
+                      5: "Octavos de Final"
+                    };
+                    
+                    for (let i = 0; i < winners.length; i += 2) {
+                      await base44.entities.Match.create({
+                        tournament_id: selectedTournament.id,
+                        round: nextRound,
+                        round_name: roundNames[nextRound] || `Ronda ${nextRound}`,
+                        match_number: Math.floor(i / 2) + 1,
+                        player1_id: winners[i].id,
+                        player1_name: winners[i].name,
+                        player2_id: winners[i + 1]?.id,
+                        player2_name: winners[i + 1]?.name,
+                        status: "pending"
+                      });
+                    }
+                    
+                    toast.success(`✨ ${roundNames[nextRound] || `Ronda ${nextRound}`} generada automáticamente`, {
+                      duration: 3000,
+                      style: {
+                        background: '#8B5CF6',
+                        color: '#fff',
+                        fontWeight: 'bold'
+                      }
+                    });
+                  }
+                }
+
+                await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
+                await queryClient.invalidateQueries(["admin-tournaments"]);
+                
+                setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null });
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold"
+            >
+              Confirmar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

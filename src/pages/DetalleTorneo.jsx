@@ -16,6 +16,7 @@ export default function DetalleTorneo() {
   const urlParams = new URLSearchParams(window.location.search);
   const tournamentId = urlParams.get("id");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [confirmWinnerDialog, setConfirmWinnerDialog] = useState({ open: false, match: null, winnerId: null, winnerName: null });
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -147,13 +148,17 @@ export default function DetalleTorneo() {
     }
   });
 
-  const handleRegisterResult = async (match, winnerId, winnerName) => {
-    if (confirm(`¿Confirmar a ${winnerName} como ganador?`)) {
-      await base44.entities.Match.update(match.id, {
-        winner_id: winnerId,
-        winner_name: winnerName,
-        status: "completed"
-      });
+  const handleRegisterResult = (match, winnerId, winnerName) => {
+    setConfirmWinnerDialog({ open: true, match, winnerId, winnerName });
+  };
+
+  const confirmWinner = async () => {
+    const { match, winnerId, winnerName } = confirmWinnerDialog;
+    await base44.entities.Match.update(match.id, {
+      winner_id: winnerId,
+      winner_name: winnerName,
+      status: "completed"
+    });
 
       // Verificar si se completó toda la ronda
       const allMatches = await base44.entities.Match.filter({ tournament_id: tournamentId });
@@ -202,11 +207,12 @@ export default function DetalleTorneo() {
         }
       }
 
-      await queryClient.invalidateQueries(["tournament-matches", tournamentId]);
-      await queryClient.refetchQueries(["tournament-matches", tournamentId]);
-      await queryClient.invalidateQueries(["tournament", tournamentId]);
-      await queryClient.refetchQueries(["tournament", tournamentId]);
-    }
+    await queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+    await queryClient.refetchQueries(["tournament-matches", tournamentId]);
+    await queryClient.invalidateQueries(["tournament", tournamentId]);
+    await queryClient.refetchQueries(["tournament", tournamentId]);
+    
+    setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null });
   };
 
 
@@ -459,6 +465,37 @@ export default function DetalleTorneo() {
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
             >
               Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Winner Dialog */}
+      <Dialog open={confirmWinnerDialog.open} onOpenChange={(open) => setConfirmWinnerDialog({ ...confirmWinnerDialog, open })}>
+        <DialogContent className="bg-gradient-to-br from-green-900 to-gray-900 border-2 border-green-500/40 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-green-400" />
+              Confirmar Ganador
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-300 mb-2">¿Confirmar como ganador del match?</p>
+            <p className="text-white font-bold text-xl text-center my-4">{confirmWinnerDialog.winnerName}</p>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null })}
+              variant="outline"
+              className="border-gray-500/30 text-black"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmWinner}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold"
+            >
+              Confirmar
             </Button>
           </DialogFooter>
         </DialogContent>
