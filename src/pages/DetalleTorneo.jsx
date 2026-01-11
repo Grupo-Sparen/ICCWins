@@ -70,23 +70,29 @@ export default function DetalleTorneo() {
 
   const generateBracketMutation = useMutation({
     mutationFn: async () => {
-      // Validar número de participantes
-      if (participants.length < 2) {
+      console.log("🔥 GENERAR BRACKET - DetalleTorneo");
+      console.log("👥 Participants:", participants.length);
+
+      if (!participants || participants.length < 2) {
         throw new Error("Se necesitan al menos 2 participantes para generar el bracket");
       }
 
-      // Validar que sea potencia de 2
-      const isPowerOfTwo = (n) => n > 0 && (n & (n - 1)) === 0;
+      // Validar que sea potencia de 2 (excluye 0 y 1)
+      const isPowerOfTwo = (n) => n > 1 && (n & (n - 1)) === 0;
+      
       if (!isPowerOfTwo(participants.length)) {
         throw new Error(`Se necesita un número de participantes que sea potencia de 2 (2, 4, 8, 16, 32...). Actualmente hay ${participants.length} participantes.`);
       }
 
+      console.log("🎲 Mezclando participantes...");
       const shuffled = [...participants].sort(() => Math.random() - 0.5);
       
-      // Generar matches de la primera ronda
+      console.log("🏗️ Creando matches de Ronda 1...");
       for (let i = 0; i < shuffled.length; i += 2) {
         const player1 = shuffled[i];
         const player2 = shuffled[i + 1];
+
+        console.log(`  Match ${Math.floor(i / 2) + 1}: ${player1.player_username} vs ${player2.player_username}`);
 
         await base44.entities.Match.create({
           tournament_id: tournamentId,
@@ -95,23 +101,31 @@ export default function DetalleTorneo() {
           match_number: Math.floor(i / 2) + 1,
           player1_id: player1.user_id,
           player1_name: player1.player_username,
-          player2_id: player2?.user_id,
-          player2_name: player2?.player_username,
+          player2_id: player2.user_id,
+          player2_name: player2.player_username,
           status: "pending"
         });
       }
 
+      console.log("🏆 Actualizando estado del torneo...");
       await base44.entities.Tournament.update(tournamentId, {
         bracket_generated: true,
         status: "in_progress"
       });
+      
+      console.log("✅ Bracket generado exitosamente");
     },
     onSuccess: async () => {
+      console.log("🔄 Refrescando queries...");
       await queryClient.invalidateQueries(["tournament", tournamentId]);
       await queryClient.invalidateQueries(["tournament-matches", tournamentId]);
       
       await queryClient.refetchQueries(["tournament", tournamentId]);
       await queryClient.refetchQueries(["tournament-matches", tournamentId]);
+      console.log("✅ Queries refrescadas");
+    },
+    onError: (error) => {
+      console.error("❌ Error en generateBracketMutation:", error);
     }
   });
 

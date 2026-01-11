@@ -12,23 +12,41 @@ function GenerateBracketButton({ selectedTournament, tournamentParticipants, que
   const participants = tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id);
 
   const handleGenerate = async () => {
+    console.log("🔥 CLICK GENERAR BRACKET");
+    
+    if (isGenerating) {
+      console.log("⚠️ Ya está generando, bloqueando click duplicado");
+      return;
+    }
+
     setIsGenerating(true);
+    
     try {
-      if (participants.length < 2) {
+      console.log("👥 PARTICIPANTS:", participants);
+      console.log("👥 COUNT:", participants.length);
+
+      if (!participants || participants.length < 2) {
         throw new Error("Se necesitan al menos 2 participantes para generar el bracket");
       }
 
-      // Validar que sea potencia de 2
-      const isPowerOfTwo = (n) => n > 0 && (n & (n - 1)) === 0;
+      // Validar que sea potencia de 2 (excluye 0 y 1)
+      const isPowerOfTwo = (n) => n > 1 && (n & (n - 1)) === 0;
+      
+      console.log("✅ Validando potencia de 2 para:", participants.length);
+      
       if (!isPowerOfTwo(participants.length)) {
         throw new Error(`Se necesita un número de participantes que sea potencia de 2 (2, 4, 8, 16, 32...). Actualmente hay ${participants.length} participantes.`);
       }
 
+      console.log("🎲 Mezclando participantes...");
       const shuffled = [...participants].sort(() => Math.random() - 0.5);
 
+      console.log("🏗️ Creando matches de Ronda 1...");
       for (let i = 0; i < shuffled.length; i += 2) {
         const player1 = shuffled[i];
         const player2 = shuffled[i + 1];
+
+        console.log(`  Match ${Math.floor(i / 2) + 1}: ${player1.player_username} vs ${player2.player_username}`);
 
         await base44.entities.Match.create({
           tournament_id: selectedTournament.id,
@@ -37,17 +55,19 @@ function GenerateBracketButton({ selectedTournament, tournamentParticipants, que
           match_number: Math.floor(i / 2) + 1,
           player1_id: player1.user_id,
           player1_name: player1.player_username,
-          player2_id: player2?.user_id,
-          player2_name: player2?.player_username,
+          player2_id: player2.user_id,
+          player2_name: player2.player_username,
           status: "pending"
         });
       }
 
+      console.log("🏆 Actualizando estado del torneo...");
       await base44.entities.Tournament.update(selectedTournament.id, {
         bracket_generated: true,
         status: "in_progress"
       });
 
+      console.log("🔄 Refrescando queries...");
       await queryClient.invalidateQueries(["admin-tournaments"]);
       await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
       await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
@@ -55,6 +75,7 @@ function GenerateBracketButton({ selectedTournament, tournamentParticipants, que
       const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
       setSelectedTournament(updatedTournament);
 
+      console.log("✅ Bracket generado exitosamente");
       toast.success("¡Bracket generado exitosamente!", {
         duration: 3000,
         style: {
@@ -64,7 +85,7 @@ function GenerateBracketButton({ selectedTournament, tournamentParticipants, que
         }
       });
     } catch (error) {
-      console.error("Error generando bracket:", error);
+      console.error("❌ Error generando bracket:", error);
       toast.error(error.message || "Error al generar bracket", {
         duration: 4000,
         style: {
@@ -74,9 +95,12 @@ function GenerateBracketButton({ selectedTournament, tournamentParticipants, que
         }
       });
     } finally {
+      console.log("🏁 Finalizando, liberando estado");
       setIsGenerating(false);
     }
   };
+
+  console.log("🔵 Render GenerateBracketButton - Participants:", participants.length, "isGenerating:", isGenerating);
 
   return (
     <Button
