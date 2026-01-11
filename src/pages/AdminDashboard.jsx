@@ -168,8 +168,8 @@ export default function AdminDashboard() {
   });
 
   const { data: allMatches = [] } = useQuery({
-    queryKey: ["admin-matches"],
-    queryFn: () => base44.entities.Match.list("round,match_number"),
+    queryKey: ["admin-matches", selectedTournament?.id],
+    queryFn: () => selectedTournament ? base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number") : [],
     enabled: !!selectedTournament
   });
 
@@ -2306,7 +2306,10 @@ export default function AdminDashboard() {
                       });
 
                       queryClient.invalidateQueries(["admin-tournaments"]);
-                      setShowBracketModal(false);
+                      queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+
+                      const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
+                      setSelectedTournament(updatedTournament);
                     }}
                     className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
                   >
@@ -2320,18 +2323,12 @@ export default function AdminDashboard() {
               {selectedTournament.bracket_generated && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-black text-white">Partidos</h3>
-                  {(() => {
-                    const tournamentMatches = allMatches.filter(m => m.tournament_id === selectedTournament.id);
-
-                    if (tournamentMatches.length === 0) {
-                      return (
-                        <div className="text-center text-gray-400 py-8">
-                          No hay partidos generados
-                        </div>
-                      );
-                    }
-
-                    return tournamentMatches.map(match => (
+                  {allMatches.length === 0 ? (
+                    <div className="text-center text-gray-400 py-8">
+                      No hay partidos generados
+                    </div>
+                  ) : (
+                    allMatches.map(match => (
                       <Card key={match.id} className="bg-black/30 p-4 rounded-xl border border-purple-500/20">
                         <div className="flex items-center justify-between mb-3">
                           <div className="text-xs text-purple-400 font-bold">
@@ -2412,10 +2409,10 @@ export default function AdminDashboard() {
                           </div>
                         )}
                       </Card>
-                    ));
-                  })()}
-                </div>
-              )}
+                      ))
+                      )}
+                      </div>
+                      )}
             </div>
           )}
 
