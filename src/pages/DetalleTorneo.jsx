@@ -156,7 +156,7 @@ export default function DetalleTorneo() {
       });
 
       // Verificar si se completó toda la ronda
-      const allMatches = await base44.entities.Match.filter({ tournament_id: tournamentId }, "round,match_number");
+      const allMatches = await base44.entities.Match.filter({ tournament_id: tournamentId });
       const currentRound = match.round;
       const currentRoundMatches = allMatches.filter(m => m.round === currentRound);
       const allCompleted = currentRoundMatches.every(m => m.status === "completed");
