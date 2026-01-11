@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords, Menu, LogOut, Home } from "lucide-react";
+import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords, Menu, LogOut, Home, Play } from "lucide-react";
 import TournamentBracket from "../components/TournamentBracket";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
