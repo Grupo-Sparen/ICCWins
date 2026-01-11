@@ -669,6 +669,7 @@ export default function AdminDashboard() {
                             setBattleForm({
                               opponent_id: battle.opponent_id,
                               opponent_name: battle.opponent_name,
+                              opponent_name_2: battle.opponent_name_2 || "",
                               date_time: battle.date_time,
                               rules: battle.rules,
                               prize: battle.prize || ""
