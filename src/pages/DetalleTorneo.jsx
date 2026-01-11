@@ -270,14 +270,14 @@ export default function DetalleTorneo() {
               </TabsContent>
 
               <TabsContent value="bracket">
-                {!tournament.bracket_generated ? (
+                {matches.length === 0 ? (
                   <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-8 rounded-2xl text-center">
                     <Trophy className="w-12 h-12 text-purple-400 mx-auto mb-3" />
                     <h3 className="text-lg font-black text-white mb-2">Bracket no generado</h3>
                     <p className="text-gray-400 text-sm mb-4">
                       {participants.length < 2 
                         ? "Se necesitan al menos 2 participantes para generar el bracket"
-                        : "El bracket se generará cuando el torneo comience"}
+                        : `Hay ${participants.length} participantes inscritos`}
                     </p>
                     {isAdmin && (
                       <Button
@@ -286,7 +286,7 @@ export default function DetalleTorneo() {
                         className="mt-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
                       >
                         <Play className="w-5 h-5 mr-2" />
-                        Generar Bracket Ahora
+                        {generateBracketMutation.isPending ? "Generando..." : "Generar Bracket con Inscritos Actuales"}
                       </Button>
                     )}
                   </Card>
