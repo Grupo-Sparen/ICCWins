@@ -2400,12 +2400,16 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Generate Bracket Button */}
-              {!selectedTournament.bracket_generated && (
+              {/* Generate Bracket Button or Show Matches */}
+              {allMatches.length === 0 ? (
                 <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-6 text-center">
                   <Trophy className="w-12 h-12 text-purple-400 mx-auto mb-3" />
                   <h3 className="text-lg font-black text-white mb-2">Bracket no generado</h3>
-                  <p className="text-gray-400 text-sm mb-4">Genera el bracket para comenzar el torneo</p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id).length < 2 
+                      ? "Se necesitan al menos 2 participantes para generar el bracket"
+                      : `Hay ${tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id).length} participantes inscritos`}
+                  </p>
                   <Button
                     onClick={async () => {
                       const participants = await base44.entities.TournamentParticipant.filter({ tournament_id: selectedTournament.id });
@@ -2444,16 +2448,14 @@ export default function AdminDashboard() {
                       const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
                       setSelectedTournament(updatedTournament);
                     }}
+                    disabled={tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id).length < 2}
                     className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
                   >
                     <Trophy className="w-5 h-5 mr-2" />
-                    Generar Bracket
+                    Generar Bracket con Inscritos Actuales
                   </Button>
                 </div>
-              )}
-
-              {/* Matches List */}
-              {selectedTournament.bracket_generated && (
+              ) : (
                 <TournamentBracket 
                   matches={allMatches} 
                   isAdmin={true}
