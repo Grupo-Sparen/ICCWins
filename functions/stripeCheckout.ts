@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
         line_items: [
           {
             price_data: {
-              currency: 'pen',
+              currency: 'usd',
               product_data: {
                 name: `Entrada - ${tournament.name}`,
                 description: `Entrada para el torneo ${tournament.name}`,
