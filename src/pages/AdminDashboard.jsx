@@ -2859,9 +2859,9 @@ export default function AdminDashboard() {
                   }
                 }
 
-                await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
-                await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
-                await queryClient.invalidateQueries(["admin-tournaments"]);
+                // Solo invalidate, que automáticamente hará refetch
+                queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+                queryClient.invalidateQueries(["admin-tournaments"]);
                 
                 setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null });
               }}

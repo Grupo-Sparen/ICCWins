@@ -207,10 +207,9 @@ export default function DetalleTorneo() {
         }
       }
 
-    await queryClient.invalidateQueries(["tournament-matches", tournamentId]);
-    await queryClient.refetchQueries(["tournament-matches", tournamentId]);
-    await queryClient.invalidateQueries(["tournament", tournamentId]);
-    await queryClient.refetchQueries(["tournament", tournamentId]);
+    // Solo invalidate, que automáticamente hará refetch
+    queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+    queryClient.invalidateQueries(["tournament", tournamentId]);
     
     setConfirmWinnerDialog({ open: false, match: null, winnerId: null, winnerName: null });
   };
