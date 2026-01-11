@@ -1,21 +1,72 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords, Menu, LogOut, Home, Play } from "lucide-react";
+import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords, Menu, LogOut, Home, Play, RefreshCw } from "lucide-react";
 import TournamentBracket from "../components/TournamentBracket";
 import toast, { Toaster } from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
 
 // Componente para generar bracket
-function GenerateBracketButton({ selectedTournament, tournamentParticipants, queryClient, setSelectedTournament }) {
+function GenerateBracketButton({ selectedTournament, tournamentParticipants, queryClient, setSelectedTournament, existingMatches }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const participants = tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id);
+
+  const cleanAndRegenerate = async () => {
+    console.log("🧹 LIMPIAR Y REGENERAR BRACKET");
+    
+    if (isGenerating) return;
+    setIsGenerating(true);
+    
+    try {
+      // 1. Eliminar todos los matches existentes
+      console.log("🗑️ Eliminando matches existentes:", existingMatches.length);
+      for (const match of existingMatches) {
+        await base44.entities.Match.delete(match.id);
+      }
+
+      // 2. Resetear estado del torneo
+      console.log("🔄 Reseteando estado del torneo...");
+      await base44.entities.Tournament.update(selectedTournament.id, {
+        bracket_generated: false,
+        status: "registration_open",
+        winner_id: null,
+        winner_name: null
+      });
+
+      // 3. Invalidar queries para forzar recarga
+      await queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
+      await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
+      
+      const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
+      setSelectedTournament(updatedTournament);
+
+      toast.success("Bracket limpiado. Ahora puedes regenerarlo.", {
+        duration: 3000,
+        style: { background: '#10B981', color: '#fff', fontWeight: 'bold' }
+      });
+    } catch (error) {
+      console.error("❌ Error limpiando bracket:", error);
+      toast.error("Error al limpiar bracket: " + error.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleGenerate = async () => {
     console.log("🔥 CLICK GENERAR BRACKET");
     
     if (isGenerating) {
       console.log("⚠️ Ya está generando, bloqueando click duplicado");
+      return;
+    }
+
+    // VALIDACIÓN CRÍTICA: Verificar si ya existen matches
+    if (existingMatches && existingMatches.length > 0) {
+      console.log("⚠️ YA EXISTEN MATCHES:", existingMatches.length);
+      const confirmClean = confirm(`Ya existen ${existingMatches.length} matches en este torneo. ¿Deseas LIMPIAR TODO y regenerar desde cero?`);
+      if (confirmClean) {
+        await cleanAndRegenerate();
+      }
       return;
     }
 
@@ -101,6 +152,29 @@ function GenerateBracketButton({ selectedTournament, tournamentParticipants, que
   };
 
   console.log("🔵 Render GenerateBracketButton - Participants:", participants.length, "isGenerating:", isGenerating);
+
+  // Mostrar botón de limpiar si ya hay matches
+  if (existingMatches && existingMatches.length > 0) {
+    return (
+      <Button
+        onClick={cleanAndRegenerate}
+        disabled={isGenerating}
+        className="bg-red-600 hover:bg-red-700 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isGenerating ? (
+          <>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Limpiando...
+          </>
+        ) : (
+          <>
+            <Trash2 className="w-5 h-5 mr-2" />
+            Limpiar y Regenerar Bracket
+          </>
+        )}
+      </Button>
+    );
+  }
 
   return (
     <Button
@@ -2562,6 +2636,7 @@ export default function AdminDashboard() {
                     tournamentParticipants={tournamentParticipants}
                     queryClient={queryClient}
                     setSelectedTournament={setSelectedTournament}
+                    existingMatches={allMatches}
                   />
                 </div>
               ) : (
