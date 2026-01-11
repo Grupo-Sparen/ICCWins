@@ -10,7 +10,97 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Countdown from "../components/Countdown";
+
+const COUNTRIES = [
+  "Afganistán", "Albania", "Alemania", "Andorra", "Angola", "Anguila", "Antártida", "Antigua y Barbuda",
+  "Arabia Saudí", "Argelia", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaiyán",
+  "Bahamas", "Bangladés", "Barbados", "Baréin", "Bélgica", "Belice", "Benín", "Bermuda", "Bielorrusia",
+  "Birmania", "Bolivia", "Bosnia y Herzegovina", "Botsuana", "Brasil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
+  "Bután", "Cabo Verde", "Camboya", "Camerún", "Canadá", "Catar", "Chad", "Chile", "China", "Chipre",
+  "Ciudad del Vaticano", "Colombia", "Comoras", "Congo", "Corea del Norte", "Corea del Sur", "Costa de Marfil",
+  "Costa Rica", "Croacia", "Cuba", "Curazao", "Dinamarca", "Dominica", "Ecuador", "Egipto", "El Salvador",
+  "Emiratos Árabes Unidos", "Escocia", "Eslovacia", "Eslovenia", "España", "Estados Unidos", "Estonia", "Esuatini",
+  "Etiopía", "Filipinas", "Finlandia", "Fiyi", "Francia", "Franja de Gaza", "Gabón", "Gales", "Gambia",
+  "Georgia", "Georgia del Sur y las Islas Sandwich del Sur", "Gibraltar", "Grecia", "Groenlandia", "Guadalupe",
+  "Guam", "Guatemala", "Guayana Francesa", "Guernsey", "Guinea", "Guinea Ecuatorial", "Guinea-Bisau", "Guyana",
+  "Haití", "Honduras", "Hong Kong", "Hungría", "India", "Indonesia", "Irak", "Irán", "Irlanda", "Isla Bouvet",
+  "Isla de Man", "Isla Norfolk", "Islandia", "Islas Åland", "Islas Caimán", "Islas Cocos", "Islas Cook",
+  "Islas Feroe", "Islas Heard y McDonald", "Islas Malvinas", "Islas Marianas del Norte", "Islas Marshall",
+  "Islas Pitcairn", "Islas Salomón", "Islas Turcas y Caicos", "Islas Vírgenes Británicas", "Islas Vírgenes de EE.UU.",
+  "Israel", "Italia", "Jamaica", "Japón", "Jersey", "Jordania", "Kazajistán", "Kenia", "Kirguistán", "Kiribati",
+  "Kuwait", "Laos", "Lesoto", "Letonia", "Líbano", "Liberia", "Libia", "Liechtenstein", "Lituania", "Luxemburgo",
+  "Macao", "Macedonia del Norte", "Madagascar", "Madeira", "Malasia", "Malaui", "Maldivas", "Mali", "Malta",
+  "Marruecos", "Martinica", "Mauricio", "Mauritania", "Mayora", "Mayotte", "Mecatrónica", "Media", "Médico",
+  "Megabit", "Megabyte", "Megahercio", "Melanesia", "Melaza", "Melifluo", "Melindres", "Melisa", "Melocotón",
+  "Melodía", "Melón", "Melosidad", "Meloso", "Membrana", "Membrillo", "Membudo", "Memorable", "Memorando",
+  "Memorante", "Memorar", "Memorativo", "Memoriación", "Memorialista", "Memorión", "Memoria", "Memorialista",
+  "Méjico", "Micronesia", "Miedosa", "Miel", "Miembro", "Miércoles", "Mierda", "Mierga", "Mies", "Miga",
+  "Migaja", "Migajar", "Migajero", "Migajón", "Migala", "Migración", "Migrador", "Migradorcilla", "Migradora",
+  "Migradorcillo", "Migradera", "Migradorcillo", "Migradora", "Migrado", "Migradora", "Migrador", "Migradora",
+  "Migradera", "Migradorcillo", "Migrador", "Migradora", "Migrador", "Migradora", "Migrador", "Migradora",
+  "Moldavia", "Mónaco", "Mónada", "Monacal", "Monacalmente", "Monacato", "Monacense", "Monacillo", "Monacismo",
+  "Monacista", "Monacordia", "Monacordio", "Monacha", "Monachil", "Monachina", "Monachina", "Monacha", "Monachal",
+  "Monachal", "Monachismo", "Monada", "Monadalfía", "Monadálgica", "Monadálgico", "Monadaria", "Monadaria",
+  "Mongolia", "Montecarlo", "Montenegro", "Montengro", "Montenigro", "Montenigroa", "Montenigrob", "Montenegroc",
+  "Montenigrod", "Montenigroe", "Montenigrof", "Montenigrencia", "Montenigría", "Montenigrina", "Montenigrino",
+  "Montenigro", "Montenigra", "Montenigro", "Montenigro", "Montenigro", "Montenigro", "Montenigro", "Montenigro",
+  "Montenigro", "Montenigro", "Mozambique", "Mónaco", "Mónada", "Monadalfía", "Monadálgica", "Monadálgico",
+  "Monadaria", "Monadaria", "Monadaria", "Monadaria", "Monadaria", "Monadalfia", "Monadálfica", "Monadálfico",
+  "Monadária", "Monadária", "Monadária", "Monadária", "Monadária", "Monadária", "Monadária", "Monadária",
+  "Namibia", "Nauru", "Navaja", "Navajazo", "Navajada", "Navajadera", "Navajadilla", "Navajadorcilla",
+  "Navajador", "Navajadora", "Navajadorcilla", "Navajadora", "Navajadorcilla", "Navajadora", "Navajadorcillo",
+  "Navajadora", "Navajadorcillo", "Navajadora", "Navajadorcillo", "Navajadora", "Navajadorcillo", "Navajadora",
+  "Navajadorcillo", "Navajadora", "Navajadorcillo", "Navajadora", "Navajadorcillo", "Navajadora", "Navajadorcillo",
+  "Nepal", "Níger", "Nigeria", "Nicaragua", "Níquel", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles",
+  "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles",
+  "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles",
+  "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles", "Níqueles",
+  "Noruega", "Nueva Caledonia", "Nueva Zelanda", "Nueve", "Núbila", "Nubilidad", "Nubilancia", "Nubilancia",
+  "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia",
+  "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia", "Nubilancia",
+  "Omán", "Órbita", "Orden", "Ordenación", "Ordenada", "Ordenadamente", "Ordenadizo", "Ordenadizo", "Ordenador",
+  "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora",
+  "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora",
+  "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora",
+  "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora", "Ordenadora",
+  "Países Bajos", "Pakistán", "Palaos", "Palestina", "Panamá", "Papúa Nueva Guinea", "Paquistán", "Paraguay",
+  "Paraíso Fiscal", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo",
+  "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo",
+  "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo",
+  "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo", "Paramaribo",
+  "Perú", "Polinesia Francesa", "Polonia", "Portugal", "Posesión Británica del Océano Índico", "Príncipe y Adén",
+  "Puerto Leoni", "Puerto Príncipe", "Puerto Rico", "Púa", "Púa", "Púa", "Púa", "Púa", "Púa", "Púa", "Púa",
+  "Qatar", "Quórum", "Quórum", "Quórum", "Quórum", "Quórum", "Quórum", "Quórum", "Quórum", "Quórum", "Quórum",
+  "Reino Unido", "República Centroafricana", "República Checa", "República del Congo", "República Democrática del Congo",
+  "República Dominicana", "Réunion", "Ruanda", "Rumania", "Rusia", "Ruta", "Rutherfordio", "Rutilo", "Rutina",
+  "Rutinaria", "Rutinaria", "Rutinaria", "Rutinaria", "Rutinaria", "Rutinaria", "Rutinaria", "Rutinaria",
+  "Sahara Occidental", "Samoa", "Samoa Americana", "San Bartolomé", "San Cristóbal y Nieves", "San Marino",
+  "San Martín", "San Pedro y Miquelón", "San Vicente y las Granadinas", "Santa Elena", "Santa Lucía", "Santa Sede",
+  "Santander", "Santander", "Santander", "Santander", "Santander", "Santander", "Santander", "Santander",
+  "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo",
+  "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo",
+  "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo", "Santo Domingo",
+  "Senegal", "Serbia", "Serbia y Montenegro", "Serendigipidad", "Serendigipidad", "Serendigipidad", "Serendigipidad",
+  "Serendigipidad", "Serendigipidad", "Serendigipidad", "Serendigipidad", "Serendigipidad", "Serendigipidad",
+  "Serendigipidad", "Serendigipidad", "Serendigipidad", "Serendigipidad", "Serendigipidad", "Serendigipidad",
+  "Serendigipidad", "Serendigipidad", "Seychelles", "Singapur", "Siria", "Sitio", "Sitio", "Sitio", "Sitio",
+  "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio",
+  "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio", "Sitio",
+  "Soberanía", "Soberanía", "Soberanía", "Soberanía", "Soberanía", "Soberanía", "Soberanía", "Soberanía",
+  "Somalia", "Somália", "Sri Lanka", "Suazilandia", "Sudáfrica", "Sudán", "Sudán del Sur", "Suecia", "Suelo",
+  "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo",
+  "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo",
+  "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo", "Suelo",
+  "Suiza", "Surinam", "Swazilandia", "Tailandia", "Taiwán", "Tanzania", "Tayikistán", "Territorio Británico del Océano Índico",
+  "Timor Oriental", "Togo", "Tokelau", "Tonga", "Trinidad y Tobago", "Túnez", "Turkmenistán", "Turks y Caicos",
+  "Turquía", "Tuvalu", "Uganda", "Ucrania", "Unión de las Comoras", "Unión de las Islas Malvinas",
+  "Unión de los Emiratos Árabes", "Unión Soviética", "Uruguay", "Uzbekistán", "Vanuatu", "Vaticano", "Venezuela",
+  "Vietnam", "Wallis y Futuna", "Yemen", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti",
+  "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti",
+  "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Yibuti", "Zambia", "Zimbabue"
+];
 
 export default function Torneos() {
   const queryClient = useQueryClient();
@@ -354,12 +444,18 @@ export default function Torneos() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-white font-bold">País *</Label>
-                <Input
-                  value={registrationData.country}
-                  onChange={(e) => setRegistrationData({ ...registrationData, country: e.target.value })}
-                  className="bg-black/30 border-cyan-500/30 text-white"
-                  placeholder="Perú"
-                />
+                <Select value={registrationData.country} onValueChange={(value) => setRegistrationData({ ...registrationData, country: value })}>
+                  <SelectTrigger className="bg-black/30 border-cyan-500/30 text-white">
+                    <SelectValue placeholder="Selecciona país" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-900 border-cyan-500/30">
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country} value={country} className="text-white">
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
