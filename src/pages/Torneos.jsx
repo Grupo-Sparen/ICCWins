@@ -84,6 +84,12 @@ export default function Torneos() {
     queryFn: () => base44.entities.Tournament.list("-created_date")
   });
 
+  const { data: userParticipations = [] } = useQuery({
+    queryKey: ["user-participations", user?.id],
+    queryFn: () => user?.id ? base44.entities.TournamentParticipant.filter({ user_id: user.id }) : Promise.resolve([]),
+    enabled: !!user?.id
+  });
+
   const isAdmin = user?.role === "admin";
 
   const registerMutation = useMutation({
