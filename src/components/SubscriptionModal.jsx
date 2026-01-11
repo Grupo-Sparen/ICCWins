@@ -10,18 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createPageUrl } from "../utils";
 
 export default function SubscriptionModal({ plan, currency, language, onClose }) {
-  const [paymentMethod, setPaymentMethod] = useState("yape");
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     screenshot: null
-  });
-  const [cardData, setCardData] = useState({
-    name: "",
-    email: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: ""
   });
   const [uploadedScreenshotUrl, setUploadedScreenshotUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -33,41 +26,37 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
   const t = {
     es: {
       title: "Suscripción",
+      stripe: "Pago Seguro con Stripe",
       yape: "Pago con Yape",
-      card: "Pago con Tarjeta",
       name: "Nombre completo",
       email: "Correo electrónico",
       uploadScreenshot: "Sube tu comprobante de Yape",
       yapeTo: "Número Yape: 999 999 999",
       amount: "Monto a pagar",
-      cardNumber: "Número de tarjeta",
-      expiryDate: "Fecha de vencimiento (MM/YY)",
-      cvv: "CVV",
       cancel: "Cancelar",
-      subscribe: "Suscribirse",
+      subscribe: "Ir a Pago Seguro",
       uploading: "Subiendo...",
       processing: "Procesando...",
       success: "¡Suscripción exitosa!",
-      successMessage: "Tu suscripción ha sido creada. Recibirás un email de confirmación."
+      successMessage: "Tu suscripción ha sido creada. Serás redirigido a la confirmación.",
+      secure: "Pago 100% seguro con Stripe"
     },
     en: {
       title: "Subscription",
+      stripe: "Secure Payment with Stripe",
       yape: "Pay with Yape",
-      card: "Pay with Card",
       name: "Full name",
       email: "Email address",
       uploadScreenshot: "Upload your Yape receipt",
       yapeTo: "Yape Number: 999 999 999",
       amount: "Amount to pay",
-      cardNumber: "Card number",
-      expiryDate: "Expiry date (MM/YY)",
-      cvv: "CVV",
       cancel: "Cancel",
-      subscribe: "Subscribe",
+      subscribe: "Go to Secure Payment",
       uploading: "Uploading...",
       processing: "Processing...",
       success: "Subscription successful!",
-      successMessage: "Your subscription has been created. You will receive a confirmation email."
+      successMessage: "Your subscription has been created. You will be redirected to confirmation.",
+      secure: "100% secure payment with Stripe"
     }
   };
 
@@ -95,34 +84,39 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const currentUser = await base44.auth.me();
-      
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + plan.duration_months);
-
-      const subscriptionData = {
-        user_email: paymentMethod === "yape" ? formData.email : cardData.email,
-        user_name: paymentMethod === "yape" ? formData.name : cardData.name,
-        plan_id: plan.id,
-        plan_name: plan.name_es,
-        amount_paid: price,
-        currency: currency,
-        status: "pending",
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        payment_method: paymentMethod === "yape" ? "Yape (Manual)" : "Tarjeta de Crédito",
-        auto_renew: true
+      // Map plan duration to Stripe price IDs
+      const stripePriceIds = {
+        1: currency === "PEN" ? "price_1SoRnvAK7SnVWQyCUBZ1ZmKr" : "price_1SoRnvAK7SnVWQyCsFd5ZBlE",
+        3: currency === "PEN" ? "price_1SoRnvAK7SnVWQyCSeow3Eg2" : "price_1SoRnvAK7SnVWQyCHDJQimUl",
+        6: currency === "PEN" ? "price_1SoRnvAK7SnVWQyCbK91VDxM" : "price_1SoRnvAK7SnVWQyCphKfY6fw"
       };
 
-      await base44.entities.Subscription.create(subscriptionData);
-      
-      queryClient.invalidateQueries(["user-subscription"]);
-      
-      setShowSuccess(true);
+      const priceId = stripePriceIds[plan.duration_months];
+      if (!priceId) throw new Error("Invalid subscription plan");
+
+      // Check if running in iframe
+      if (window.self !== window.top) {
+        alert(language === "es" 
+          ? "El pago solo funciona desde la app publicada. Por favor abre en una nueva pestaña."
+          : "Payment only works from the published app. Please open in a new tab.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const response = await base44.functions.invoke('stripeCheckout', {
+        type: 'subscription',
+        priceId,
+        planId: plan.id
+      });
+
+      if (response.data.sessionUrl) {
+        window.location.href = response.data.sessionUrl;
+      }
     } catch (error) {
-      console.error("Error creating subscription:", error);
-      alert("Error al procesar la suscripción. Por favor intenta nuevamente.");
+      console.error("Error creating checkout:", error);
+      alert(language === "es" 
+        ? "Error al procesar el pago. Por favor intenta nuevamente."
+        : "Error processing payment. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -134,11 +128,7 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
   };
 
   const isFormValid = () => {
-    if (paymentMethod === "yape") {
-      return formData.name && formData.email && uploadedScreenshotUrl;
-    } else {
-      return cardData.name && cardData.email && cardData.cardNumber && cardData.expiryDate && cardData.cvv;
-    }
+    return true; // Stripe handles validation
   };
 
   if (showSuccess) {
@@ -174,16 +164,33 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
           <p className="text-xl text-purple-300 font-bold">{symbol}{price}</p>
         </div>
 
+        <Card className="bg-gradient-to-br from-green-600/20 to-cyan-600/20 border border-green-500/30 p-6 rounded-2xl mb-6">
+          <div className="flex items-center gap-3">
+            <CreditCard className="w-8 h-8 text-green-400" />
+            <div>
+              <h3 className="text-lg font-black text-white">{translations.stripe}</h3>
+              <p className="text-sm text-green-300">{translations.secure}</p>
+            </div>
+          </div>
+        </Card>
+
         <Tabs value={paymentMethod} onValueChange={setPaymentMethod} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6 bg-black/30">
+            <TabsTrigger value="stripe" className="data-[state=active]:bg-green-600">
+              {translations.stripe}
+            </TabsTrigger>
             <TabsTrigger value="yape" className="data-[state=active]:bg-purple-600">
               {translations.yape}
             </TabsTrigger>
-            <TabsTrigger value="card" className="data-[state=active]:bg-purple-600">
-              <CreditCard className="w-4 h-4 mr-2" />
-              {translations.card}
-            </TabsTrigger>
           </TabsList>
+
+          {/* Stripe Payment */}
+          <TabsContent value="stripe" className="space-y-4">
+            <Card className="bg-green-600/20 border border-green-500/30 p-4 rounded-xl">
+              <p className="text-white font-bold text-center">{translations.amount}: {symbol}{price}</p>
+              <p className="text-xs text-green-300 text-center mt-2">Se abrirá Stripe Checkout de forma segura</p>
+            </Card>
+          </TabsContent>
 
           {/* Yape Payment */}
           <TabsContent value="yape" className="space-y-6">
