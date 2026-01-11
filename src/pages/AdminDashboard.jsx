@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords, Menu, LogOut, Home, Play } from "lucide-react";
 import TournamentBracket from "../components/TournamentBracket";
+import toast, { Toaster } from 'react-hot-toast';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1279,6 +1280,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen pt-40 pb-20 bg-gradient-to-b from-[#0A0A0F] via-[#0F0F1E] to-[#0A0A0F]">
+      <Toaster position="top-right" />
       <div className="flex">
         {/* Sidebar */}
         <aside className={`${sidebarOpen ? "w-64" : "w-20"} bg-[#050508] border-r border-purple-900/20 transition-all duration-300 fixed h-screen flex flex-col overflow-y-auto`}>
@@ -2451,10 +2453,24 @@ export default function AdminDashboard() {
                         const updatedTournament = await base44.entities.Tournament.filter({ id: selectedTournament.id }).then(t => t[0]);
                         setSelectedTournament(updatedTournament);
 
-                        alert("Bracket generado exitosamente!");
+                        toast.success("¡Bracket generado exitosamente!", {
+                          duration: 3000,
+                          style: {
+                            background: '#10B981',
+                            color: '#fff',
+                            fontWeight: 'bold'
+                          }
+                        });
                       } catch (error) {
                         console.error("Error generando bracket:", error);
-                        alert("Error al generar bracket: " + error.message);
+                        toast.error("Error al generar bracket: " + error.message, {
+                          duration: 4000,
+                          style: {
+                            background: '#EF4444',
+                            color: '#fff',
+                            fontWeight: 'bold'
+                          }
+                        });
                       }
                     }}
                     disabled={tournamentParticipants.filter(p => p.tournament_id === selectedTournament.id).length < 2}
