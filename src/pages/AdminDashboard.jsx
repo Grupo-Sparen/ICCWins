@@ -1818,29 +1818,41 @@ export default function AdminDashboard() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-white font-bold">Fecha del Sorteo *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal bg-black/30 border-yellow-500/30 text-white hover:bg-black/40 hover:text-white"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {prizeForm.draw_date ? format(new Date(prizeForm.draw_date), 'PPP', { locale: es }) : <span>Seleccionar fecha</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={prizeForm.draw_date ? new Date(prizeForm.draw_date) : undefined}
-                    onSelect={(date) => {
-                      if (date) setPrizeForm({ ...prizeForm, draw_date: date.toISOString().split('T')[0] });
-                    }}
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha del Sorteo *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-black/30 border-yellow-500/30 text-white hover:bg-black/40 hover:text-white"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {prizeForm.draw_date ? format(new Date(prizeForm.draw_date), 'PPP', { locale: es }) : <span className="text-gray-400">Seleccionar fecha</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-900 border border-yellow-500/30">
+                    <Calendar
+                      mode="single"
+                      selected={prizeForm.draw_date ? new Date(prizeForm.draw_date) : undefined}
+                      onSelect={(date) => {
+                        if (date) setPrizeForm({ ...prizeForm, draw_date: date.toISOString().split('T')[0] });
+                      }}
+                      locale={es}
+                      className="rounded-xl"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Hora del Sorteo (opcional)</Label>
+                <Input
+                  type="time"
+                  value={prizeForm.draw_time || ""}
+                  onChange={(e) => setPrizeForm({ ...prizeForm, draw_time: e.target.value })}
+                  className="bg-black/30 border-yellow-500/30 text-white"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
