@@ -41,6 +41,8 @@ export default function AdminDashboard() {
   const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
   const [showBattleForm, setShowBattleForm] = useState(false);
   const [showTournamentForm, setShowTournamentForm] = useState(false);
+  const [showBracketModal, setShowBracketModal] = useState(false);
+  const [selectedTournament, setSelectedTournament] = useState(null);
   const [confirmPaymentDialog, setConfirmPaymentDialog] = useState({ open: false, subscription: null });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, type: null, id: null, name: null });
 
@@ -732,6 +734,18 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        <Button
+                          onClick={() => {
+                            setSelectedTournament(tournament);
+                            setShowBracketModal(true);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-purple-500/30 text-purple-400"
+                        >
+                          <Trophy className="w-4 h-4 mr-1" />
+                          Brackets
+                        </Button>
                         <Button
                           onClick={() => {
                             setEditingTournament(tournament);
@@ -2212,6 +2226,210 @@ export default function AdminDashboard() {
               className="bg-red-600 hover:bg-red-700 text-white font-bold"
             >
               Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bracket Management Modal */}
+      <Dialog open={showBracketModal} onOpenChange={setShowBracketModal}>
+        <DialogContent className="bg-gradient-to-br from-purple-900 to-gray-900 border-2 border-purple-500/40 max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-purple-400" />
+              Gestionar Brackets - {selectedTournament?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedTournament && (
+            <div className="space-y-6">
+              {/* Tournament Info */}
+              <div className="bg-black/30 p-4 rounded-xl">
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <div className="text-gray-400 mb-1">Participantes</div>
+                    <div className="text-white font-bold">{selectedTournament.current_participants}/{selectedTournament.max_participants}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400 mb-1">Formato</div>
+                    <div className="text-white font-bold capitalize">{selectedTournament.format.replace("_", " ")}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400 mb-1">Estado</div>
+                    <div className="text-white font-bold capitalize">{selectedTournament.status.replace("_", " ")}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Generate Bracket Button */}
+              {!selectedTournament.bracket_generated && (
+                <div className="bg-purple-600/20 border border-purple-500/30 rounded-xl p-6 text-center">
+                  <Trophy className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                  <h3 className="text-lg font-black text-white mb-2">Bracket no generado</h3>
+                  <p className="text-gray-400 text-sm mb-4">Genera el bracket para comenzar el torneo</p>
+                  <Button
+                    onClick={async () => {
+                      const participants = await base44.entities.TournamentParticipant.filter({ tournament_id: selectedTournament.id });
+                      if (participants.length < 2) {
+                        alert("Se necesitan al menos 2 participantes para generar el bracket");
+                        return;
+                      }
+
+                      const shuffled = [...participants].sort(() => Math.random() - 0.5);
+
+                      for (let i = 0; i < shuffled.length; i += 2) {
+                        const player1 = shuffled[i];
+                        const player2 = shuffled[i + 1];
+
+                        await base44.entities.Match.create({
+                          tournament_id: selectedTournament.id,
+                          round: 1,
+                          round_name: "Ronda 1",
+                          match_number: Math.floor(i / 2) + 1,
+                          player1_id: player1.user_id,
+                          player1_name: player1.user_name,
+                          player2_id: player2?.user_id,
+                          player2_name: player2?.user_name,
+                          status: "pending"
+                        });
+                      }
+
+                      await base44.entities.Tournament.update(selectedTournament.id, {
+                        bracket_generated: true,
+                        status: "in_progress"
+                      });
+
+                      queryClient.invalidateQueries(["admin-tournaments"]);
+                      setShowBracketModal(false);
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  >
+                    <Trophy className="w-5 h-5 mr-2" />
+                    Generar Bracket
+                  </Button>
+                </div>
+              )}
+
+              {/* Matches List */}
+              {selectedTournament.bracket_generated && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-black text-white">Partidos</h3>
+                  {(() => {
+                    const [matches, setMatches] = React.useState([]);
+
+                    React.useEffect(() => {
+                      base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number")
+                        .then(setMatches);
+                    }, [selectedTournament.id]);
+
+                    if (matches.length === 0) {
+                      return (
+                        <div className="text-center text-gray-400 py-8">
+                          Cargando partidos...
+                        </div>
+                      );
+                    }
+
+                    return matches.map(match => (
+                      <Card key={match.id} className="bg-black/30 p-4 rounded-xl border border-purple-500/20">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-xs text-purple-400 font-bold">
+                            {match.round_name} - Match {match.match_number}
+                          </div>
+                          <div className={`text-xs font-bold px-2 py-1 rounded ${
+                            match.status === "completed" ? "bg-green-600/20 text-green-400" : 
+                            match.status === "in_progress" ? "bg-blue-600/20 text-blue-400" : 
+                            "bg-gray-600/20 text-gray-400"
+                          }`}>
+                            {match.status === "completed" ? "Completado" : 
+                             match.status === "in_progress" ? "En Progreso" : 
+                             "Pendiente"}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 items-center">
+                          <div className={`text-right ${match.winner_id === match.player1_id ? "text-yellow-400 font-black" : "text-white font-bold"}`}>
+                            {match.player1_name || "TBD"}
+                          </div>
+
+                          <div className="text-center">
+                            {match.status === "completed" ? (
+                              <div className="text-white font-bold">
+                                {match.player1_score} - {match.player2_score}
+                              </div>
+                            ) : (
+                              <div className="text-gray-400 text-sm">VS</div>
+                            )}
+                          </div>
+
+                          <div className={`text-left ${match.winner_id === match.player2_id ? "text-yellow-400 font-black" : "text-white font-bold"}`}>
+                            {match.player2_name || "TBD"}
+                          </div>
+                        </div>
+
+                        {match.status === "pending" && match.player1_id && match.player2_id && (
+                          <div className="mt-4 pt-4 border-t border-purple-500/20">
+                            <div className="grid grid-cols-2 gap-3">
+                              <Button
+                                onClick={async () => {
+                                  const score1 = prompt("Puntaje de " + match.player1_name);
+                                  const score2 = prompt("Puntaje de " + match.player2_name);
+                                  if (score1 !== null && score2 !== null) {
+                                    const winnerId = parseInt(score1) > parseInt(score2) ? match.player1_id : match.player2_id;
+                                    const winnerName = parseInt(score1) > parseInt(score2) ? match.player1_name : match.player2_name;
+
+                                    await base44.entities.Match.update(match.id, {
+                                      winner_id: winnerId,
+                                      winner_name: winnerName,
+                                      player1_score: parseInt(score1),
+                                      player2_score: parseInt(score2),
+                                      status: "completed"
+                                    });
+
+                                    const updatedMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number");
+                                    setMatches(updatedMatches);
+                                  }
+                                }}
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                              >
+                                Registrar Resultado
+                              </Button>
+                              <Button
+                                onClick={async () => {
+                                  await base44.entities.Match.update(match.id, {
+                                    status: "in_progress"
+                                  });
+                                  const updatedMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id }, "round,match_number");
+                                  setMatches(updatedMatches);
+                                }}
+                                size="sm"
+                                variant="outline"
+                                className="border-blue-500/30 text-blue-400"
+                              >
+                                Marcar En Progreso
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </Card>
+                    ));
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setShowBracketModal(false);
+                setSelectedTournament(null);
+              }}
+              variant="outline"
+              className="border-gray-500/30 text-black"
+            >
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>
