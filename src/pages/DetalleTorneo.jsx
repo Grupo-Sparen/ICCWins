@@ -68,23 +68,43 @@ export default function DetalleTorneo() {
 
   const registerMutation = useMutation({
     mutationFn: async () => {
-      await base44.entities.TournamentParticipant.create({
-        tournament_id: tournamentId,
-        tournament_name: tournament.name,
-        user_id: user.id,
-        user_name: user.full_name,
-        user_email: user.email,
-        payment_status: tournament.entry_fee > 0 ? "pending" : "free"
-      });
+      // Si el torneo tiene entrada de pago, ir a Stripe
+      if (tournament.entry_fee > 0) {
+        // Validar que no esté en iframe
+        if (window.self !== window.top) {
+          throw new Error("El pago solo funciona desde la app publicada. Por favor abre en una nueva pestaña.");
+        }
 
-      await base44.entities.Tournament.update(tournamentId, {
-        current_participants: tournament.current_participants + 1
-      });
+        const response = await base44.functions.invoke('stripeCheckout', {
+          type: 'tournament',
+          tournamentId: tournamentId
+        });
+
+        if (response.data.sessionUrl) {
+          window.location.href = response.data.sessionUrl;
+        }
+      } else {
+        // Entrada gratis
+        await base44.entities.TournamentParticipant.create({
+          tournament_id: tournamentId,
+          tournament_name: tournament.name,
+          user_id: user.id,
+          user_name: user.full_name,
+          user_email: user.email,
+          payment_status: "free"
+        });
+
+        await base44.entities.Tournament.update(tournamentId, {
+          current_participants: tournament.current_participants + 1
+        });
+
+        queryClient.invalidateQueries(["tournament", tournamentId]);
+        queryClient.invalidateQueries(["tournament-participants", tournamentId]);
+        setShowSuccessModal(true);
+      }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["tournament", tournamentId]);
-      queryClient.invalidateQueries(["tournament-participants", tournamentId]);
-      setShowSuccessModal(true);
+    onError: (error) => {
+      alert(error.message || "Error al procesar la inscripción");
     }
   });
 
