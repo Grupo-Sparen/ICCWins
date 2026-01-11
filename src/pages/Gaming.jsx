@@ -43,6 +43,16 @@ export default function Gaming() {
     }
   };
 
+  const getYoutubeThumbnail = (url) => {
+    if (!url) return null;
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = url.match(youtubeRegex);
+    if (match && match[1]) {
+      return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,7 +172,11 @@ export default function Gaming() {
                 {/* Thumbnail */}
                 <div className="relative overflow-hidden">
                   <img 
-                    src={item.thumbnail_url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600"} 
+                    src={
+                      item.platform === "youtube" && getYoutubeThumbnail(item.embed_url) 
+                        ? getYoutubeThumbnail(item.embed_url)
+                        : item.thumbnail_url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600"
+                    }
                     alt={item.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                   />

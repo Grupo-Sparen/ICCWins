@@ -42,6 +42,7 @@ export default function AdminDashboard() {
   const [showBattleForm, setShowBattleForm] = useState(false);
   const [showTournamentForm, setShowTournamentForm] = useState(false);
   const [confirmPaymentDialog, setConfirmPaymentDialog] = useState({ open: false, subscription: null });
+  const [confirmDelete, setConfirmDelete] = useState({ open: false, type: null, id: null, name: null });
 
   const [prizeForm, setPrizeForm] = useState({
     title: "",
@@ -623,11 +624,7 @@ export default function AdminDashboard() {
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => {
-                            if (confirm("¿Eliminar batalla?")) {
-                              deleteBattleMutation.mutate(battle.id);
-                            }
-                          }}
+                          onClick={() => setConfirmDelete({ open: true, type: "battle", id: battle.id, name: `${battle.creator_name} vs ${battle.opponent_name}` })}
                           variant="outline"
                           size="sm"
                           className="border-red-500/30 text-red-400"
@@ -701,11 +698,7 @@ export default function AdminDashboard() {
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => {
-                            if (confirm("¿Eliminar torneo?")) {
-                              deleteTournamentMutation.mutate(tournament.id);
-                            }
-                          }}
+                          onClick={() => setConfirmDelete({ open: true, type: "tournament", id: tournament.id, name: tournament.name })}
                           variant="outline"
                           size="sm"
                           className="border-red-500/30 text-red-400"
@@ -882,11 +875,7 @@ export default function AdminDashboard() {
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
-                        onClick={() => {
-                          if (confirm("¿Eliminar plan?")) {
-                            deleteSubscriptionMutation.mutate(plan.id);
-                          }
-                        }}
+                        onClick={() => setConfirmDelete({ open: true, type: "subscription", id: plan.id, name: plan.name_es })}
                         variant="outline"
                         size="sm"
                         className="border-red-500/30 text-red-400"
@@ -985,11 +974,7 @@ export default function AdminDashboard() {
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
-                        onClick={() => {
-                          if (confirm("¿Eliminar episodio?")) {
-                            deletePodcastMutation.mutate(episode.id);
-                          }
-                        }}
+                        onClick={() => setConfirmDelete({ open: true, type: "podcast", id: episode.id, name: episode.title })}
                         variant="outline"
                         size="sm"
                         className="border-red-500/30 text-red-400"
@@ -1053,11 +1038,7 @@ export default function AdminDashboard() {
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
-                        onClick={() => {
-                          if (confirm("¿Eliminar contenido?")) {
-                            deleteGamingMutation.mutate(content.id);
-                          }
-                        }}
+                        onClick={() => setConfirmDelete({ open: true, type: "gaming", id: content.id, name: content.title })}
                         variant="outline"
                         size="sm"
                         className="border-red-500/30 text-red-400"
@@ -1170,67 +1151,84 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
               <Swords className="w-6 h-6 text-red-400" />
-              {editingPodcast ? "Editar Batalla" : "Crear Nueva Batalla"}
+              {battleForm.opponent_id ? "Editar Batalla" : "Crear Nueva Batalla"}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={(e) => {
             e.preventDefault();
-            if (editingPodcast) {
-              updateBattleMutation.mutate({ id: editingPodcast.id, data: battleForm });
+            if (battleForm.opponent_id && tiktokers.find(t => t.id === battleForm.opponent_id)) {
+              updateBattleMutation.mutate({ id: battleForm.opponent_id, data: battleForm });
             } else {
               createBattleMutation.mutate(battleForm);
             }
           }} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-white font-bold">Oponente *</Label>
-              <Select
-                value={battleForm.opponent_id}
-                onValueChange={(value) => {
-                  const opponent = tiktokers.find(t => t.id === value);
-                  setBattleForm({
-                    ...battleForm,
-                    opponent_id: value,
-                    opponent_name: opponent?.full_name || ""
-                  });
-                }}
-              >
-                <SelectTrigger className="bg-black/30 border-red-500/30 text-white">
-                  <SelectValue placeholder="Selecciona un TikToker" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tiktokers.map((tiktoker) => (
-                    <SelectItem key={tiktoker.id} value={tiktoker.id}>
-                      {tiktoker.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-white font-bold">Username TikTok Oponente 1 *</Label>
+              <Input
+                required
+                value={battleForm.opponent_name}
+                onChange={(e) => setBattleForm({ ...battleForm, opponent_name: e.target.value })}
+                className="bg-black/30 border-red-500/30 text-white"
+                placeholder="@username1"
+              />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white font-bold">Fecha y Hora *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal bg-black/30 border-red-500/30 text-white hover:bg-black/40 hover:text-white"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {battleForm.date_time ? format(new Date(battleForm.date_time), 'PPP p', { locale: es }) : <span>Seleccionar fecha</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={battleForm.date_time ? new Date(battleForm.date_time) : undefined}
-                    onSelect={(date) => {
-                      if (date) setBattleForm({ ...battleForm, date_time: date.toISOString() });
-                    }}
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label className="text-white font-bold">Username TikTok Oponente 2 *</Label>
+              <Input
+                required
+                value={battleForm.opponent_name_2 || ""}
+                onChange={(e) => setBattleForm({ ...battleForm, opponent_name_2: e.target.value })}
+                className="bg-black/30 border-red-500/30 text-white"
+                placeholder="@username2"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-black/30 border-red-500/30 text-white hover:bg-black/40 hover:text-white"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {battleForm.date_time ? format(new Date(battleForm.date_time), 'PPP', { locale: es }) : <span className="text-gray-400">Seleccionar</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={battleForm.date_time ? new Date(battleForm.date_time) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          const currentTime = battleForm.date_time ? new Date(battleForm.date_time) : new Date();
+                          date.setHours(currentTime.getHours(), currentTime.getMinutes());
+                          setBattleForm({ ...battleForm, date_time: date.toISOString() });
+                        }
+                      }}
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Hora *</Label>
+                <Input
+                  type="time"
+                  value={battleForm.date_time ? format(new Date(battleForm.date_time), 'HH:mm') : ""}
+                  onChange={(e) => {
+                    const [hours, minutes] = e.target.value.split(':');
+                    const date = battleForm.date_time ? new Date(battleForm.date_time) : new Date();
+                    date.setHours(parseInt(hours), parseInt(minutes));
+                    setBattleForm({ ...battleForm, date_time: date.toISOString() });
+                  }}
+                  className="bg-black/30 border-red-500/30 text-white"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -1249,16 +1247,16 @@ export default function AdminDashboard() {
                 variant="outline"
                 onClick={() => {
                   setShowBattleForm(false);
-                  setEditingPodcast(null);
                   setBattleForm({
                     opponent_id: "",
                     opponent_name: "",
+                    opponent_name_2: "",
                     date_time: "",
                     rules: "",
                     prize: ""
                   });
                 }}
-                className="border-gray-500/30 text-black"
+                className="border-gray-500/30 text-white"
               >
                 Cancelar
               </Button>
@@ -1267,7 +1265,7 @@ export default function AdminDashboard() {
                 disabled={createBattleMutation.isPending || updateBattleMutation.isPending}
                 className="bg-red-600 hover:bg-red-700 text-white font-bold"
               >
-                {createBattleMutation.isPending || updateBattleMutation.isPending ? "Procesando..." : (editingPodcast ? "Actualizar Batalla" : "Crear Batalla")}
+                {createBattleMutation.isPending || updateBattleMutation.isPending ? "Procesando..." : (battleForm.opponent_id ? "Actualizar Batalla" : "Crear Batalla")}
               </Button>
             </DialogFooter>
           </form>
@@ -1846,11 +1844,11 @@ export default function AdminDashboard() {
 
       {/* Tournament Modal */}
       <Dialog open={showTournamentForm} onOpenChange={setShowTournamentForm}>
-        <DialogContent className="bg-gradient-to-br from-blue-900 to-gray-900 border-2 border-blue-500/40 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-gradient-to-br from-blue-900 to-gray-900 border-2 border-blue-500/40 max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
               <Trophy className="w-6 h-6 text-blue-400" />
-              {editingGaming ? "Editar Torneo" : "Crear Nuevo Torneo"}
+              {tournamentForm.name && editingGaming ? "Editar Torneo" : "Crear Nuevo Torneo"}
             </DialogTitle>
           </DialogHeader>
 
@@ -1876,7 +1874,7 @@ export default function AdminDashboard() {
                   value={tournamentForm.name}
                   onChange={(e) => setTournamentForm({ ...tournamentForm, name: e.target.value })}
                   className="bg-black/30 border-blue-500/30 text-white"
-                  placeholder="Nombre del torneo"
+                  placeholder="Copa ICC 2026"
                 />
               </div>
               <div className="space-y-2">
@@ -1886,8 +1884,80 @@ export default function AdminDashboard() {
                   value={tournamentForm.game}
                   onChange={(e) => setTournamentForm({ ...tournamentForm, game: e.target.value })}
                   className="bg-black/30 border-blue-500/30 text-white"
-                  placeholder="Ej: League of Legends"
+                  placeholder="League of Legends"
                 />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Plataforma *</Label>
+              <Input
+                required
+                value={tournamentForm.platform}
+                onChange={(e) => setTournamentForm({ ...tournamentForm, platform: e.target.value })}
+                className="bg-black/30 border-blue-500/30 text-white"
+                placeholder="Discord, Twitch, etc."
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha Inicio *</Label>
+                <Input
+                  type="datetime-local"
+                  required
+                  value={tournamentForm.start_date}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, start_date: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Fecha Fin *</Label>
+                <Input
+                  type="datetime-local"
+                  required
+                  value={tournamentForm.end_date}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, end_date: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Cupos Máx. *</Label>
+                <Input
+                  type="number"
+                  required
+                  value={tournamentForm.max_participants}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, max_participants: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="16"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Entrada (S/)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={tournamentForm.entry_fee}
+                  onChange={(e) => setTournamentForm({ ...tournamentForm, entry_fee: e.target.value })}
+                  className="bg-black/30 border-blue-500/30 text-white"
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white font-bold">Formato *</Label>
+                <Select value={tournamentForm.format} onValueChange={(value) => setTournamentForm({ ...tournamentForm, format: value })}>
+                  <SelectTrigger className="bg-black/30 border-blue-500/30 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single_elimination">Eliminación Simple</SelectItem>
+                    <SelectItem value="double_elimination">Eliminación Doble</SelectItem>
+                    <SelectItem value="round_robin">Round Robin</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -1898,6 +1968,37 @@ export default function AdminDashboard() {
                 value={tournamentForm.description}
                 onChange={(e) => setTournamentForm({ ...tournamentForm, description: e.target.value })}
                 className="bg-black/30 border-blue-500/30 text-white min-h-20"
+                placeholder="Descripción del torneo..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Premios</Label>
+              <Textarea
+                value={tournamentForm.prizes}
+                onChange={(e) => setTournamentForm({ ...tournamentForm, prizes: e.target.value })}
+                className="bg-black/30 border-blue-500/30 text-white min-h-16"
+                placeholder="1er lugar: $500, 2do: $300..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Reglas</Label>
+              <Textarea
+                value={tournamentForm.rules}
+                onChange={(e) => setTournamentForm({ ...tournamentForm, rules: e.target.value })}
+                className="bg-black/30 border-blue-500/30 text-white min-h-24"
+                placeholder="Reglas del torneo..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white font-bold">URL de Imagen</Label>
+              <Input
+                value={tournamentForm.image_url}
+                onChange={(e) => setTournamentForm({ ...tournamentForm, image_url: e.target.value })}
+                className="bg-black/30 border-blue-500/30 text-white"
+                placeholder="https://..."
               />
             </div>
 
@@ -1923,7 +2024,7 @@ export default function AdminDashboard() {
                     image_url: ""
                   });
                 }}
-                className="border-gray-500/30 text-black"
+                className="border-gray-500/30 text-white"
               >
                 Cancelar
               </Button>
@@ -1938,6 +2039,45 @@ export default function AdminDashboard() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
+
+      {/* Confirm Delete Dialog */}
+      <Dialog open={confirmDelete.open} onOpenChange={(open) => setConfirmDelete({ ...confirmDelete, open })}>
+        <DialogContent className="bg-gradient-to-br from-red-900 to-gray-900 border-2 border-red-500/40 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trash2 className="w-6 h-6 text-red-400" />
+              Confirmar Eliminación
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-300 mb-2">¿Estás seguro de que deseas eliminar?</p>
+            <p className="text-white font-bold text-lg">"{confirmDelete.name}"</p>
+            <p className="text-red-400 text-sm mt-4">Esta acción no se puede deshacer.</p>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setConfirmDelete({ open: false, type: null, id: null, name: null })}
+              variant="outline"
+              className="border-gray-500/30 text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (confirmDelete.type === "podcast") deletePodcastMutation.mutate(confirmDelete.id);
+                if (confirmDelete.type === "gaming") deleteGamingMutation.mutate(confirmDelete.id);
+                if (confirmDelete.type === "subscription") deleteSubscriptionMutation.mutate(confirmDelete.id);
+                if (confirmDelete.type === "battle") deleteBattleMutation.mutate(confirmDelete.id);
+                if (confirmDelete.type === "tournament") deleteTournamentMutation.mutate(confirmDelete.id);
+                setConfirmDelete({ open: false, type: null, id: null, name: null });
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold"
+            >
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      </div>
+      );
+      }
