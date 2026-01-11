@@ -2654,19 +2654,13 @@ export default function AdminDashboard() {
                 <TournamentBracket 
                   matches={allMatches} 
                   isAdmin={true}
-                  onRegisterResult={async (match) => {
-                    console.log("🎯 REGISTRAR RESULTADO PARA MATCH:", match.id);
-                    const score1 = prompt("Puntaje de " + match.player1_name);
-                    const score2 = prompt("Puntaje de " + match.player2_name);
-                    if (score1 !== null && score2 !== null) {
-                      const winnerId = parseInt(score1) > parseInt(score2) ? match.player1_id : match.player2_id;
-                      const winnerName = parseInt(score1) > parseInt(score2) ? match.player1_name : match.player2_name;
-
+                  onRegisterResult={async (match, winnerId, winnerName) => {
+                    console.log("🎯 REGISTRAR GANADOR:", winnerName, "para match:", match.id);
+                    
+                    if (confirm(`¿Confirmar a ${winnerName} como ganador?`)) {
                       await base44.entities.Match.update(match.id, {
                         winner_id: winnerId,
                         winner_name: winnerName,
-                        player1_score: parseInt(score1),
-                        player2_score: parseInt(score2),
                         status: "completed"
                       });
 

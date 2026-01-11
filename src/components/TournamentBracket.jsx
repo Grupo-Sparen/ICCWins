@@ -1,7 +1,6 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Trophy } from "lucide-react";
+import { Trophy, CheckCircle } from "lucide-react";
 
 export default function TournamentBracket({ matches, isAdmin, onRegisterResult }) {
   // Si no hay matches, mostrar mensaje
@@ -61,13 +60,21 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult }
                           ? "bg-yellow-600/30 border border-yellow-500/50" 
                           : "bg-[#1A1A2E]"
                       }`}>
-                        <div className={`font-bold text-sm truncate ${
+                        <div className={`font-bold text-sm truncate flex-1 ${
                           match.winner_id === match.player1_id ? "text-yellow-400" : "text-white"
                         }`}>
                           {match.player1_name || "TBD"}
                         </div>
                         {match.status === "completed" && (
                           <div className="text-white font-bold ml-2">{match.player1_score}</div>
+                        )}
+                        {isAdmin && match.status === "pending" && match.player1_id && match.player2_id && (
+                          <button
+                            onClick={() => onRegisterResult(match, match.player1_id, match.player1_name)}
+                            className="ml-2 p-1 rounded-full hover:bg-green-600/20 transition-colors"
+                          >
+                            <CheckCircle className="w-5 h-5 text-green-400 hover:text-green-300" />
+                          </button>
                         )}
                       </div>
 
@@ -88,7 +95,7 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult }
                           ? "bg-yellow-600/30 border border-yellow-500/50" 
                           : "bg-[#1A1A2E]"
                       }`}>
-                        <div className={`font-bold text-sm truncate ${
+                        <div className={`font-bold text-sm truncate flex-1 ${
                           match.winner_id === match.player2_id ? "text-yellow-400" : "text-white"
                         }`}>
                           {match.player2_name || "TBD"}
@@ -96,20 +103,15 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult }
                         {match.status === "completed" && (
                           <div className="text-white font-bold ml-2">{match.player2_score}</div>
                         )}
-                      </div>
-
-                      {/* Admin Actions */}
-                      {isAdmin && match.status === "pending" && match.player1_id && match.player2_id && (
-                        <div className="mt-3 pt-3 border-t border-purple-500/20">
-                          <Button
-                            onClick={() => onRegisterResult(match)}
-                            size="sm"
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs"
+                        {isAdmin && match.status === "pending" && match.player1_id && match.player2_id && (
+                          <button
+                            onClick={() => onRegisterResult(match, match.player2_id, match.player2_name)}
+                            className="ml-2 p-1 rounded-full hover:bg-green-600/20 transition-colors"
                           >
-                            Marcar Ganador
-                          </Button>
-                        </div>
-                      )}
+                            <CheckCircle className="w-5 h-5 text-green-400 hover:text-green-300" />
+                          </button>
+                        )}
+                      </div>
                     </Card>
 
                     {/* Connection Line to Next Round */}
