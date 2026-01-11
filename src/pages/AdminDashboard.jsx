@@ -2595,19 +2595,30 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               {/* Tournament Info */}
               <div className="bg-black/30 p-4 rounded-xl">
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <div className="text-gray-400 mb-1">Participantes</div>
-                    <div className="text-white font-bold">{selectedTournament.current_participants}/{selectedTournament.max_participants}</div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="grid grid-cols-3 gap-4 text-sm flex-1">
+                    <div>
+                      <div className="text-gray-400 mb-1">Participantes</div>
+                      <div className="text-white font-bold">{selectedTournament.current_participants}/{selectedTournament.max_participants}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 mb-1">Formato</div>
+                      <div className="text-white font-bold capitalize">{selectedTournament.format.replace("_", " ")}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 mb-1">Estado</div>
+                      <div className="text-white font-bold capitalize">{selectedTournament.status.replace("_", " ")}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-gray-400 mb-1">Formato</div>
-                    <div className="text-white font-bold capitalize">{selectedTournament.format.replace("_", " ")}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-400 mb-1">Estado</div>
-                    <div className="text-white font-bold capitalize">{selectedTournament.status.replace("_", " ")}</div>
-                  </div>
+                  {allMatches.length > 0 && (
+                    <GenerateBracketButton 
+                      selectedTournament={selectedTournament}
+                      tournamentParticipants={tournamentParticipants}
+                      queryClient={queryClient}
+                      setSelectedTournament={setSelectedTournament}
+                      existingMatches={allMatches}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -2644,6 +2655,7 @@ export default function AdminDashboard() {
                   matches={allMatches} 
                   isAdmin={true}
                   onRegisterResult={async (match) => {
+                    console.log("🎯 REGISTRAR RESULTADO PARA MATCH:", match.id);
                     const score1 = prompt("Puntaje de " + match.player1_name);
                     const score2 = prompt("Puntaje de " + match.player2_name);
                     if (score1 !== null && score2 !== null) {
@@ -2730,12 +2742,6 @@ export default function AdminDashboard() {
                       await queryClient.refetchQueries(["admin-matches", selectedTournament.id]);
                       await queryClient.invalidateQueries(["admin-tournaments"]);
                     }
-                  }}
-                  onMarkInProgress={async (match) => {
-                    await base44.entities.Match.update(match.id, {
-                      status: "in_progress"
-                    });
-                    queryClient.invalidateQueries(["admin-matches", selectedTournament.id]);
                   }}
                 />
               )}

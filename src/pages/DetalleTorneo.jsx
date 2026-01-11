@@ -216,12 +216,7 @@ export default function DetalleTorneo() {
     }
   };
 
-  const handleMarkInProgress = async (match) => {
-    await base44.entities.Match.update(match.id, {
-      status: "in_progress"
-    });
-    queryClient.invalidateQueries(["tournament-matches", tournamentId]);
-  };
+
 
   if (isLoading) {
     return (
@@ -413,7 +408,6 @@ export default function DetalleTorneo() {
                     matches={matches} 
                     isAdmin={isAdmin}
                     onRegisterResult={handleRegisterResult}
-                    onMarkInProgress={handleMarkInProgress}
                   />
                 )}
               </TabsContent>

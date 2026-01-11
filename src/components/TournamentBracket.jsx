@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
 
-export default function TournamentBracket({ matches, isAdmin, onRegisterResult, onMarkInProgress }) {
+export default function TournamentBracket({ matches, isAdmin, onRegisterResult }) {
   // Si no hay matches, mostrar mensaje
   if (!matches || matches.length === 0) {
     return (
@@ -100,21 +100,13 @@ export default function TournamentBracket({ matches, isAdmin, onRegisterResult, 
 
                       {/* Admin Actions */}
                       {isAdmin && match.status === "pending" && match.player1_id && match.player2_id && (
-                        <div className="mt-3 pt-3 border-t border-purple-500/20 flex flex-col gap-2">
+                        <div className="mt-3 pt-3 border-t border-purple-500/20">
                           <Button
                             onClick={() => onRegisterResult(match)}
                             size="sm"
                             className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs"
                           >
-                            Registrar Resultado
-                          </Button>
-                          <Button
-                            onClick={() => onMarkInProgress(match)}
-                            size="sm"
-                            variant="outline"
-                            className="w-full border-blue-500/30 text-blue-400 text-xs"
-                          >
-                            Marcar En Curso
+                            Marcar Ganador
                           </Button>
                         </div>
                       )}
