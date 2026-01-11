@@ -46,6 +46,8 @@ export default function AdminDashboard() {
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [confirmPaymentDialog, setConfirmPaymentDialog] = useState({ open: false, subscription: null });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, type: null, id: null, name: null });
+  const [showPaymentDetailModal, setShowPaymentDetailModal] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState(null);
 
   const [prizeForm, setPrizeForm] = useState({
     title: "",
@@ -174,6 +176,11 @@ export default function AdminDashboard() {
     enabled: !!selectedTournament
   });
 
+  const { data: tournamentParticipants = [] } = useQuery({
+    queryKey: ["tournament-participants"],
+    queryFn: () => base44.entities.TournamentParticipant.list("-created_date")
+  });
+
   const { data: tiktokers = [] } = useQuery({
     queryKey: ["verified-tiktokers"],
     queryFn: async () => {
@@ -205,6 +212,7 @@ export default function AdminDashboard() {
     { id: "gaming", label: "Gaming", icon: Gamepad2, color: "cyan" },
     { id: "batallas", label: "Batallas", icon: Swords, color: "red" },
     { id: "torneos", label: "Torneos", icon: Trophy, color: "blue" },
+    { id: "pagos-torneos", label: "Pagos de Torneos", icon: CreditCard, color: "orange" },
   ];
 
   const getColorClasses = (color) => {
@@ -492,6 +500,15 @@ export default function AdminDashboard() {
     mutationFn: ({ id }) => base44.entities.Subscription.update(id, { status: "active" }),
     onSuccess: () => {
       queryClient.invalidateQueries(["admin-subscriptions"]);
+    }
+  });
+
+  const confirmTournamentPaymentMutation = useMutation({
+    mutationFn: ({ id }) => base44.entities.TournamentParticipant.update(id, { payment_status: "paid" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["tournament-participants"]);
+      setShowPaymentDetailModal(false);
+      setSelectedParticipant(null);
     }
   });
 
@@ -1131,6 +1148,48 @@ export default function AdminDashboard() {
                 </Card>
               ))}
             </div>
+          </div>
+        );
+
+      case "pagos-torneos":
+        return (
+          <div className="grid gap-4">
+            {tournamentParticipants.map((participant) => (
+              <Card key={participant.id} className="bg-gradient-to-br from-orange-900/30 to-transparent border border-orange-500/20 p-6 rounded-2xl">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-black text-white">{participant.player_username}</h3>
+                    <p className="text-gray-400 text-sm">{participant.user_name} - {participant.user_email}</p>
+                    <p className="text-orange-400 font-bold mt-2">{participant.tournament_name}</p>
+                    <div className="flex gap-4 text-sm text-gray-400 mt-1">
+                      <span>{participant.country}</span>
+                      <span>•</span>
+                      <span>{participant.age} años</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      participant.payment_status === "paid" ? "bg-green-600" : 
+                      participant.payment_status === "free" ? "bg-blue-600" : "bg-yellow-600"
+                    } text-white`}>
+                      {participant.payment_status === "paid" ? "PAGADO" : 
+                       participant.payment_status === "free" ? "GRATIS" : "PENDIENTE"}
+                    </span>
+                    <Button
+                      onClick={() => {
+                        setSelectedParticipant(participant);
+                        setShowPaymentDetailModal(true);
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-orange-500/30 text-orange-400"
+                    >
+                      Ver Detalle
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         );
 
@@ -2365,6 +2424,88 @@ export default function AdminDashboard() {
             >
               Cerrar
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Detail Modal */}
+      <Dialog open={showPaymentDetailModal} onOpenChange={setShowPaymentDetailModal}>
+        <DialogContent className="bg-gradient-to-br from-orange-900 to-gray-900 border-2 border-orange-500/40 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <CreditCard className="w-6 h-6 text-orange-400" />
+              Detalle de Pago - {selectedParticipant?.tournament_name}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedParticipant && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-black/30 p-4 rounded-xl">
+                  <div className="text-gray-400 text-sm mb-1">Usuario del Juego</div>
+                  <div className="text-white font-bold">{selectedParticipant.player_username}</div>
+                </div>
+                <div className="bg-black/30 p-4 rounded-xl">
+                  <div className="text-gray-400 text-sm mb-1">Nombre Completo</div>
+                  <div className="text-white font-bold">{selectedParticipant.user_name}</div>
+                </div>
+                <div className="bg-black/30 p-4 rounded-xl">
+                  <div className="text-gray-400 text-sm mb-1">Email</div>
+                  <div className="text-white font-bold text-sm">{selectedParticipant.user_email}</div>
+                </div>
+                <div className="bg-black/30 p-4 rounded-xl">
+                  <div className="text-gray-400 text-sm mb-1">País</div>
+                  <div className="text-white font-bold">{selectedParticipant.country}</div>
+                </div>
+                <div className="bg-black/30 p-4 rounded-xl">
+                  <div className="text-gray-400 text-sm mb-1">Edad</div>
+                  <div className="text-white font-bold">{selectedParticipant.age} años</div>
+                </div>
+                <div className="bg-black/30 p-4 rounded-xl">
+                  <div className="text-gray-400 text-sm mb-1">Teléfono</div>
+                  <div className="text-white font-bold">{selectedParticipant.phone}</div>
+                </div>
+              </div>
+
+              <div className="bg-black/30 p-4 rounded-xl">
+                <div className="text-gray-400 text-sm mb-1">Estado del Pago</div>
+                <div className={`text-lg font-black ${
+                  selectedParticipant.payment_status === "paid" ? "text-green-400" : 
+                  selectedParticipant.payment_status === "free" ? "text-blue-400" : "text-yellow-400"
+                }`}>
+                  {selectedParticipant.payment_status === "paid" ? "PAGADO" : 
+                   selectedParticipant.payment_status === "free" ? "ENTRADA GRATIS" : "PAGO PENDIENTE"}
+                </div>
+              </div>
+
+              <div className="bg-black/30 p-4 rounded-xl">
+                <div className="text-gray-400 text-sm mb-2">Torneo</div>
+                <div className="text-white font-bold">{selectedParticipant.tournament_name}</div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setShowPaymentDetailModal(false);
+                setSelectedParticipant(null);
+              }}
+              variant="outline"
+              className="border-gray-500/30 text-black"
+            >
+              Cerrar
+            </Button>
+            {selectedParticipant?.payment_status === "pending" && (
+              <Button
+                onClick={() => confirmTournamentPaymentMutation.mutate({ id: selectedParticipant.id })}
+                disabled={confirmTournamentPaymentMutation.isPending}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                {confirmTournamentPaymentMutation.isPending ? "Confirmando..." : "Confirmar Pago"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
