@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trophy, Calendar, Users, DollarSign, Plus, Gamepad2, Upload } from "lucide-react";
+import { Trophy, Calendar, Users, DollarSign, Plus, Gamepad2, Upload, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,7 +26,9 @@ export default function Torneos() {
     screenshot_url: "",
     amount_paid: ""
   });
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [usernameError, setUsernameError] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -57,6 +59,24 @@ export default function Torneos() {
         throw new Error("Este nombre de usuario ya está en uso. Por favor elige otro.");
       }
 
+      // Si es pago por Stripe, redirigir al checkout
+      if (paymentMethod === "stripe" && selectedTournament.entry_fee > 0) {
+        if (window.self !== window.top) {
+          throw new Error("El pago solo funciona desde la app publicada. Por favor abre en una nueva pestaña.");
+        }
+
+        const response = await base44.functions.invoke('stripeCheckout', {
+          type: 'tournament',
+          tournamentId: selectedTournament.id
+        });
+
+        if (response.data.sessionUrl) {
+          window.location.href = response.data.sessionUrl;
+        }
+        return;
+      }
+
+      // Si es Yape o gratis, crear participante normalmente
       await base44.entities.TournamentParticipant.create({
         tournament_id: selectedTournament.id,
         tournament_name: selectedTournament.name,
@@ -78,6 +98,7 @@ export default function Torneos() {
       queryClient.invalidateQueries(["tournaments"]);
       setShowPaymentModal(false);
       setSelectedTournament(null);
+      setPaymentMethod("stripe");
       setRegistrationData({
         player_username: "",
         country: "",
@@ -87,10 +108,12 @@ export default function Torneos() {
         amount_paid: ""
       });
       setUsernameError("");
+      setIsProcessing(false);
       alert("¡Inscripción exitosa! Tu pago está pendiente de confirmación.");
     },
     onError: (error) => {
       setUsernameError(error.message);
+      setIsProcessing(false);
     }
   });
 
@@ -126,6 +149,7 @@ export default function Torneos() {
       screenshot_url: "",
       amount_paid: tournament.entry_fee.toString()
     });
+    setPaymentMethod("stripe");
     setUsernameError("");
     setShowPaymentModal(true);
   };
@@ -364,29 +388,89 @@ export default function Torneos() {
 
             {selectedTournament?.entry_fee > 0 && (
               <>
-                <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-4">
-                  <div className="text-yellow-400 font-bold text-sm mb-2">Información de Pago</div>
-                  <div className="text-white text-xs space-y-1">
-                    <div>• Realiza el pago por Yape</div>
-                    <div>• Sube la captura de pantalla del pago</div>
-                    <div>• Espera confirmación del administrador</div>
+                <div className="space-y-3">
+                  <Label className="text-white font-bold">Método de Pago *</Label>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setPaymentMethod("stripe")}
+                      className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                        paymentMethod === "stripe"
+                          ? "border-green-500 bg-green-600/20"
+                          : "border-gray-600/30 bg-black/30 hover:border-gray-600/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <CreditCard className={`w-5 h-5 ${paymentMethod === "stripe" ? "text-green-400" : "text-gray-400"}`} />
+                        <div>
+                          <div className={`font-bold ${paymentMethod === "stripe" ? "text-green-400" : "text-white"}`}>
+                            Stripe (Tarjeta)
+                          </div>
+                          <div className="text-xs text-gray-400">Pago seguro internacional</div>
+                        </div>
+                      </div>
+                    </button>
+
+                    {registrationData.country === "Peru" && (
+                      <button
+                        onClick={() => setPaymentMethod("yape")}
+                        className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
+                          paymentMethod === "yape"
+                            ? "border-blue-500 bg-blue-600/20"
+                            : "border-gray-600/30 bg-black/30 hover:border-gray-600/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <CreditCard className={`w-5 h-5 ${paymentMethod === "yape" ? "text-blue-400" : "text-gray-400"}`} />
+                          <div>
+                            <div className={`font-bold ${paymentMethod === "yape" ? "text-blue-400" : "text-white"}`}>
+                              Yape
+                            </div>
+                            <div className="text-xs text-gray-400">Transferencia desde Perú</div>
+                          </div>
+                        </div>
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-white font-bold">Captura de Pago (Yape) *</Label>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    disabled={uploadingScreenshot}
-                    className="bg-black/30 border-cyan-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyan-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-cyan-700"
-                  />
-                  {uploadingScreenshot && <span className="text-cyan-400 text-sm">Subiendo...</span>}
-                  {registrationData.screenshot_url && (
-                    <img src={registrationData.screenshot_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-2" />
-                  )}
-                </div>
+                {paymentMethod === "yape" && (
+                  <>
+                    <div className="bg-blue-600/20 border border-blue-500/30 rounded-xl p-4">
+                      <div className="text-blue-400 font-bold text-sm mb-2">Información de Pago Yape</div>
+                      <div className="text-white text-xs space-y-1">
+                        <div>• Realiza el pago por Yape</div>
+                        <div>• Sube la captura de pantalla del pago</div>
+                        <div>• Espera confirmación del administrador</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white font-bold">Captura de Pago (Yape) *</Label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploadingScreenshot}
+                        className="bg-black/30 border-cyan-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyan-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-cyan-700"
+                      />
+                      {uploadingScreenshot && <span className="text-cyan-400 text-sm">Subiendo...</span>}
+                      {registrationData.screenshot_url && (
+                        <img src={registrationData.screenshot_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-2" />
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {paymentMethod === "stripe" && (
+                  <div className="bg-green-600/20 border border-green-500/30 rounded-xl p-4">
+                    <div className="text-green-400 font-bold text-sm mb-2">Información de Pago Stripe</div>
+                    <div className="text-white text-xs space-y-1">
+                      <div>• Serás redirigido a Stripe Checkout</div>
+                      <div>• Pago 100% seguro con tarjeta</div>
+                      <div>• Confirmación instantánea</div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -412,18 +496,22 @@ export default function Torneos() {
               Cancelar
             </Button>
             <Button
-              onClick={() => registerMutation.mutate()}
+              onClick={() => {
+                setIsProcessing(true);
+                registerMutation.mutate();
+              }}
               disabled={
                 registerMutation.isPending || 
+                isProcessing ||
                 !registrationData.player_username || 
                 !registrationData.country || 
                 !registrationData.age || 
                 !registrationData.phone ||
-                (selectedTournament?.entry_fee > 0 && !registrationData.screenshot_url)
+                (selectedTournament?.entry_fee > 0 && paymentMethod === "yape" && !registrationData.screenshot_url)
               }
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
             >
-              {registerMutation.isPending ? "Procesando..." : "Confirmar Inscripción"}
+              {registerMutation.isPending || isProcessing ? "Procesando..." : "Confirmar Inscripción"}
             </Button>
           </DialogFooter>
         </DialogContent>
