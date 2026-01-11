@@ -709,6 +709,7 @@ export default function AdminDashboard() {
                           image_url: prize.image_url || "",
                           participation_cost: prize.participation_cost.toString(),
                           draw_date: prize.draw_date,
+                          draw_time: prize.draw_time || "",
                           status: prize.status,
                           featured: prize.featured || false,
                           total_participants: prize.total_participants || 0
