@@ -70,6 +70,10 @@ Deno.serve(async (req) => {
           if (participants.length > 0) {
             await base44.asServiceRole.entities.TournamentParticipant.update(participants[0].id, {
               payment_status: 'paid',
+              amount_paid: session.amount_total / 100,
+              payment_method: 'stripe',
+              payment_date: new Date().toISOString(),
+              stripe_session_id: session.id,
             });
 
             console.log('✅ Tournament payment confirmed for:', metadata.userEmail);
