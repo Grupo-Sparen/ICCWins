@@ -70,8 +70,20 @@ export default function DetalleTorneo() {
 
   const generateBracketMutation = useMutation({
     mutationFn: async () => {
+      // Validar número de participantes
+      if (participants.length < 2) {
+        throw new Error("Se necesitan al menos 2 participantes para generar el bracket");
+      }
+
+      // Validar que sea potencia de 2
+      const isPowerOfTwo = (n) => n > 0 && (n & (n - 1)) === 0;
+      if (!isPowerOfTwo(participants.length)) {
+        throw new Error(`Se necesita un número de participantes que sea potencia de 2 (2, 4, 8, 16, 32...). Actualmente hay ${participants.length} participantes.`);
+      }
+
       const shuffled = [...participants].sort(() => Math.random() - 0.5);
       
+      // Generar matches de la primera ronda
       for (let i = 0; i < shuffled.length; i += 2) {
         const player1 = shuffled[i];
         const player2 = shuffled[i + 1];
@@ -118,7 +130,57 @@ export default function DetalleTorneo() {
         status: "completed"
       });
 
-      queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+      // Verificar si se completó toda la ronda
+      const allMatches = await base44.entities.Match.filter({ tournament_id: tournamentId }, "round,match_number");
+      const currentRound = match.round;
+      const currentRoundMatches = allMatches.filter(m => m.round === currentRound);
+      const allCompleted = currentRoundMatches.every(m => m.status === "completed");
+
+      if (allCompleted) {
+        // Avanzar a la siguiente ronda
+        const winners = currentRoundMatches.map(m => ({
+          id: m.winner_id,
+          name: m.winner_name
+        }));
+
+        // Verificar si es la final
+        if (winners.length === 1) {
+          // Es el campeón
+          await base44.entities.Tournament.update(tournamentId, {
+            status: "completed",
+            winner_id: winners[0].id,
+            winner_name: winners[0].name
+          });
+        } else {
+          // Crear siguiente ronda
+          const nextRound = currentRound + 1;
+          const roundNames = {
+            2: "Final",
+            3: "Semifinales",
+            4: "Cuartos de Final",
+            5: "Octavos de Final"
+          };
+          
+          for (let i = 0; i < winners.length; i += 2) {
+            await base44.entities.Match.create({
+              tournament_id: tournamentId,
+              round: nextRound,
+              round_name: roundNames[nextRound] || `Ronda ${nextRound}`,
+              match_number: Math.floor(i / 2) + 1,
+              player1_id: winners[i].id,
+              player1_name: winners[i].name,
+              player2_id: winners[i + 1]?.id,
+              player2_name: winners[i + 1]?.name,
+              status: "pending"
+            });
+          }
+        }
+      }
+
+      await queryClient.invalidateQueries(["tournament-matches", tournamentId]);
+      await queryClient.refetchQueries(["tournament-matches", tournamentId]);
+      await queryClient.invalidateQueries(["tournament", tournamentId]);
+      await queryClient.refetchQueries(["tournament", tournamentId]);
     }
   };
 
@@ -285,11 +347,23 @@ export default function DetalleTorneo() {
                       <Button
                         onClick={() => generateBracketMutation.mutate()}
                         disabled={generateBracketMutation.isPending || participants.length < 2}
-                        className="mt-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
+                        className="mt-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Play className="w-5 h-5 mr-2" />
-                        {generateBracketMutation.isPending ? "Generando..." : "Generar Bracket con Inscritos Actuales"}
+                        {generateBracketMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Generando Bracket...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-5 h-5 mr-2" />
+                            Generar Bracket con Inscritos Actuales
+                          </>
+                        )}
                       </Button>
+                    )}
+                    {generateBracketMutation.isError && (
+                      <p className="text-red-400 text-sm mt-2">{generateBracketMutation.error.message}</p>
                     )}
                   </Card>
                 ) : (
