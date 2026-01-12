@@ -63,8 +63,8 @@ export default function Home() {
               </h1>
               
               <p className="text-xl text-gray-300 mb-8 max-w-xl">
-                Haz un solo pago, participa en el sorteo del premio actual. 
-                <span className="text-purple-400 font-bold"> Cada premio tiene su propio sorteo.</span> 
+                Suscríbete mensualmente y participa en múltiples sorteos cada mes. 
+                <span className="text-purple-400 font-bold"> Cada mes nuevos premios increíbles.</span> 
                 ¡Es tu oportunidad de ganar!
               </p>
 
