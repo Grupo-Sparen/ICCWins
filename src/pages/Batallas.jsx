@@ -63,15 +63,6 @@ export default function Batallas() {
               Desafía a otros tiktokers y demuestra quién es el mejor en la arena.
             </p>
           </div>
-          
-          {canCreateBattle && (
-            <Link to={createPageUrl("CrearBatalla")}>
-              <Button className="h-12 px-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold">
-                <Plus className="w-5 h-5 mr-2" />
-                Crear Batalla
-              </Button>
-            </Link>
-          )}
         </div>
 
         {/* Filters */}
