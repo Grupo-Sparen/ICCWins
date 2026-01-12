@@ -33,7 +33,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-32">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Effects */}
