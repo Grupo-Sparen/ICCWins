@@ -7,6 +7,7 @@ import { Trophy, Zap, Users, Gift, Play, ArrowRight, CheckCircle, Sparkles, Star
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import useEmblaCarousel from "embla-carousel-react";
+import Countdown from "../components/Countdown";
 
 export default function Home() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
@@ -128,6 +129,10 @@ export default function Home() {
 
                             <h3 className="text-3xl font-black text-white mb-3">{prize.title}</h3>
                             <p className="text-gray-300 mb-6 line-clamp-2">{prize.description}</p>
+
+                            <div className="mb-6">
+                              <Countdown targetDate={prize.draw_date} />
+                            </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-6">
                               <div className="bg-black/30 p-4 rounded-xl">
