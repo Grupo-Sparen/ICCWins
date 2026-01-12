@@ -112,7 +112,13 @@ export default function Torneos() {
 
         const response = await base44.functions.invoke('stripeCheckout', {
           type: 'tournament',
-          tournamentId: selectedTournament.id
+          tournamentId: selectedTournament.id,
+          registrationData: {
+            player_username: registrationData.player_username,
+            country: registrationData.country,
+            age: registrationData.age,
+            phone: registrationData.phone
+          }
         });
 
         if (response.data.sessionUrl) {

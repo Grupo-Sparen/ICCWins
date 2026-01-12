@@ -46,11 +46,35 @@ Deno.serve(async (req) => {
       return Response.json({ sessionUrl: session.url });
     } else if (type === 'tournament') {
       // Tournament entry fee checkout
+      const { registrationData } = await req.json();
+      
       const tournament = await base44.entities.Tournament.filter({ id: tournamentId }).then(t => t[0]);
 
       if (!tournament) {
         return Response.json({ error: 'Tournament not found' }, { status: 404 });
       }
+
+      // Create TournamentParticipant BEFORE Stripe checkout with pending status
+      console.log('📝 Creating tournament participant with pending payment...');
+      const participant = await base44.entities.TournamentParticipant.create({
+        tournament_id: tournamentId,
+        tournament_name: tournament.name,
+        user_id: user.id,
+        user_name: user.full_name,
+        user_email: user.email,
+        player_username: registrationData.player_username,
+        country: registrationData.country,
+        age: parseInt(registrationData.age),
+        phone: registrationData.phone,
+        payment_status: 'pending',
+        amount_paid: tournament.entry_fee,
+      });
+      console.log('✅ Participant created:', participant.id);
+
+      // Update tournament participant count
+      await base44.entities.Tournament.update(tournamentId, {
+        current_participants: tournament.current_participants + 1
+      });
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
