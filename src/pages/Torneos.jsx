@@ -67,6 +67,7 @@ export default function Torneos() {
   const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [usernameError, setUsernameError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   const { data: user } = useQuery({
     queryKey: ["current-user"],
@@ -140,8 +141,8 @@ export default function Torneos() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["tournaments"]);
+      queryClient.invalidateQueries(["user-participations", user?.id]);
       setShowPaymentModal(false);
-      setSelectedTournament(null);
       setPaymentMethod("stripe");
       setRegistrationData({
         player_username: "",
@@ -153,7 +154,7 @@ export default function Torneos() {
       });
       setUsernameError("");
       setIsProcessing(false);
-      alert("¡Inscripción exitosa! Tu pago está pendiente de confirmación.");
+      setShowSuccessModal(true);
     },
     onError: (error) => {
       setUsernameError(error.message);
@@ -569,6 +570,34 @@ export default function Torneos() {
               className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold"
             >
               {registerMutation.isPending || isProcessing ? "Procesando..." : "Confirmar Inscripción"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="bg-gradient-to-br from-green-900 to-gray-900 border-2 border-green-500/40 max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-green-400" />
+              ¡Inscripción Exitosa!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <p className="text-gray-300 mb-2">Tu inscripción al torneo</p>
+            <p className="text-green-400 font-bold text-lg mb-4">{selectedTournament?.name}</p>
+            <p className="text-sm text-gray-400">Tu pago está pendiente de confirmación por el administrador.</p>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setShowSuccessModal(false);
+                setSelectedTournament(null);
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold"
+            >
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>
