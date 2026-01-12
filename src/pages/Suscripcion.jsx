@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import LanguageCurrencySelector from "../components/LanguageCurrencySelector";
 import SubscriptionModal from "../components/SubscriptionModal";
+import PrizesSlider from "../components/PrizesSlider";
 
 const translations = {
   es: {
@@ -284,37 +285,10 @@ export default function Suscripcion() {
 
         {/* Prizes Section */}
         <div className="mt-20">
-          <Card className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 p-12 rounded-3xl text-center">
-            <Gift className="w-16 h-16 text-yellow-400 mx-auto mb-6" />
-            <h3 className="text-3xl font-black text-white mb-4">
-              {language === "es" ? "Premios Semanales" : "Weekly Prizes"}
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              <div className="bg-black/30 p-6 rounded-xl">
-                <Sparkles className="w-12 h-12 text-purple-400 mx-auto mb-3" />
-                <h4 className="text-xl font-black text-white mb-2">Nintendo Switch</h4>
-                <p className="text-gray-400 text-sm">
-                  {language === "es" ? "Consola completa" : "Complete console"}
-                </p>
-              </div>
-              <div className="bg-black/30 p-6 rounded-xl">
-                <Star className="w-12 h-12 text-cyan-400 mx-auto mb-3" />
-                <h4 className="text-xl font-black text-white mb-2">PlayStation 5</h4>
-                <p className="text-gray-400 text-sm">
-                  {language === "es" ? "Edición estándar" : "Standard edition"}
-                </p>
-              </div>
-              <div className="bg-black/30 p-6 rounded-xl">
-                <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
-                <h4 className="text-xl font-black text-white mb-2">
-                  {language === "es" ? "Juegos AAA" : "AAA Games"}
-                </h4>
-                <p className="text-gray-400 text-sm">
-                  {language === "es" ? "Últimos lanzamientos" : "Latest releases"}
-                </p>
-              </div>
-            </div>
-          </Card>
+          <h3 className="text-3xl font-black text-white mb-8 text-center">
+            {language === "es" ? "Premios Semanales" : "Weekly Prizes"}
+          </h3>
+          <PrizesSlider />
         </div>
 
         {/* Subscription Modal */}
