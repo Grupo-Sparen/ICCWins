@@ -22,6 +22,12 @@ export default function MiSuscripcion() {
     enabled: !!user?.email
   });
 
+  const { data: tournamentParticipations = [] } = useQuery({
+    queryKey: ["my-tournament-participations", user?.id],
+    queryFn: () => base44.entities.TournamentParticipant.filter({ user_id: user?.id }, "-created_date"),
+    enabled: !!user?.id
+  });
+
   const activeSubscription = subscriptions.find(s => s.status === "active");
 
   const { data: allSubscriptionPlans = [] } = useQuery({
@@ -274,12 +280,79 @@ export default function MiSuscripcion() {
           </Card>
         )}
 
+        {/* Tournament Participations */}
+        {tournamentParticipations.length > 0 && (
+          <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-8 rounded-3xl mt-8">
+            <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
+              <Trophy className="w-8 h-8 text-cyan-400" />
+              Mis Torneos
+            </h3>
+            <div className="space-y-3">
+              {tournamentParticipations.map((participation) => (
+                <div key={participation.id} className="bg-black/30 p-5 rounded-xl">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h4 className="text-white font-bold text-lg">{participation.tournament_name}</h4>
+                      <p className="text-cyan-400 text-sm mt-1 font-semibold">
+                        Jugador: {participation.player_username}
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Inscrito el {new Date(participation.created_date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {participation.amount_paid > 0 && (
+                        <div className="text-xl font-black text-white mb-2">
+                          S/ {participation.amount_paid}
+                        </div>
+                      )}
+                      <div className={`px-3 py-1 rounded-full text-xs font-bold inline-block ${
+                        participation.payment_status === "paid" ? "bg-green-600 text-white" :
+                        participation.payment_status === "free" ? "bg-blue-600 text-white" :
+                        "bg-yellow-600 text-black"
+                      }`}>
+                        {participation.payment_status === "paid" ? "PAGADO" :
+                         participation.payment_status === "free" ? "GRATIS" :
+                         "PENDIENTE"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-gray-700">
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">País</div>
+                      <div className="text-gray-300 text-sm font-semibold">{participation.country}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Edad</div>
+                      <div className="text-gray-300 text-sm font-semibold">{participation.age} años</div>
+                    </div>
+                    {participation.payment_method && (
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Método de Pago</div>
+                        <div className="text-gray-300 text-sm font-semibold capitalize">{participation.payment_method}</div>
+                      </div>
+                    )}
+                    {participation.payment_date && (
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">Fecha de Pago</div>
+                        <div className="text-gray-300 text-sm font-semibold">
+                          {new Date(participation.payment_date).toLocaleDateString('es-ES')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         {/* Payment History */}
         {subscriptions.length > 0 && (
           <Card className="bg-gradient-to-br from-gray-900/30 to-transparent border border-gray-500/20 p-8 rounded-3xl mt-8">
             <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
               <CreditCard className="w-8 h-8 text-gray-400" />
-              Historial de Pagos
+              Historial de Pagos de Suscripción
             </h3>
             <div className="space-y-3">
               {subscriptions.map((sub) => (
