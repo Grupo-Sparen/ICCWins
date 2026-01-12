@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
+import PrizesSlider from "../components/PrizesSlider";
 
 export default function MiSuscripcion() {
   const queryClient = useQueryClient();
@@ -245,23 +246,7 @@ export default function MiSuscripcion() {
                 <Trophy className="w-8 h-8 text-yellow-400" />
                 Premios Disponibles Esta Semana
               </h3>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-black/30 p-6 rounded-xl text-center">
-                  <div className="text-4xl mb-3">🎮</div>
-                  <h4 className="text-lg font-black text-white mb-2">Nintendo Switch</h4>
-                  <p className="text-gray-400 text-sm">Sorteo: Viernes</p>
-                </div>
-                <div className="bg-black/30 p-6 rounded-xl text-center">
-                  <div className="text-4xl mb-3">🎯</div>
-                  <h4 className="text-lg font-black text-white mb-2">PlayStation 5</h4>
-                  <p className="text-gray-400 text-sm">Sorteo: Sábado</p>
-                </div>
-                <div className="bg-black/30 p-6 rounded-xl text-center">
-                  <div className="text-4xl mb-3">🎲</div>
-                  <h4 className="text-lg font-black text-white mb-2">Juegos AAA</h4>
-                  <p className="text-gray-400 text-sm">Sorteo: Domingo</p>
-                </div>
-              </div>
+              <PrizesSlider />
             </Card>
           </div>
         ) : (
