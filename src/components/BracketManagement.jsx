@@ -79,7 +79,19 @@ export default function BracketManagement({ tournaments }) {
   const clearBracketMutation = useMutation({
     mutationFn: async () => {
       const allMatches = await base44.entities.Match.filter({ tournament_id: selectedTournament.id });
-      await Promise.all(allMatches.map(match => base44.entities.Match.delete(match.id)));
+      
+      // Eliminar en lotes de 3 con delay para evitar rate limit
+      const batchSize = 3;
+      for (let i = 0; i < allMatches.length; i += batchSize) {
+        const batch = allMatches.slice(i, i + batchSize);
+        await Promise.all(batch.map(match => base44.entities.Match.delete(match.id)));
+        
+        // Pequeño delay entre lotes
+        if (i + batchSize < allMatches.length) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+      
       await base44.entities.Tournament.update(selectedTournament.id, { bracket_generated: false });
     },
     onSuccess: () => {
