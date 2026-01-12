@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Shield, Trophy, Crown, Mic, Gamepad2, Users, Upload, Plus, Edit, Trash2, Check, X, CheckCircle2, Calendar as CalendarIcon, CreditCard, Swords } from "lucide-react";
+import BracketManagement from "../components/BracketManagement";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -758,6 +759,10 @@ export default function Admin() {
             <TabsTrigger value="tournament-payments" className="data-[state=active]:bg-green-600">
               <CreditCard className="w-4 h-4 mr-2" />
               Pagos Torneos
+            </TabsTrigger>
+            <TabsTrigger value="brackets" className="data-[state=active]:bg-purple-600">
+              <Trophy className="w-4 h-4 mr-2" />
+              Gestionar Brackets
             </TabsTrigger>
             </TabsList>
 
@@ -2187,6 +2192,11 @@ export default function Admin() {
                 })
               )}
             </div>
+          </TabsContent>
+
+          {/* Brackets Tab */}
+          <TabsContent value="brackets">
+            <BracketManagement tournaments={tournaments} />
           </TabsContent>
 
           {/* Torneos Tab */}
