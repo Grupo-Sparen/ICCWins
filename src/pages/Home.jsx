@@ -208,7 +208,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-black text-white mb-4">Realiza tu pago</h3>
               <p className="text-gray-400 leading-relaxed">
-                Haz un solo pago único del premio que quieras. Súper fácil y seguro con Yape.
+                Haz un solo pago único del premio que quieras. Súper fácil y seguro.
               </p>
             </Card>
 
