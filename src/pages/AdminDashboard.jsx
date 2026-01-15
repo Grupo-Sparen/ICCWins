@@ -1001,7 +1001,7 @@ export default function AdminDashboard() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="text-xl font-black text-white mb-2">
-                          {battle.creator_name} vs {battle.opponent_name}
+                          {battle.opponent_name} vs {battle.opponent_name_2}
                         </h3>
                         <p className="text-gray-400 mb-2">{new Date(battle.date_time).toLocaleString('es-ES')}</p>
                         <p className="text-gray-300 text-sm">{battle.rules}</p>
@@ -1028,7 +1028,7 @@ export default function AdminDashboard() {
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => setConfirmDelete({ open: true, type: "battle", id: battle.id, name: `${battle.creator_name} vs ${battle.opponent_name}` })}
+                          onClick={() => setConfirmDelete({ open: true, type: "battle", id: battle.id, name: `${battle.opponent_name} vs ${battle.opponent_name_2}` })}
                           variant="outline"
                           size="sm"
                           className="border-red-500/30 text-red-400"
