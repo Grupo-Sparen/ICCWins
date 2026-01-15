@@ -109,15 +109,15 @@ export default function Batallas() {
                     <div className="mb-4">
                       <div className="flex items-center justify-between text-center mb-2">
                         <div className="flex-1">
-                          <div className="text-lg font-black text-white">{battle.creator_name}</div>
-                          <div className="text-xs text-gray-400">Creador</div>
+                          <div className="text-lg font-black text-white">{battle.opponent_name || "???"}</div>
+                          <div className="text-xs text-gray-400">Oponente 1</div>
                         </div>
                         <div className="px-3">
                           <div className="text-2xl">⚔️</div>
                         </div>
                         <div className="flex-1">
-                          <div className="text-lg font-black text-white">{battle.opponent_name || "???"}</div>
-                          <div className="text-xs text-gray-400">Oponente</div>
+                          <div className="text-lg font-black text-white">{battle.opponent_name_2 || "???"}</div>
+                          <div className="text-xs text-gray-400">Oponente 2</div>
                         </div>
                       </div>
                     </div>
@@ -149,7 +149,7 @@ export default function Batallas() {
                         <Trophy className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
                         <div className="text-yellow-400 font-bold text-xs">GANADOR</div>
                         <div className="text-white font-black">
-                          {battle.winner_id === battle.creator_id ? battle.creator_name : battle.opponent_name}
+                          {battle.winner_id === battle.opponent_id ? battle.opponent_name : battle.opponent_name_2}
                         </div>
                       </div>
                     )}
