@@ -418,7 +418,6 @@ export default function AdminDashboard() {
     { id: "dashboard", label: "Dashboard", icon: Home, color: "purple" },
     { id: "premios", label: "Premios", icon: Trophy, color: "yellow" },
     { id: "sorteos", label: "Sorteos", icon: Trophy, color: "orange" },
-    { id: "participaciones", label: "Participaciones", icon: Users, color: "green" },
     { id: "suscripciones", label: "Planes de Suscripción", icon: Crown, color: "blue" },
     { id: "pagos", label: "Pagos de Suscripción", icon: CreditCard, color: "cyan" },
     { id: "podcast", label: "Podcast", icon: Mic, color: "pink" },
@@ -1187,41 +1186,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
-          </div>
-        );
-
-      case "participaciones":
-        return (
-          <div className="grid gap-4">
-            {participations.map((participation) => (
-              <Card key={participation.id} className="bg-gradient-to-br from-green-900/30 to-transparent border border-green-500/20 p-6 rounded-2xl">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-black text-white">{participation.user_name}</h3>
-                    <p className="text-gray-400 text-sm">{participation.user_email}</p>
-                    <p className="text-green-400 font-bold mt-2">{participation.prize_title}</p>
-                    <p className="text-gray-500 text-sm">S/ {participation.amount_paid}</p>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      participation.payment_status === "confirmed" ? "bg-green-600" : "bg-yellow-600"
-                    } text-white`}>
-                      {participation.payment_status === "confirmed" ? "CONFIRMADO" : "PENDIENTE"}
-                    </span>
-                    {participation.payment_status === "pending" && (
-                      <Button
-                        onClick={() => confirmPaymentMutation.mutate({ id: participation.id })}
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold"
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        Confirmar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
           </div>
         );
 
