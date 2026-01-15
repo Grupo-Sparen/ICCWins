@@ -2107,13 +2107,20 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-white font-bold">URL de Imagen</Label>
-              <Input
-                value={prizeForm.image_url}
-                onChange={(e) => setPrizeForm({ ...prizeForm, image_url: e.target.value })}
-                className="bg-black/30 border-yellow-500/30 text-white"
-                placeholder="https://..."
-              />
+              <Label className="text-white font-bold">Imagen del Premio</Label>
+              <div className="flex gap-4 items-start">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="bg-black/30 border-yellow-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-yellow-700"
+                />
+                {uploadingImage && <span className="text-yellow-400 text-sm mt-2">Subiendo...</span>}
+              </div>
+              {prizeForm.image_url && (
+                <img src={prizeForm.image_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-4" />
+              )}
             </div>
 
             <div className="space-y-2">
