@@ -241,6 +241,9 @@ export default function AdminDashboard() {
   const [showPaymentDetailModal, setShowPaymentDetailModal] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [confirmWinnerDialog, setConfirmWinnerDialog] = useState({ open: false, match: null, winnerId: null, winnerName: null });
+  const [showSubscribersModal, setShowSubscribersModal] = useState(false);
+  const [selectedPrizeForSubscribers, setSelectedPrizeForSubscribers] = useState(null);
+  const [subscriberSearchFilter, setSubscriberSearchFilter] = useState("");
 
   const [prizeForm, setPrizeForm] = useState({
     title: "",
@@ -928,29 +931,43 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </div>
-                    <Button
-                      onClick={() => {
-                        setEditingPrize(prize);
-                        setPrizeForm({
-                          title: prize.title,
-                          description: prize.description,
-                          image_url: prize.image_url || "",
-                          participation_cost: prize.participation_cost.toString(),
-                          draw_date: prize.draw_date,
-                          draw_time: prize.draw_time || "",
-                          status: prize.status,
-                          featured: prize.featured || false,
-                          total_participants: prize.total_participants || 0
-                        });
-                        setShowPrizeForm(true);
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="border-yellow-500/30 text-yellow-400"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Editar
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        onClick={() => {
+                          setEditingPrize(prize);
+                          setPrizeForm({
+                            title: prize.title,
+                            description: prize.description,
+                            image_url: prize.image_url || "",
+                            participation_cost: prize.participation_cost.toString(),
+                            draw_date: prize.draw_date,
+                            draw_time: prize.draw_time || "",
+                            status: prize.status,
+                            featured: prize.featured || false,
+                            total_participants: prize.total_participants || 0
+                          });
+                          setShowPrizeForm(true);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-yellow-500/30 text-yellow-400"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Editar
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setSelectedPrizeForSubscribers(prize);
+                          setShowSubscribersModal(true);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="border-green-500/30 text-green-400"
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Ver Suscriptores
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -2875,6 +2892,96 @@ export default function AdminDashboard() {
               className="bg-green-600 hover:bg-green-700 text-white font-bold"
             >
               Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Subscribers Modal */}
+      <Dialog open={showSubscribersModal} onOpenChange={setShowSubscribersModal}>
+        <DialogContent className="bg-gradient-to-br from-green-900 to-gray-900 border-2 border-green-500/40 max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
+              <Users className="w-6 h-6 text-green-400" />
+              Suscriptores - {selectedPrizeForSubscribers?.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Buscar por Nombre o ID</Label>
+              <Input
+                value={subscriberSearchFilter}
+                onChange={(e) => setSubscriberSearchFilter(e.target.value)}
+                className="bg-black/30 border-green-500/30 text-white"
+                placeholder="Buscar suscriptor..."
+              />
+            </div>
+
+            <div className="grid gap-3 max-h-[500px] overflow-y-auto">
+              {subscriptions
+                .filter(s => s.status === "active")
+                .filter(s => {
+                  if (!subscriberSearchFilter) return true;
+                  const searchLower = subscriberSearchFilter.toLowerCase();
+                  return (
+                    s.user_name?.toLowerCase().includes(searchLower) ||
+                    s.user_email?.toLowerCase().includes(searchLower) ||
+                    s.id?.toLowerCase().includes(searchLower)
+                  );
+                })
+                .map((subscriber) => (
+                  <Card key={subscriber.id} className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-4 rounded-xl">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-white font-bold">{subscriber.user_name}</h3>
+                        <p className="text-gray-400 text-sm">{subscriber.user_email}</p>
+                        <p className="text-purple-400 text-xs mt-1">ID: {subscriber.id}</p>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          if (confirm(`¿Confirmar ${subscriber.user_name} como ganador de ${selectedPrizeForSubscribers.title}?`)) {
+                            selectWinnerMutation.mutate({ subscriber, prize: selectedPrizeForSubscribers });
+                            setShowSubscribersModal(false);
+                            setSubscriberSearchFilter("");
+                          }
+                        }}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold"
+                        size="sm"
+                      >
+                        <Trophy className="w-4 h-4 mr-1" />
+                        Seleccionar
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              {subscriptions.filter(s => s.status === "active").filter(s => {
+                if (!subscriberSearchFilter) return true;
+                const searchLower = subscriberSearchFilter.toLowerCase();
+                return (
+                  s.user_name?.toLowerCase().includes(searchLower) ||
+                  s.user_email?.toLowerCase().includes(searchLower) ||
+                  s.id?.toLowerCase().includes(searchLower)
+                );
+              }).length === 0 && (
+                <div className="bg-black/30 p-8 rounded-xl text-center">
+                  <p className="text-gray-400">No se encontraron suscriptores</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setShowSubscribersModal(false);
+                setSelectedPrizeForSubscribers(null);
+                setSubscriberSearchFilter("");
+              }}
+              variant="outline"
+              className="border-gray-500/30 text-black"
+            >
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>
