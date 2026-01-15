@@ -298,7 +298,8 @@ export default function AdminDashboard() {
     opponent_name: "",
     date_time: "",
     rules: "",
-    prize: ""
+    prize: "",
+    image_url: ""
   });
   const [editingBattle, setEditingBattle] = useState(null);
 
@@ -527,7 +528,8 @@ export default function AdminDashboard() {
         opponent_name: "",
         date_time: "",
         rules: "",
-        prize: ""
+        prize: "",
+        image_url: ""
       });
     }
   });
@@ -545,7 +547,8 @@ export default function AdminDashboard() {
         opponent_name_2: "",
         date_time: "",
         rules: "",
-        prize: ""
+        prize: "",
+        image_url: ""
       });
     }
   });
@@ -732,6 +735,20 @@ export default function AdminDashboard() {
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
       setPrizeForm({ ...prizeForm, image_url: result.file_url });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleBattleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      setBattleForm({ ...battleForm, image_url: result.file_url });
     } catch (error) {
       console.error("Error uploading image:", error);
     } finally {
@@ -981,10 +998,11 @@ export default function AdminDashboard() {
                               opponent_id: battle.opponent_id,
                               opponent_name: battle.opponent_name,
                               opponent_name_2: battle.opponent_name_2 || "",
-                              date_time: battle.date_time,
-                              rules: battle.rules,
-                              prize: battle.prize || ""
-                            });
+                               date_time: battle.date_time,
+                               rules: battle.rules,
+                               prize: battle.prize || "",
+                               image_url: battle.image_url || ""
+                              });
                             setShowBattleForm(true);
                           }}
                           variant="outline"
@@ -1667,6 +1685,23 @@ export default function AdminDashboard() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label className="text-white font-bold">Imagen de la Batalla</Label>
+              <div className="flex gap-4 items-start">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBattleImageUpload}
+                  disabled={uploadingImage}
+                  className="bg-black/30 border-red-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-red-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-red-700"
+                />
+                {uploadingImage && <span className="text-red-400 text-sm mt-2">Subiendo...</span>}
+              </div>
+              {battleForm.image_url && (
+                <img src={battleForm.image_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-4" />
+              )}
+            </div>
+
             <DialogFooter>
               <Button
                 type="button"
@@ -1680,7 +1715,8 @@ export default function AdminDashboard() {
                     opponent_name_2: "",
                     date_time: "",
                     rules: "",
-                    prize: ""
+                    prize: "",
+                    image_url: ""
                   });
                 }}
                 className="border-gray-500/30 text-black"
