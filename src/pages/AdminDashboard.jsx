@@ -979,9 +979,11 @@ export default function AdminDashboard() {
         );
 
       case "batallas":
+        const pendingApprovalBattles = battles.filter(b => b.status === "pending_approval");
+
         return (
           <div>
-            <div className="mb-6">
+            <div className="mb-6 flex gap-4">
               <Button
                 onClick={() => setShowBattleForm(true)}
                 className="h-12 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold"
@@ -991,7 +993,62 @@ export default function AdminDashboard() {
               </Button>
             </div>
 
-            {battles.length === 0 ? (
+            {pendingApprovalBattles.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-xl font-black text-white mb-4 flex items-center gap-2">
+                  <Swords className="w-5 h-5 text-yellow-400" />
+                  Batallas Pendientes de Aprobación ({pendingApprovalBattles.length})
+                </h3>
+                <div className="grid gap-4">
+                  {pendingApprovalBattles.map((battle) => (
+                    <Card key={battle.id} className="bg-gradient-to-br from-yellow-900/30 to-transparent border border-yellow-500/20 p-6 rounded-2xl">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-black text-white mb-2">
+                            {battle.opponent_name} vs {battle.opponent_name_2}
+                          </h3>
+                          <p className="text-gray-400 mb-2">{new Date(battle.date_time).toLocaleString('es-ES')}</p>
+                          <p className="text-gray-300 text-sm mb-2">{battle.rules}</p>
+                          <p className="text-purple-400 text-sm">Creada por: {battle.creator_name}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={async () => {
+                              await base44.entities.Battle.update(battle.id, { 
+                                status: "invited",
+                                approved_by_admin: true 
+                              });
+                              queryClient.invalidateQueries(["admin-battles"]);
+                              toast.success("Batalla aprobada", {
+                                duration: 3000,
+                                style: { background: '#10B981', color: '#fff', fontWeight: 'bold' }
+                              });
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                            size="sm"
+                          >
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Aprobar
+                          </Button>
+                          <Button
+                            onClick={() => setConfirmDelete({ open: true, type: "battle", id: battle.id, name: `${battle.opponent_name} vs ${battle.opponent_name_2}` })}
+                            variant="outline"
+                            size="sm"
+                            className="border-red-500/30 text-red-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <h3 className="text-xl font-black text-white mb-4">Todas las Batallas</h3>
+
+            {battles.filter(b => b.status !== "pending_approval").length === 0 ? (
               <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-12 rounded-2xl text-center">
                 <Swords className="w-16 h-16 text-red-400 mx-auto mb-4" />
                 <h3 className="text-xl font-black text-white mb-2">No hay batallas</h3>
@@ -999,7 +1056,7 @@ export default function AdminDashboard() {
               </Card>
             ) : (
               <div className="grid gap-4">
-                {battles.map((battle) => (
+                {battles.filter(b => b.status !== "pending_approval").map((battle) => (
                   <Card key={battle.id} className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-6 rounded-2xl">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
