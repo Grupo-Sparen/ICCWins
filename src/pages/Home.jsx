@@ -273,8 +273,7 @@ export default function Home() {
       </section>
 
       {/* Upcoming Tournaments */}
-      {upcomingTournaments.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-purple-950/20 to-transparent">
+      <section className="py-20 bg-gradient-to-b from-purple-950/20 to-transparent">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
@@ -283,8 +282,15 @@ export default function Home() {
               <p className="text-xl text-gray-400">Únete a la competencia y demuestra tu habilidad</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {upcomingTournaments.map((tournament) => (
+            {upcomingTournaments.length === 0 ? (
+              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-12 rounded-3xl text-center col-span-full">
+                <Trophy className="w-20 h-20 text-cyan-400 mx-auto mb-4" />
+                <h3 className="text-2xl font-black text-white mb-2">Próximamente</h3>
+                <p className="text-gray-400">Nuevos torneos muy pronto...</p>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-8">
+                {upcomingTournaments.map((tournament) => (
                 <Link key={tournament.id} to={createPageUrl(`DetalleTorneo?id=${tournament.id}`)}>
                   <Card className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 p-6 rounded-2xl card-hover">
                     {tournament.image_url && (
@@ -316,8 +322,9 @@ export default function Home() {
                     </Button>
                   </Card>
                 </Link>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="text-center mt-12">
               <Link to={createPageUrl("Torneos")}>
@@ -329,11 +336,9 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
 
       {/* Upcoming Battles */}
-      {upcomingBattles.length > 0 && (
-        <section className="py-20">
+      <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
@@ -342,8 +347,15 @@ export default function Home() {
               <p className="text-xl text-gray-400">No te pierdas estos enfrentamientos épicos</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {upcomingBattles.map((battle) => (
+            {upcomingBattles.length === 0 ? (
+              <Card className="bg-gradient-to-br from-red-900/30 to-transparent border border-red-500/20 p-12 rounded-3xl text-center col-span-full">
+                <Swords className="w-20 h-20 text-red-400 mx-auto mb-4" />
+                <h3 className="text-2xl font-black text-white mb-2">Próximamente</h3>
+                <p className="text-gray-400">Nuevas batallas épicas muy pronto...</p>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-8">
+                {upcomingBattles.map((battle) => (
                 <Link key={battle.id} to={createPageUrl(`DetalleBatalla?id=${battle.id}`)}>
                   <Card className="bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-500/30 p-6 rounded-2xl card-hover">
                     {battle.image_url && (
@@ -389,8 +401,9 @@ export default function Home() {
                     )}
                   </Card>
                 </Link>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="text-center mt-12">
               <Link to={createPageUrl("Batallas")}>
@@ -402,7 +415,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
+      
 
       {/* CTA Section */}
       <section className="py-20">
