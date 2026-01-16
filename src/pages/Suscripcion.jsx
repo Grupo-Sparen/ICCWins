@@ -59,7 +59,10 @@ export default function Suscripcion() {
 
   const { data: plans = [] } = useQuery({
     queryKey: ["subscription-plans"],
-    queryFn: () => base44.entities.SubscriptionPlan.filter({ active: true }, "-created_date")
+    queryFn: async () => {
+      const allPlans = await base44.entities.SubscriptionPlan.filter({ active: true }, "-created_date");
+      return allPlans.sort((a, b) => a.duration_months - b.duration_months);
+    }
   });
 
   const { data: userSubscription } = useQuery({
@@ -129,55 +132,7 @@ export default function Suscripcion() {
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.filter(p => p.duration_months === 1).map((plan) => (
-            <Card 
-              key={plan.id}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 lg:p-10 hover:scale-105 transition-transform duration-300"
-            >
-              <div className="text-center mb-8">
-                <div className="inline-block bg-purple-600 text-white px-4 py-2 rounded-full font-black text-sm mb-4">
-                  {t.monthly}
-                </div>
-                
-                <div className="mb-4">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
-                    <Zap className="w-16 h-16 text-white" />
-                  </div>
-                </div>
-
-                <h3 className="text-3xl font-black text-white mb-2">{getPlanName(plan)}</h3>
-                <p className="text-gray-300 text-sm mb-6">{getPlanDescription(plan)}</p>
-
-                {/* Price */}
-                <div className="mb-6">
-                  <div className="text-6xl font-black text-white mb-2">
-                    {formatPrice(plan)}
-                  </div>
-                  <div className="text-gray-300 font-bold">{t.perMonth}</div>
-                </div>
-              </div>
-
-              {/* Benefits */}
-              <div className="space-y-4 mb-8">
-                {plan.benefits?.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-400 shrink-0 mt-1" />
-                    <span className="text-white font-semibold">{getBenefitText(benefit)}</span>
-                  </div>
-                ))}
-              </div>
-
-              <Button 
-                onClick={() => setSelectedPlan(plan)}
-                disabled={userSubscription?.plan_id === plan.id}
-                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {userSubscription?.plan_id === plan.id ? (language === "es" ? "Plan Actual" : "Current Plan") : t.subscribe}
-              </Button>
-            </Card>
-          ))}
-
-          {plans.filter(p => p.duration_months === 3).map((plan) => (
+          {plans.map((plan) => (
             <Card 
               key={plan.id}
               className={`relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-2 rounded-3xl p-8 lg:p-10 hover:scale-105 transition-transform duration-300 ${
@@ -192,13 +147,13 @@ export default function Suscripcion() {
               )}
 
               <div className="text-center mb-8">
-                <div className="inline-block bg-cyan-600 text-white px-4 py-2 rounded-full font-black text-sm mb-4">
-                  {t.quarterly}
+                <div className="inline-block bg-purple-600 text-white px-4 py-2 rounded-full font-black text-sm mb-4">
+                  {plan.duration_months === 1 ? t.monthly : plan.duration_months === 3 ? t.quarterly : plan.duration_months === 6 ? t.semestral : `${plan.duration_months} ${language === 'es' ? 'MESES' : 'MONTHS'}`}
                 </div>
                 
                 <div className="mb-4">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center mb-4">
-                    <Trophy className="w-16 h-16 text-white" />
+                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
+                    {plan.duration_months === 1 ? <Zap className="w-16 h-16 text-white" /> : plan.duration_months === 3 ? <Trophy className="w-16 h-16 text-white" /> : <Crown className="w-16 h-16 text-white" />}
                   </div>
                 </div>
 
@@ -210,55 +165,9 @@ export default function Suscripcion() {
                   <div className="text-6xl font-black text-white mb-2">
                     {formatPrice(plan)}
                   </div>
-                  <div className="text-gray-300 font-bold">{t.perQuarter}</div>
-                </div>
-              </div>
-
-              {/* Benefits */}
-              <div className="space-y-4 mb-8">
-                {plan.benefits?.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-400 shrink-0 mt-1" />
-                    <span className="text-white font-semibold">{getBenefitText(benefit)}</span>
+                  <div className="text-gray-300 font-bold">
+                    {plan.duration_months === 1 ? t.perMonth : plan.duration_months === 3 ? t.perQuarter : plan.duration_months === 6 ? t.perSemester : `/${plan.duration_months} ${language === 'es' ? 'meses' : 'months'}`}
                   </div>
-                ))}
-              </div>
-
-              <Button 
-                onClick={() => setSelectedPlan(plan)}
-                disabled={userSubscription?.plan_id === plan.id}
-                className="w-full h-14 bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-black font-black text-lg rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {userSubscription?.plan_id === plan.id ? (language === "es" ? "Plan Actual" : "Current Plan") : t.subscribe}
-              </Button>
-            </Card>
-          ))}
-
-          {plans.filter(p => p.duration_months === 6).map((plan) => (
-            <Card 
-              key={plan.id}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 lg:p-10 hover:scale-105 transition-transform duration-300"
-            >
-              <div className="text-center mb-8">
-                <div className="inline-block bg-yellow-600 text-white px-4 py-2 rounded-full font-black text-sm mb-4">
-                  {t.semestral}
-                </div>
-                
-                <div className="mb-4">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-4">
-                    <Crown className="w-16 h-16 text-white" />
-                  </div>
-                </div>
-
-                <h3 className="text-3xl font-black text-white mb-2">{getPlanName(plan)}</h3>
-                <p className="text-gray-300 text-sm mb-6">{getPlanDescription(plan)}</p>
-
-                {/* Price */}
-                <div className="mb-6">
-                  <div className="text-6xl font-black text-white mb-2">
-                    {formatPrice(plan)}
-                  </div>
-                  <div className="text-gray-300 font-bold">{t.perSemester}</div>
                 </div>
               </div>
 
