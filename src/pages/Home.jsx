@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Zap, Users, Gift, Play, ArrowRight, CheckCircle, Sparkles, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trophy, Zap, Users, Gift, Play, ArrowRight, CheckCircle, Sparkles, Star, ChevronLeft, ChevronRight, Swords, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import useEmblaCarousel from "embla-carousel-react";
@@ -28,9 +28,14 @@ export default function Home() {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const { data: recentWinners } = useQuery({
-    queryKey: ["recentWinners"],
-    queryFn: () => base44.entities.Winner.list("-winner_date", 3)
+  const { data: upcomingTournaments = [] } = useQuery({
+    queryKey: ["upcomingTournaments"],
+    queryFn: () => base44.entities.Tournament.filter({ status: "registration_open" }, "-start_date", 3)
+  });
+
+  const { data: upcomingBattles = [] } = useQuery({
+    queryKey: ["upcomingBattles"],
+    queryFn: () => base44.entities.Battle.filter({ status: "confirmed" }, "-date_time", 3)
   });
 
   return (
@@ -267,53 +272,130 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Recent Winners */}
-      {recentWinners && recentWinners.length > 0 && (
+      {/* Upcoming Tournaments */}
+      {upcomingTournaments.length > 0 && (
         <section className="py-20 bg-gradient-to-b from-purple-950/20 to-transparent">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
-                Últimos <span className="text-yellow-400">Ganadores</span>
+                Torneos <span className="text-cyan-400">Próximos</span>
               </h2>
-              <p className="text-xl text-gray-400">Ellos ya ganaron. ¿Serás el próximo?</p>
+              <p className="text-xl text-gray-400">Únete a la competencia y demuestra tu habilidad</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {recentWinners.map((winner) => (
-                <Card key={winner.id} className="bg-gradient-to-br from-yellow-900/20 to-purple-900/20 border border-yellow-500/30 p-6 rounded-2xl card-hover">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-2xl font-black">
-                      {winner.winner_photo_url ? (
-                        <img src={winner.winner_photo_url} alt={winner.winner_name} className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        winner.winner_name[0]
-                      )}
+              {upcomingTournaments.map((tournament) => (
+                <Link key={tournament.id} to={createPageUrl(`DetalleTorneo?id=${tournament.id}`)}>
+                  <Card className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 p-6 rounded-2xl card-hover">
+                    {tournament.image_url && (
+                      <div className="mb-4 rounded-xl overflow-hidden">
+                        <img src={tournament.image_url} alt={tournament.name} className="w-full h-40 object-cover" />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="w-5 h-5 text-cyan-400" />
+                      <span className="text-cyan-400 font-bold text-sm uppercase">{tournament.game}</span>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-black text-white">{winner.winner_name}</h3>
-                      <p className="text-sm text-gray-400">{winner.winner_country || "LATAM"}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-black/40 p-4 rounded-xl mb-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Trophy className="w-5 h-5 text-yellow-400" />
-                      <span className="text-yellow-400 font-bold text-sm">GANÓ</span>
-                    </div>
-                    <p className="text-white font-bold">{winner.prize_title}</p>
-                  </div>
 
-                  <div className="text-xs text-gray-500 font-semibold">
-                    {new Date(winner.winner_date).toLocaleDateString('es-ES')}
-                  </div>
-                </Card>
+                    <h3 className="text-2xl font-black text-white mb-3">{tournament.name}</h3>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(tournament.start_date).toLocaleDateString('es-ES')}
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Users className="w-4 h-4" />
+                        {tournament.current_participants}/{tournament.max_participants} participantes
+                      </div>
+                    </div>
+
+                    <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
+                      Ver Torneo
+                    </Button>
+                  </Card>
+                </Link>
               ))}
             </div>
 
             <div className="text-center mt-12">
-              <Link to={createPageUrl("Ganadores")}>
-                <Button className="h-12 px-8 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-black font-black rounded-xl">
-                  Ver Todos los Ganadores
+              <Link to={createPageUrl("Torneos")}>
+                <Button className="h-12 px-8 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-black rounded-xl">
+                  Ver Todos los Torneos
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Upcoming Battles */}
+      {upcomingBattles.length > 0 && (
+        <section className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
+                Batallas <span className="text-red-400">Confirmadas</span>
+              </h2>
+              <p className="text-xl text-gray-400">No te pierdas estos enfrentamientos épicos</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {upcomingBattles.map((battle) => (
+                <Link key={battle.id} to={createPageUrl(`DetalleBatalla?id=${battle.id}`)}>
+                  <Card className="bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-500/30 p-6 rounded-2xl card-hover">
+                    {battle.image_url && (
+                      <div className="mb-4 rounded-xl overflow-hidden">
+                        <img src={battle.image_url} alt="Battle" className="w-full h-40 object-cover" />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2 mb-4">
+                      <Swords className="w-5 h-5 text-red-400" />
+                      <span className="text-red-400 font-bold text-sm uppercase">Batalla Confirmada</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-center mb-4">
+                      <div className="flex-1">
+                        <div className="text-lg font-black text-white">{battle.opponent_name}</div>
+                        <div className="text-xs text-gray-400">Oponente 1</div>
+                      </div>
+                      <div className="px-3">
+                        <div className="text-2xl">⚔️</div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-lg font-black text-white">{battle.opponent_name_2}</div>
+                        <div className="text-xs text-gray-400">Oponente 2</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+                      <Calendar className="w-4 h-4" />
+                      {new Date(battle.date_time).toLocaleDateString('es-ES', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+
+                    {battle.prize && (
+                      <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 text-center">
+                        <Trophy className="w-4 h-4 text-yellow-400 inline mr-2" />
+                        <span className="text-yellow-400 font-bold text-sm">{battle.prize}</span>
+                      </div>
+                    )}
+                  </Card>
+                </Link>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link to={createPageUrl("Batallas")}>
+                <Button className="h-12 px-8 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-black rounded-xl">
+                  Ver Todas las Batallas
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
