@@ -272,73 +272,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Upcoming Tournaments */}
-      <section className="py-20 bg-gradient-to-b from-purple-950/20 to-transparent">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
-                Torneos <span className="text-cyan-400">Próximos</span>
-              </h2>
-              <p className="text-xl text-gray-400">Únete a la competencia y demuestra tu habilidad</p>
-            </div>
-
-            {upcomingTournaments.length === 0 ? (
-              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-12 rounded-3xl text-center col-span-full">
-                <Trophy className="w-20 h-20 text-cyan-400 mx-auto mb-4" />
-                <h3 className="text-2xl font-black text-white mb-2">Próximamente</h3>
-                <p className="text-gray-400">Nuevos torneos muy pronto...</p>
-              </Card>
-            ) : (
-              <div className="grid md:grid-cols-3 gap-8">
-                {upcomingTournaments.map((tournament) => (
-                <Link key={tournament.id} to={createPageUrl(`DetalleTorneo?id=${tournament.id}`)}>
-                  <Card className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 p-6 rounded-2xl card-hover">
-                    {tournament.image_url && (
-                      <div className="mb-4 rounded-xl overflow-hidden">
-                        <img src={tournament.image_url} alt={tournament.name} className="w-full h-40 object-cover" />
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <Trophy className="w-5 h-5 text-cyan-400" />
-                      <span className="text-cyan-400 font-bold text-sm uppercase">{tournament.game}</span>
-                    </div>
-
-                    <h3 className="text-2xl font-black text-white mb-3">{tournament.name}</h3>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-gray-400 text-sm">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(tournament.start_date).toLocaleDateString('es-ES')}
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-400 text-sm">
-                        <Users className="w-4 h-4" />
-                        {tournament.current_participants}/{tournament.max_participants} participantes
-                      </div>
-                    </div>
-
-                    <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
-                      Ver Torneo
-                    </Button>
-                  </Card>
-                </Link>
-                ))}
-              </div>
-            )}
-
-            <div className="text-center mt-12">
-              <Link to={createPageUrl("Torneos")}>
-                <Button className="h-12 px-8 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-black rounded-xl">
-                  Ver Todos los Torneos
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
       {/* Upcoming Battles */}
-      <section className="py-20">
+      <section className="py-20 bg-gradient-to-b from-purple-950/20 to-transparent">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
@@ -415,32 +350,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-      
-
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="bg-gradient-to-br from-[#1a0f2e] to-[#0f0818] p-12 rounded-3xl text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wIDhoLTJ2LTJoMnYyem00IDBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-5"></div>
-
-            <div className="relative">
-              <Star className="w-16 h-16 text-yellow-300 mx-auto mb-6" />
-              <h2 className="text-4xl lg:text-5xl font-black text-white mb-6">
-                ¡Es Tu Momento de Ganar!
-              </h2>
-              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-                Miles de gamers ya participan. No te quedes afuera de la comunidad gaming más grande de LATAM.
-              </p>
-              <Link to={createPageUrl("Suscripcion")}>
-                <Button className="h-16 px-12 bg-white hover:bg-gray-100 text-purple-600 font-black text-xl rounded-xl shadow-2xl">
-                  <Zap className="w-6 h-6 mr-2" />
-                  Suscribirse Ahora
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        </div>
-      </section>
 
       {/* Influencers Section */}
       <section className="py-20">
@@ -491,6 +400,98 @@ export default function Home() {
           </Card>
         </div>
       </section>
+
+      {/* Upcoming Tournaments */}
+      <section className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl font-black text-white mb-4">
+                Torneos <span className="text-cyan-400">Próximos</span>
+              </h2>
+              <p className="text-xl text-gray-400">Únete a la competencia y demuestra tu habilidad</p>
+            </div>
+
+            {upcomingTournaments.length === 0 ? (
+              <Card className="bg-gradient-to-br from-cyan-900/30 to-transparent border border-cyan-500/20 p-12 rounded-3xl text-center col-span-full">
+                <Trophy className="w-20 h-20 text-cyan-400 mx-auto mb-4" />
+                <h3 className="text-2xl font-black text-white mb-2">Próximamente</h3>
+                <p className="text-gray-400">Nuevos torneos muy pronto...</p>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-8">
+                {upcomingTournaments.map((tournament) => (
+                <Link key={tournament.id} to={createPageUrl(`DetalleTorneo?id=${tournament.id}`)}>
+                  <Card className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 p-6 rounded-2xl card-hover">
+                    {tournament.image_url && (
+                      <div className="mb-4 rounded-xl overflow-hidden">
+                        <img src={tournament.image_url} alt={tournament.name} className="w-full h-40 object-cover" />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="w-5 h-5 text-cyan-400" />
+                      <span className="text-cyan-400 font-bold text-sm uppercase">{tournament.game}</span>
+                    </div>
+
+                    <h3 className="text-2xl font-black text-white mb-3">{tournament.name}</h3>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(tournament.start_date).toLocaleDateString('es-ES')}
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Users className="w-4 h-4" />
+                        {tournament.current_participants}/{tournament.max_participants} participantes
+                      </div>
+                    </div>
+
+                    <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
+                      Ver Torneo
+                    </Button>
+                  </Card>
+                </Link>
+                ))}
+              </div>
+            )}
+
+            <div className="text-center mt-12">
+              <Link to={createPageUrl("Torneos")}>
+                <Button className="h-12 px-8 bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-black rounded-xl">
+                  Ver Todos los Torneos
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      
+
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="bg-gradient-to-br from-[#1a0f2e] to-[#0f0818] p-12 rounded-3xl text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wIDhoLTJ2LTJoMnYyem00IDBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-5"></div>
+
+            <div className="relative">
+              <Star className="w-16 h-16 text-yellow-300 mx-auto mb-6" />
+              <h2 className="text-4xl lg:text-5xl font-black text-white mb-6">
+                ¡Es Tu Momento de Ganar!
+              </h2>
+              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                Miles de gamers ya participan. No te quedes afuera de la comunidad gaming más grande de LATAM.
+              </p>
+              <Link to={createPageUrl("Suscripcion")}>
+                <Button className="h-16 px-12 bg-white hover:bg-gray-100 text-purple-600 font-black text-xl rounded-xl shadow-2xl">
+                  <Zap className="w-6 h-6 mr-2" />
+                  Suscribirse Ahora
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </section>
+
       </div>
       );
       }
