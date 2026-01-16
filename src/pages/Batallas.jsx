@@ -150,29 +150,35 @@ export default function Batallas() {
       <Toaster position="top-right" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex justify-between items-start mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-red-600/20 border border-red-500/30 px-4 py-2 rounded-full mb-6">
+        <div className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <div className="inline-flex items-center gap-2 bg-red-600/20 border border-red-500/30 px-4 py-2 rounded-full">
               <Swords className="w-4 h-4 text-red-400" />
               <span className="text-red-300 font-bold text-sm">BATALLAS TIKTOK</span>
             </div>
-            <h1 className="text-5xl lg:text-6xl font-black text-white mb-6">
-              Batallas <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">ÉPICAS</span>
-            </h1>
-            <p className="text-xl text-gray-400 max-w-3xl">
-              Desafía a otros tiktokers y demuestra quién es el mejor en la arena.
-            </p>
-          </div>
-          
-          {user && (
+            
             <Button
-              onClick={() => setShowBattleForm(true)}
-              className="h-12 px-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold"
+              onClick={() => {
+                if (!user) {
+                  toast.error("Debes iniciar sesión para crear una batalla");
+                  base44.auth.redirectToLogin();
+                  return;
+                }
+                setShowBattleForm(true);
+              }}
+              className="h-12 px-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold shadow-lg shadow-red-500/30"
             >
               <Plus className="w-5 h-5 mr-2" />
               Crear Batalla
             </Button>
-          )}
+          </div>
+          
+          <h1 className="text-5xl lg:text-6xl font-black text-white mb-6">
+            Batallas <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">ÉPICAS</span>
+          </h1>
+          <p className="text-xl text-gray-400 max-w-3xl">
+            Desafía a otros tiktokers y demuestra quién es el mejor en la arena.
+          </p>
         </div>
 
         {/* Filters */}
