@@ -350,7 +350,10 @@ export default function AdminDashboard() {
 
   const { data: subscriptionPlans = [] } = useQuery({
     queryKey: ["admin-subscription-plans"],
-    queryFn: () => base44.entities.SubscriptionPlan.list("-created_date")
+    queryFn: async () => {
+      const plans = await base44.entities.SubscriptionPlan.list("-created_date");
+      return plans.sort((a, b) => a.duration_months - b.duration_months);
+    }
   });
 
   const { data: subscriptions = [] } = useQuery({
