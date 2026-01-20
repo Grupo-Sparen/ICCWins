@@ -28,15 +28,40 @@ export default function Home() {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
+  const [emblaBattlesRef, emblaBattlesApi] = useEmblaCarousel({ loop: false, align: "start" });
+  const [emblaTournamentsRef, emblaTournamentsApi] = useEmblaCarousel({ loop: false, align: "start" });
+
   const { data: upcomingTournaments = [] } = useQuery({
     queryKey: ["upcomingTournaments"],
-    queryFn: () => base44.entities.Tournament.filter({ status: "registration_open" }, "-start_date", 3)
+    queryFn: async () => {
+      const tournaments = await base44.entities.Tournament.list("-start_date", 7);
+      return tournaments.filter(t => t.status !== "completed" && t.status !== "cancelled");
+    }
   });
 
   const { data: upcomingBattles = [] } = useQuery({
     queryKey: ["upcomingBattles"],
-    queryFn: () => base44.entities.Battle.filter({ status: "confirmed" }, "-date_time", 3)
+    queryFn: async () => {
+      const battles = await base44.entities.Battle.list("-date_time", 7);
+      return battles.filter(b => b.status === "confirmed" || b.status === "invited");
+    }
   });
+
+  const scrollBattlesPrev = React.useCallback(() => {
+    if (emblaBattlesApi) emblaBattlesApi.scrollPrev();
+  }, [emblaBattlesApi]);
+
+  const scrollBattlesNext = React.useCallback(() => {
+    if (emblaBattlesApi) emblaBattlesApi.scrollNext();
+  }, [emblaBattlesApi]);
+
+  const scrollTournamentsPrev = React.useCallback(() => {
+    if (emblaTournamentsApi) emblaTournamentsApi.scrollPrev();
+  }, [emblaTournamentsApi]);
+
+  const scrollTournamentsNext = React.useCallback(() => {
+    if (emblaTournamentsApi) emblaTournamentsApi.scrollNext();
+  }, [emblaTournamentsApi]);
 
   return (
     <div className="min-h-screen pt-32">
@@ -289,54 +314,90 @@ export default function Home() {
                 <p className="text-gray-400">Nuevas batallas épicas muy pronto...</p>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-3 gap-8">
-                {upcomingBattles.map((battle) => (
-                <Link key={battle.id} to={createPageUrl(`DetalleBatalla?id=${battle.id}`)}>
-                  <Card className="bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-500/30 p-6 rounded-2xl card-hover">
-                    {battle.image_url && (
-                      <div className="mb-4 rounded-xl overflow-hidden">
-                        <img src={battle.image_url} alt="Battle" className="w-full h-40 object-cover" />
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-2 mb-4">
-                      <Swords className="w-5 h-5 text-red-400" />
-                      <span className="text-red-400 font-bold text-sm uppercase">Batalla Confirmada</span>
-                    </div>
+              <div className="relative">
+                <div className="overflow-hidden" ref={emblaBattlesRef}>
+                  <div className="flex gap-6">
+                    {upcomingBattles.map((battle) => {
+                      const getStatusBadge = (status) => {
+                        const badges = {
+                          invited: { text: "Invitado", color: "bg-blue-600" },
+                          confirmed: { text: "Confirmada", color: "bg-green-600" }
+                        };
+                        return badges[status] || badges.confirmed;
+                      };
+                      const badge = getStatusBadge(battle.status);
+                      
+                      return (
+                        <div key={battle.id} className="flex-[0_0_350px] min-w-0">
+                          <Link to={createPageUrl(`DetalleBatalla?id=${battle.id}`)}>
+                            <Card className="bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-500/30 p-6 rounded-2xl card-hover h-full">
+                              <div className="flex justify-between items-start mb-4">
+                                <span className={`${badge.color} text-white px-3 py-1 rounded-full text-xs font-bold`}>
+                                  {badge.text}
+                                </span>
+                                <Swords className="w-6 h-6 text-red-400" />
+                              </div>
 
-                    <div className="flex items-center justify-between text-center mb-4">
-                      <div className="flex-1">
-                        <div className="text-lg font-black text-white">{battle.opponent_name}</div>
-                        <div className="text-xs text-gray-400">Oponente 1</div>
-                      </div>
-                      <div className="px-3">
-                        <div className="text-2xl">⚔️</div>
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-lg font-black text-white">{battle.opponent_name_2}</div>
-                        <div className="text-xs text-gray-400">Oponente 2</div>
-                      </div>
-                    </div>
+                              {battle.image_url && (
+                                <div className="mb-4 rounded-xl overflow-hidden">
+                                  <img src={battle.image_url} alt="Battle" className="w-full h-40 object-cover" />
+                                </div>
+                              )}
 
-                    <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
-                      <Calendar className="w-4 h-4" />
-                      {new Date(battle.date_time).toLocaleDateString('es-ES', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
+                              <div className="flex items-center justify-between text-center mb-4">
+                                <div className="flex-1">
+                                  <div className="text-lg font-black text-white">{battle.opponent_name || "???"}</div>
+                                  <div className="text-xs text-gray-400">Oponente 1</div>
+                                </div>
+                                <div className="px-3">
+                                  <div className="text-2xl">⚔️</div>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-lg font-black text-white">{battle.opponent_name_2 || "???"}</div>
+                                  <div className="text-xs text-gray-400">Oponente 2</div>
+                                </div>
+                              </div>
 
-                    {battle.prize && (
-                      <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 text-center">
-                        <Trophy className="w-4 h-4 text-yellow-400 inline mr-2" />
-                        <span className="text-yellow-400 font-bold text-sm">{battle.prize}</span>
-                      </div>
-                    )}
-                  </Card>
-                </Link>
-                ))}
+                              <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+                                <Calendar className="w-4 h-4" />
+                                {new Date(battle.date_time).toLocaleDateString('es-ES', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+
+                              {battle.prize && (
+                                <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-3 text-center">
+                                  <Trophy className="w-4 h-4 text-yellow-400 inline mr-2" />
+                                  <span className="text-yellow-400 font-bold text-sm">{battle.prize}</span>
+                                </div>
+                              )}
+                            </Card>
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {upcomingBattles.length > 3 && (
+                  <>
+                    <button
+                      onClick={scrollBattlesPrev}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-white shadow-lg z-10"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={scrollBattlesNext}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-white shadow-lg z-10"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
@@ -418,40 +479,81 @@ export default function Home() {
                 <p className="text-gray-400">Nuevos torneos muy pronto...</p>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-3 gap-8">
-                {upcomingTournaments.map((tournament) => (
-                <Link key={tournament.id} to={createPageUrl(`DetalleTorneo?id=${tournament.id}`)}>
-                  <Card className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 p-6 rounded-2xl card-hover">
-                    {tournament.image_url && (
-                      <div className="mb-4 rounded-xl overflow-hidden">
-                        <img src={tournament.image_url} alt={tournament.name} className="w-full h-40 object-cover" />
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <Trophy className="w-5 h-5 text-cyan-400" />
-                      <span className="text-cyan-400 font-bold text-sm uppercase">{tournament.game}</span>
-                    </div>
+              <div className="relative">
+                <div className="overflow-hidden" ref={emblaTournamentsRef}>
+                  <div className="flex gap-6">
+                    {upcomingTournaments.map((tournament) => {
+                      const getStatusBadge = (status) => {
+                        const badges = {
+                          upcoming: { text: "Próximo", color: "bg-purple-600" },
+                          registration_open: { text: "Inscripción Abierta", color: "bg-green-600" },
+                          in_progress: { text: "En Curso", color: "bg-blue-600" }
+                        };
+                        return badges[status] || badges.upcoming;
+                      };
+                      const badge = getStatusBadge(tournament.status);
+                      
+                      return (
+                        <div key={tournament.id} className="flex-[0_0_350px] min-w-0">
+                          <Link to={createPageUrl(`DetalleTorneo?id=${tournament.id}`)}>
+                            <Card className="bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border border-cyan-500/30 p-6 rounded-2xl card-hover h-full">
+                              <div className="flex justify-between items-start mb-4">
+                                <span className={`${badge.color} text-white px-3 py-1 rounded-full text-xs font-bold`}>
+                                  {badge.text}
+                                </span>
+                                <Trophy className="w-6 h-6 text-cyan-400" />
+                              </div>
 
-                    <h3 className="text-2xl font-black text-white mb-3">{tournament.name}</h3>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-gray-400 text-sm">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(tournament.start_date).toLocaleDateString('es-ES')}
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-400 text-sm">
-                        <Users className="w-4 h-4" />
-                        {tournament.current_participants}/{tournament.max_participants} participantes
-                      </div>
-                    </div>
+                              {tournament.image_url && (
+                                <div className="mb-4 rounded-xl overflow-hidden">
+                                  <img src={tournament.image_url} alt={tournament.name} className="w-full h-40 object-cover" />
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center gap-2 mb-3">
+                                <span className="text-cyan-400 font-bold text-sm uppercase">{tournament.game}</span>
+                              </div>
 
-                    <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
-                      Ver Torneo
-                    </Button>
-                  </Card>
-                </Link>
-                ))}
+                              <h3 className="text-xl font-black text-white mb-3 line-clamp-2">{tournament.name}</h3>
+                              
+                              <div className="space-y-2 mb-4">
+                                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                  <Calendar className="w-4 h-4" />
+                                  {new Date(tournament.start_date).toLocaleDateString('es-ES')}
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                  <Users className="w-4 h-4" />
+                                  {tournament.current_participants || 0}/{tournament.max_participants} participantes
+                                </div>
+                              </div>
+
+                              <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold">
+                                Ver Torneo
+                              </Button>
+                            </Card>
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {upcomingTournaments.length > 3 && (
+                  <>
+                    <button
+                      onClick={scrollTournamentsPrev}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 bg-cyan-600 hover:bg-cyan-700 rounded-full flex items-center justify-center text-white shadow-lg z-10"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={scrollTournamentsNext}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 bg-cyan-600 hover:bg-cyan-700 rounded-full flex items-center justify-center text-white shadow-lg z-10"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
