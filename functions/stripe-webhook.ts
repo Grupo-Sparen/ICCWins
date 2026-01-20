@@ -38,24 +38,35 @@ Deno.serve(async (req) => {
 
       const metadata = session.metadata;
       if (metadata.type === 'subscription') {
-        const user = await base44.entities.User.filter({ email: metadata.userEmail }).then(u => u[0]);
+        const user = await base44.asServiceRole.entities.User.filter({ email: metadata.userEmail }).then(u => u[0]);
 
         if (user) {
+          // Obtener el plan para obtener el nombre y duración
+          const plan = await base44.asServiceRole.entities.SubscriptionPlan.filter({ id: metadata.planId }).then(p => p[0]);
+          
+          const startDate = new Date();
+          const endDate = new Date(startDate);
+          endDate.setMonth(endDate.getMonth() + (plan?.duration_months || 1));
+          
+          const nextBillingDate = new Date(endDate);
+          
           // Create subscription record in database
           await base44.asServiceRole.entities.Subscription.create({
             user_email: metadata.userEmail,
             user_name: user.full_name,
             plan_id: metadata.planId,
-            plan_name: session.subscription || 'Plan Premium',
+            plan_name: plan?.name_es || 'Plan Premium',
             status: 'active',
-            start_date: new Date().toISOString().split('T')[0],
+            start_date: startDate.toISOString().split('T')[0],
+            end_date: endDate.toISOString().split('T')[0],
+            next_billing_date: nextBillingDate.toISOString().split('T')[0],
             amount_paid: session.amount_total / 100,
             currency: session.currency.toUpperCase(),
             payment_method: 'stripe',
             auto_renew: true,
           });
 
-          console.log('✅ Subscription created for:', metadata.userEmail);
+          console.log('✅ Subscription created for:', metadata.userEmail, 'Plan:', plan?.name_es);
         }
       } else if (metadata.type === 'tournament') {
         const user = await base44.asServiceRole.entities.User.filter({ email: metadata.userEmail }).then(u => u[0]);
