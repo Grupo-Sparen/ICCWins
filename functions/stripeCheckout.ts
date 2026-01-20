@@ -22,19 +22,44 @@ Deno.serve(async (req) => {
     console.log(`📝 Creating checkout for ${type}:`, { priceId, planId, tournamentId });
 
     if (type === 'subscription') {
-      if (!priceId || !planId) {
-        console.error('❌ Missing required parameters for subscription:', { priceId, planId });
-        return Response.json({ error: 'Missing priceId or planId' }, { status: 400 });
+      if (!planId) {
+        console.error('❌ Missing required parameter planId:', { planId });
+        return Response.json({ error: 'Missing planId' }, { status: 400 });
       }
 
-      // Subscription checkout
+      // Obtener el plan de suscripción
+      const plan = await base44.asServiceRole.entities.SubscriptionPlan.filter({ id: planId }).then(p => p[0]);
+      
+      if (!plan) {
+        console.error('❌ Plan not found:', planId);
+        return Response.json({ error: 'Plan not found' }, { status: 404 });
+      }
+
+      const { price_pen, price_usd, duration_months, name_es } = plan;
+      const currency = priceId?.includes('PEN') || !price_usd ? 'pen' : 'usd';
+      const amount = currency === 'pen' ? price_pen : price_usd;
+
+      console.log('💰 Creating subscription checkout:', { planId, currency, amount, duration_months });
+
+      // Subscription checkout con price_data dinámico
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'subscription',
         customer_email: user.email,
         line_items: [
           {
-            price: priceId,
+            price_data: {
+              currency: currency,
+              product_data: {
+                name: name_es || `Suscripción ${duration_months} ${duration_months === 1 ? 'mes' : 'meses'}`,
+                description: `Plan de suscripción por ${duration_months} ${duration_months === 1 ? 'mes' : 'meses'}`,
+              },
+              unit_amount: Math.round(amount * 100),
+              recurring: {
+                interval: 'month',
+                interval_count: duration_months,
+              },
+            },
             quantity: 1,
           },
         ],
