@@ -5,11 +5,24 @@ import { Menu, X, Trophy, Gift, Crown, Mic, Gamepad2, CreditCard, Shield, Swords
 import { LanguageProvider, useLanguage } from "./components/LanguageContext";
 import LanguageCurrencySelector from "./components/LanguageCurrencySelector";
 import { translations } from "./components/translations";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 
 function LayoutContent({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { language } = useLanguage();
   const t = translations[language].nav;
+
+  const { data: user } = useQuery({
+    queryKey: ["current-user-layout"],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch {
+        return null;
+      }
+    }
+  });
 
   const navLinks = [
     { name: t.home, path: "Home", icon: Trophy },
@@ -103,14 +116,16 @@ function LayoutContent({ children, currentPageName }) {
                   {link.name}
                 </Link>
               ))}
-              
-              <Link
-                to={createPageUrl("AdminDashboard")}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
-              >
-                <Shield className="w-4 h-4" />
-                {t.admin}
-              </Link>
+
+              {user?.role === "admin" && (
+                <Link
+                  to={createPageUrl("AdminDashboard")}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm rounded-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  {t.admin}
+                </Link>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -140,16 +155,18 @@ function LayoutContent({ children, currentPageName }) {
                 >
                   <link.icon className="w-5 h-5" />
                   {link.name}
-                </Link>
-              ))}
-              <Link
-                to={createPageUrl("AdminDashboard")}
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg"
-              >
-                <Shield className="w-5 h-5" />
-                {t.admin}
-              </Link>
+                  </Link>
+                  ))}
+                  {user?.role === "admin" && (
+                  <Link
+                  to={createPageUrl("AdminDashboard")}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg"
+                  >
+                  <Shield className="w-5 h-5" />
+                  {t.admin}
+                  </Link>
+                  )}
             </div>
           </div>
         )}
