@@ -16,11 +16,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { type, priceId, planId, tournamentId } = await req.json();
+    const body = await req.json();
+    const { type, priceId, planId, tournamentId, registrationData } = body;
 
     console.log(`📝 Creating checkout for ${type}:`, { priceId, planId, tournamentId });
 
     if (type === 'subscription') {
+      if (!priceId || !planId) {
+        console.error('❌ Missing required parameters for subscription:', { priceId, planId });
+        return Response.json({ error: 'Missing priceId or planId' }, { status: 400 });
+      }
+
       // Subscription checkout
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -46,7 +52,10 @@ Deno.serve(async (req) => {
       return Response.json({ sessionUrl: session.url });
     } else if (type === 'tournament') {
       // Tournament entry fee checkout
-      const { registrationData } = await req.json();
+      if (!tournamentId || !registrationData) {
+        console.error('❌ Missing required parameters for tournament:', { tournamentId, registrationData });
+        return Response.json({ error: 'Missing tournamentId or registrationData' }, { status: 400 });
+      }
       
       const tournament = await base44.entities.Tournament.filter({ id: tournamentId }).then(t => t[0]);
 
