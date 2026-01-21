@@ -158,9 +158,32 @@ export default function BracketManagement({ tournaments }) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["bracket-matches", selectedTournament?.id]);
-      queryClient.invalidateQueries(["admin-tournaments"]);
+      // Solo invalidar las queries específicas de brackets, sin hacer refetch automático
+      queryClient.invalidateQueries({ 
+        queryKey: ["bracket-matches", selectedTournament?.id],
+        refetchType: 'none' // No refetch automáticamente, esperamos que el usuario cierre el diálogo
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ["admin-tournaments"],
+        refetchType: 'none' 
+      });
+      
+      // Actualizar los datos localmente sin hacer fetch
+      queryClient.setQueryData(["bracket-matches", selectedTournament?.id], (oldData) => {
+        if (!oldData) return oldData;
+        return oldData.map(m => 
+          m.id === confirmDialog.match?.id 
+            ? { ...m, winner_id: confirmDialog.winnerId, winner_name: confirmDialog.winnerName, status: "completed" }
+            : m
+        );
+      });
+      
       setConfirmDialog({ open: false, match: null, winnerId: null, winnerName: null });
+      
+      // Refetch manual después de cerrar el diálogo (con delay para evitar rate limit)
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["bracket-matches", selectedTournament?.id] });
+      }, 500);
     }
   });
 
