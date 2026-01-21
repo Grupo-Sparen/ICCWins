@@ -16,6 +16,19 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
     email: "",
     screenshot: null
   });
+
+  // Pre-fill user email
+  React.useEffect(() => {
+    base44.auth.me().then(user => {
+      if (user) {
+        setFormData(prev => ({ 
+          ...prev, 
+          name: user.full_name || "",
+          email: user.email || "" 
+        }));
+      }
+    }).catch(() => {});
+  }, []);
   const [uploadedScreenshotUrl, setUploadedScreenshotUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
