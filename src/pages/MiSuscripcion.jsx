@@ -45,11 +45,26 @@ export default function MiSuscripcion() {
 
   if (!user) {
     return (
-      <div className="min-h-screen py-20 flex items-center justify-center">
-        <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-12 rounded-3xl text-center max-w-md">
+      <div className="min-h-screen py-20 flex items-center justify-center px-4">
+        <Card className="bg-gradient-to-br from-purple-900/30 to-transparent border border-purple-500/20 p-12 rounded-3xl text-center max-w-md w-full">
           <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-black text-white mb-4">Inicia Sesión</h2>
-          <p className="text-gray-400 mb-6">Debes iniciar sesión para ver tu suscripción</p>
+          <h2 className="text-2xl font-black text-white mb-4">Inicia Sesión o Regístrate</h2>
+          <p className="text-gray-400 mb-8">Debes tener una cuenta para ver tu suscripción</p>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+            >
+              Iniciar Sesión
+            </Button>
+            <Button
+              onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              variant="outline"
+              className="w-full h-12 border-purple-500/50 text-white hover:bg-purple-500/10"
+            >
+              Crear Cuenta Nueva
+            </Button>
+          </div>
         </Card>
       </div>
     );
