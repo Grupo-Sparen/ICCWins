@@ -11,12 +11,24 @@ export const useLanguage = () => {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState("es");
-  const [currency, setCurrency] = useState("PEN");
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem("language") || "es";
+  });
+  const [currency, setCurrency] = useState(() => {
+    return localStorage.getItem("currency") || "PEN";
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Detect user location on mount
+    // Detect user location on mount only if no preferences saved
+    const savedLanguage = localStorage.getItem("language");
+    const savedCurrency = localStorage.getItem("currency");
+    
+    if (savedLanguage && savedCurrency) {
+      setIsLoading(false);
+      return;
+    }
+
     const detectLocation = async () => {
       try {
         const response = await fetch("https://ipapi.co/json/");
@@ -26,23 +38,27 @@ export const LanguageProvider = ({ children }) => {
         const countryCode = data.country_code;
         const spanishCountries = ["PE", "AR", "CL", "CO", "MX", "EC", "BO", "PY", "UY", "VE", "PA", "CR", "ES"];
         
-        if (spanishCountries.includes(countryCode)) {
-          setLanguage("es");
-        } else {
-          setLanguage("en");
-        }
+        const detectedLanguage = spanishCountries.includes(countryCode) ? "es" : "en";
+        const detectedCurrency = countryCode === "PE" ? "PEN" : "USD";
 
-        // Set currency based on country
-        if (countryCode === "PE") {
-          setCurrency("PEN");
-        } else {
-          setCurrency("USD");
+        if (!savedLanguage) {
+          setLanguage(detectedLanguage);
+          localStorage.setItem("language", detectedLanguage);
+        }
+        if (!savedCurrency) {
+          setCurrency(detectedCurrency);
+          localStorage.setItem("currency", detectedCurrency);
         }
       } catch (error) {
         console.error("Error detecting location:", error);
-        // Default to Spanish and PEN if detection fails
-        setLanguage("es");
-        setCurrency("PEN");
+        if (!savedLanguage) {
+          setLanguage("es");
+          localStorage.setItem("language", "es");
+        }
+        if (!savedCurrency) {
+          setCurrency("PEN");
+          localStorage.setItem("currency", "PEN");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -51,12 +67,37 @@ export const LanguageProvider = ({ children }) => {
     detectLocation();
   }, []);
 
+  const handleSetLanguage = (newLanguage) => {
+    setLanguage(newLanguage);
+    localStorage.setItem("language", newLanguage);
+  };
+
+  const handleSetCurrency = (newCurrency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem("currency", newCurrency);
+  };
+
+  const convertPrice = (priceInPEN, targetCurrency = currency) => {
+    if (targetCurrency === "USD") {
+      return (priceInPEN / 3.4).toFixed(2);
+    }
+    return priceInPEN.toFixed(2);
+  };
+
+  const formatPrice = (priceInPEN, targetCurrency = currency) => {
+    const convertedPrice = convertPrice(priceInPEN, targetCurrency);
+    const symbol = targetCurrency === "PEN" ? "S/" : "$";
+    return `${symbol}${convertedPrice}`;
+  };
+
   const value = {
     language,
-    setLanguage,
+    setLanguage: handleSetLanguage,
     currency,
-    setCurrency,
-    isLoading
+    setCurrency: handleSetCurrency,
+    isLoading,
+    convertPrice,
+    formatPrice
   };
 
   return (
