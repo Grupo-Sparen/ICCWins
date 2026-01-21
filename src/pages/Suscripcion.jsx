@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import LanguageCurrencySelector from "../components/LanguageCurrencySelector";
 import SubscriptionModal from "../components/SubscriptionModal";
 import PrizesSlider from "../components/PrizesSlider";
+import { useLanguage } from "../components/LanguageContext";
 
 const translations = {
   es: {
@@ -50,24 +51,9 @@ const translations = {
 };
 
 export default function Suscripcion() {
-  const [language, setLanguage] = useState("es");
-  const [currency, setCurrency] = useState("PEN");
+  const { language, currency, convertPrice, formatPrice } = useLanguage();
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [detectedCountry, setDetectedCountry] = useState(null);
   const queryClient = useQueryClient();
-
-  // Auto-detect country and set currency
-  React.useEffect(() => {
-    base44.functions.invoke('detectCountry').then(response => {
-      const data = response.data;
-      setCurrency(data.currency);
-      setDetectedCountry(data.country);
-      console.log('🌍 Auto-detected country:', data.country, '| Currency:', data.currency);
-    }).catch(error => {
-      console.error('Error detecting country:', error);
-      setCurrency('USD'); // Default to USD on error
-    });
-  }, []);
 
   const t = translations[language];
 
@@ -96,11 +82,13 @@ export default function Suscripcion() {
     }
   });
 
-  const formatPrice = (plan) => {
+  const getPlanPrice = (plan) => {
     if (!plan) return "";
-    const price = currency === "PEN" ? plan.price_pen : plan.price_usd;
+    // Price is stored in PEN, convert if needed
+    const priceInPEN = plan.price_pen;
+    const convertedPrice = currency === "USD" ? convertPrice(priceInPEN) : priceInPEN.toFixed(2);
     const symbol = currency === "PEN" ? "S/" : "$";
-    return `${symbol}${price}`;
+    return `${symbol}${convertedPrice}`;
   };
 
   const getPlanName = (plan) => {
@@ -123,12 +111,7 @@ export default function Suscripcion() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Language & Currency Selector */}
         <div className="flex justify-end mb-8">
-          <LanguageCurrencySelector 
-            language={language} 
-            setLanguage={setLanguage}
-            currency={currency}
-            setCurrency={setCurrency}
-          />
+          <LanguageCurrencySelector />
         </div>
 
         {/* Header */}
@@ -177,7 +160,7 @@ export default function Suscripcion() {
                 {/* Price */}
                 <div className="mb-6">
                   <div className="text-6xl font-black text-white mb-2">
-                    {formatPrice(plan)}
+                    {getPlanPrice(plan)}
                   </div>
                   <div className="text-gray-300 font-bold">
                     {plan.duration_months === 1 ? t.perMonth : plan.duration_months === 3 ? t.perQuarter : plan.duration_months === 6 ? t.perSemester : `/${plan.duration_months} ${language === 'es' ? 'meses' : 'months'}`}
