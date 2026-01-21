@@ -97,6 +97,18 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // Verificar si el usuario está autenticado
+      const currentUser = await base44.auth.me().catch(() => null);
+      
+      if (!currentUser) {
+        alert(language === "es" 
+          ? "Debes iniciar sesión o crear una cuenta para suscribirte."
+          : "You must login or create an account to subscribe.");
+        base44.auth.redirectToLogin(window.location.href);
+        setIsSubmitting(false);
+        return;
+      }
+
       // Map plan duration to Stripe price IDs
       const stripePriceIds = {
         1: currency === "PEN" ? "price_1SoRnvAK7SnVWQyCUBZ1ZmKr" : "price_1SoRnvAK7SnVWQyCsFd5ZBlE",
