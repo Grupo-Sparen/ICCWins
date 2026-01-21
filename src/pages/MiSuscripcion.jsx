@@ -60,7 +60,7 @@ export default function MiSuscripcion() {
             <Button
               onClick={() => base44.auth.redirectToLogin(window.location.href)}
               variant="outline"
-              className="w-full h-12 border-purple-500/50 text-white hover:bg-purple-500/10"
+              className="w-full h-12 border-purple-500/50 text-black bg-white hover:bg-gray-100"
             >
               Crear Cuenta Nueva
             </Button>

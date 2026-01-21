@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, CreditCard, Upload, CheckCircle2, Loader2, PartyPopper } from "lucide-react";
+import { X, CreditCard, Upload, CheckCircle2, Loader2, PartyPopper, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [alertDialog, setAlertDialog] = useState({ show: false, message: "" });
 
   const queryClient = useQueryClient();
 
@@ -101,10 +102,12 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
       const currentUser = await base44.auth.me().catch(() => null);
       
       if (!currentUser) {
-        alert(language === "es" 
-          ? "Debes iniciar sesión o crear una cuenta para suscribirte."
-          : "You must login or create an account to subscribe.");
-        base44.auth.redirectToLogin(window.location.href);
+        setAlertDialog({
+          show: true,
+          message: language === "es" 
+            ? "Debes iniciar sesión o crear una cuenta para suscribirte."
+            : "You must login or create an account to subscribe."
+        });
         setIsSubmitting(false);
         return;
       }
@@ -121,9 +124,12 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
 
       // Check if running in iframe
       if (window.self !== window.top) {
-        alert(language === "es" 
-          ? "El pago solo funciona desde la app publicada. Por favor abre en una nueva pestaña."
-          : "Payment only works from the published app. Please open in a new tab.");
+        setAlertDialog({
+          show: true,
+          message: language === "es" 
+            ? "El pago solo funciona desde la app publicada. Por favor abre en una nueva pestaña."
+            : "Payment only works from the published app. Please open in a new tab."
+        });
         setIsSubmitting(false);
         return;
       }
@@ -139,9 +145,12 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
       }
     } catch (error) {
       console.error("Error creating checkout:", error);
-      alert(language === "es" 
-        ? "Error al procesar el pago. Por favor intenta nuevamente."
-        : "Error processing payment. Please try again.");
+      setAlertDialog({
+        show: true,
+        message: language === "es" 
+          ? "Error al procesar el pago. Por favor intenta nuevamente."
+          : "Error processing payment. Please try again."
+      });
       setIsSubmitting(false);
     }
   };
@@ -155,6 +164,47 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
   const isFormValid = () => {
     return true; // Stripe handles validation
   };
+
+  // Alert Dialog
+  if (alertDialog.show) {
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <Card className="bg-gradient-to-br from-purple-900/95 to-pink-900/95 border-2 border-purple-500/40 p-8 rounded-3xl max-w-md w-full text-center">
+          <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+          <p className="text-xl text-white mb-6">{alertDialog.message}</p>
+          <div className="flex gap-3">
+            {alertDialog.message.includes("iniciar sesión") || alertDialog.message.includes("login") ? (
+              <>
+                <Button
+                  onClick={() => {
+                    setAlertDialog({ show: false, message: "" });
+                    base44.auth.redirectToLogin(window.location.href);
+                  }}
+                  className="flex-1 h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+                >
+                  {language === "es" ? "Iniciar Sesión" : "Login"}
+                </Button>
+                <Button
+                  onClick={() => setAlertDialog({ show: false, message: "" })}
+                  variant="outline"
+                  className="flex-1 h-12 border-purple-500/50 text-white hover:bg-purple-500/10"
+                >
+                  {language === "es" ? "Cancelar" : "Cancel"}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => setAlertDialog({ show: false, message: "" })}
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold"
+              >
+                {language === "es" ? "Entendido" : "OK"}
+              </Button>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   if (showSuccess) {
     return (
