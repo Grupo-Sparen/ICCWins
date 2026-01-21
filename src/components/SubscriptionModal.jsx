@@ -283,7 +283,7 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
 
           {/* Yape Payment - Only for Peru */}
           {isPeru && (
-            <TabsContent value="yape" className="space-y-6">
+            <TabsContent value="yape" className="space-y-6"  >
             <Card className="bg-purple-600/20 border border-purple-500/30 p-4 rounded-xl">
               <p className="text-white font-bold text-center">{translations.yapeTo}</p>
               <p className="text-yellow-400 font-black text-center text-xl">{translations.amount}: {symbol}{price}</p>
@@ -344,8 +344,9 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
                 </div>
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+            )}
+            </Tabs>
 
         <div className="flex gap-3 mt-8">
           <Button

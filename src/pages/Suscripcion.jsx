@@ -53,7 +53,21 @@ export default function Suscripcion() {
   const [language, setLanguage] = useState("es");
   const [currency, setCurrency] = useState("PEN");
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [detectedCountry, setDetectedCountry] = useState(null);
   const queryClient = useQueryClient();
+
+  // Auto-detect country and set currency
+  React.useEffect(() => {
+    base44.functions.invoke('detectCountry').then(response => {
+      const data = response.data;
+      setCurrency(data.currency);
+      setDetectedCountry(data.country);
+      console.log('🌍 Auto-detected country:', data.country, '| Currency:', data.currency);
+    }).catch(error => {
+      console.error('Error detecting country:', error);
+      setCurrency('USD'); // Default to USD on error
+    });
+  }, []);
 
   const t = translations[language];
 
