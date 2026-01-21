@@ -283,70 +283,70 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
 
           {/* Yape Payment - Only for Peru */}
           {isPeru && (
-            <TabsContent value="yape" className="space-y-6"  >
-            <Card className="bg-purple-600/20 border border-purple-500/30 p-4 rounded-xl">
-              <p className="text-white font-bold text-center">{translations.yapeTo}</p>
-              <p className="text-yellow-400 font-black text-center text-xl">{translations.amount}: {symbol}{price}</p>
-            </Card>
+            <TabsContent value="yape" className="space-y-6">
+              <Card className="bg-purple-600/20 border border-purple-500/30 p-4 rounded-xl">
+                <p className="text-white font-bold text-center">{translations.yapeTo}</p>
+                <p className="text-yellow-400 font-black text-center text-xl">{translations.amount}: {symbol}{price}</p>
+              </Card>
 
-            <div className="space-y-4">
-              <div>
-                <Label className="text-white font-bold mb-2 block">{translations.name}</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="bg-black/30 border-purple-500/30 text-white"
-                  placeholder="Juan Pérez"
-                />
-              </div>
-
-              <div>
-                <Label className="text-white font-bold mb-2 block">{translations.email}</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="bg-black/30 border-purple-500/30 text-white"
-                  placeholder="tu@email.com"
-                />
-              </div>
-
-              <div>
-                <Label className="text-white font-bold mb-3 block flex items-center gap-2">
-                  <Upload className="w-5 h-5" />
-                  {translations.uploadScreenshot}
-                </Label>
-                <div className="border-2 border-dashed border-purple-500/30 rounded-2xl p-6 text-center hover:border-purple-500/60 transition-colors">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleScreenshotUpload}
-                    className="hidden"
-                    id="screenshot-upload"
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-white font-bold mb-2 block">{translations.name}</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="bg-black/30 border-purple-500/30 text-white"
+                    placeholder="Juan Pérez"
                   />
-                  <label htmlFor="screenshot-upload" className="cursor-pointer">
-                    {isUploading ? (
-                      <div className="text-purple-400">{translations.uploading}</div>
-                    ) : uploadedScreenshotUrl ? (
-                      <div className="space-y-3">
-                        <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
-                        <p className="text-green-400 font-bold">¡Comprobante subido!</p>
-                        <img src={uploadedScreenshotUrl} alt="Screenshot" className="max-w-xs mx-auto rounded-xl" />
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <Upload className="w-12 h-12 text-purple-400 mx-auto" />
-                        <p className="text-white font-bold">Click para subir imagen</p>
-                        <p className="text-sm text-gray-400">PNG, JPG hasta 10MB</p>
-                      </div>
-                    )}
-                  </label>
+                </div>
+
+                <div>
+                  <Label className="text-white font-bold mb-2 block">{translations.email}</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="bg-black/30 border-purple-500/30 text-white"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-white font-bold mb-3 block flex items-center gap-2">
+                    <Upload className="w-5 h-5" />
+                    {translations.uploadScreenshot}
+                  </Label>
+                  <div className="border-2 border-dashed border-purple-500/30 rounded-2xl p-6 text-center hover:border-purple-500/60 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleScreenshotUpload}
+                      className="hidden"
+                      id="screenshot-upload"
+                    />
+                    <label htmlFor="screenshot-upload" className="cursor-pointer">
+                      {isUploading ? (
+                        <div className="text-purple-400">{translations.uploading}</div>
+                      ) : uploadedScreenshotUrl ? (
+                        <div className="space-y-3">
+                          <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
+                          <p className="text-green-400 font-bold">¡Comprobante subido!</p>
+                          <img src={uploadedScreenshotUrl} alt="Screenshot" className="max-w-xs mx-auto rounded-xl" />
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <Upload className="w-12 h-12 text-purple-400 mx-auto" />
+                          <p className="text-white font-bold">Click para subir imagen</p>
+                          <p className="text-sm text-gray-400">PNG, JPG hasta 10MB</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
             </TabsContent>
-            )}
-            </Tabs>
+          )}
+          </Tabs>
 
         <div className="flex gap-3 mt-8">
           <Button
