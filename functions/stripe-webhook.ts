@@ -41,22 +41,57 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Handle different event types
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      console.log('✅ Checkout completed:', session.id);
-      console.log('Session data:', JSON.stringify({
-        customer_email: session.customer_email,
-        amount_total: session.amount_total,
-        metadata: session.metadata
-      }));
+    if (event.type === 'checkout.session.completed' || event.type === 'payment_intent.succeeded') {
+      let session = event.data.object;
+      let metadata = session.metadata || {};
+      let customerEmail = session.customer_email;
+      let amountTotal = session.amount_total;
+      let currency = session.currency;
 
-      const metadata = session.metadata || {};
+      // If payment_intent.succeeded, fetch the checkout session
+      if (event.type === 'payment_intent.succeeded') {
+        console.log('💳 Payment intent succeeded:', session.id);
+        // Try to get customer email from charges
+        if (session.charges && session.charges.data && session.charges.data.length > 0) {
+          const charge = session.charges.data[0];
+          customerEmail = charge.billing_details?.email || customerEmail;
+        }
+        amountTotal = session.amount;
+        currency = session.currency;
+        
+        console.log('Payment Intent data:', JSON.stringify({
+          customer_email: customerEmail,
+          amount: amountTotal,
+          metadata: metadata,
+          description: session.description
+        }));
+      } else {
+        console.log('✅ Checkout completed:', session.id);
+        console.log('Session data:', JSON.stringify({
+          customer_email: customerEmail,
+          amount_total: amountTotal,
+          metadata: metadata
+        }));
+      }
+
       console.log('Metadata:', metadata);
       
       if (metadata.type === 'subscription') {
         const user = await base44.asServiceRole.entities.User.filter({ email: metadata.userEmail }).then(u => u[0]);
 
         if (user) {
+          // Check if subscription already exists
+          const existingSubs = await base44.asServiceRole.entities.Subscription.filter({
+            user_email: metadata.userEmail,
+            plan_id: metadata.planId,
+            status: 'active'
+          });
+
+          if (existingSubs.length > 0) {
+            console.log('⚠️ Subscription already exists for:', metadata.userEmail);
+            return Response.json({ received: true, message: 'Subscription already exists' });
+          }
+
           // Obtener el plan para obtener el nombre y duración
           const plan = await base44.asServiceRole.entities.SubscriptionPlan.filter({ id: metadata.planId }).then(p => p[0]);
           
@@ -76,13 +111,15 @@ Deno.serve(async (req) => {
             start_date: startDate.toISOString().split('T')[0],
             end_date: endDate.toISOString().split('T')[0],
             next_billing_date: nextBillingDate.toISOString().split('T')[0],
-            amount_paid: session.amount_total / 100,
-            currency: session.currency.toUpperCase(),
+            amount_paid: amountTotal / 100,
+            currency: currency ? currency.toUpperCase() : 'USD',
             payment_method: 'stripe',
             auto_renew: true,
           });
 
           console.log('✅ Subscription created for:', metadata.userEmail, 'Plan:', plan?.name_es);
+        } else {
+          console.error('❌ User not found for email:', metadata.userEmail);
         }
       } else if (metadata.type === 'tournament') {
         const user = await base44.asServiceRole.entities.User.filter({ email: metadata.userEmail }).then(u => u[0]);
@@ -102,7 +139,7 @@ Deno.serve(async (req) => {
             console.log('💳 Updating participant:', participants[0].id);
             await base44.asServiceRole.entities.TournamentParticipant.update(participants[0].id, {
               payment_status: 'paid',
-              amount_paid: session.amount_total / 100,
+              amount_paid: amountTotal / 100,
               payment_method: 'stripe',
               payment_date: new Date().toISOString(),
               stripe_session_id: session.id,
