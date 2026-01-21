@@ -11,11 +11,23 @@ import { createPageUrl } from "../utils";
 
 export default function SubscriptionModal({ plan, currency, language, onClose }) {
   const [paymentMethod, setPaymentMethod] = useState("stripe");
+  const [isPeru, setIsPeru] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     screenshot: null
   });
+
+  // Detect if user is from Peru
+  React.useEffect(() => {
+    base44.functions.invoke('detectCountry').then(response => {
+      const data = response.data;
+      setIsPeru(data.isPeru);
+      console.log('🌍 User is from Peru:', data.isPeru);
+    }).catch(() => {
+      setIsPeru(false);
+    });
+  }, []);
 
   // Pre-fill user email
   React.useEffect(() => {
@@ -250,13 +262,15 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
         </Card>
 
         <Tabs value={paymentMethod} onValueChange={setPaymentMethod} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-black/30">
+          <TabsList className={`grid w-full ${isPeru ? 'grid-cols-2' : 'grid-cols-1'} mb-6 bg-black/30`}>
             <TabsTrigger value="stripe" className="data-[state=active]:bg-green-600">
               {translations.stripe}
             </TabsTrigger>
-            <TabsTrigger value="yape" className="data-[state=active]:bg-purple-600">
-              {translations.yape}
-            </TabsTrigger>
+            {isPeru && (
+              <TabsTrigger value="yape" className="data-[state=active]:bg-purple-600">
+                {translations.yape}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Stripe Payment */}
@@ -267,8 +281,9 @@ export default function SubscriptionModal({ plan, currency, language, onClose })
             </Card>
           </TabsContent>
 
-          {/* Yape Payment */}
-          <TabsContent value="yape" className="space-y-6">
+          {/* Yape Payment - Only for Peru */}
+          {isPeru && (
+            <TabsContent value="yape" className="space-y-6">
             <Card className="bg-purple-600/20 border border-purple-500/30 p-4 rounded-xl">
               <p className="text-white font-bold text-center">{translations.yapeTo}</p>
               <p className="text-yellow-400 font-black text-center text-xl">{translations.amount}: {symbol}{price}</p>
