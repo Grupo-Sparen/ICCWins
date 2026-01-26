@@ -37,9 +37,6 @@ export default function Batallas() {
     challenge_description: "",
     use_boosters: false,
     diamonds_required: "10k",
-    musical_section: "indistinto",
-    flyer_url: "",
-    needs_flyer_support: false,
     rules_confirmed: false,
     additional_comments: "",
     opponent_name: "",
@@ -316,7 +313,7 @@ export default function Batallas() {
             <DialogHeader>
               <DialogTitle className="text-2xl font-black text-white flex items-center gap-2">
                 <Swords className="w-6 h-6 text-red-400" />
-                Crear Nueva Batalla
+                Solicitud Batalla Oficial TikTok
               </DialogTitle>
               {user?.role !== "admin" && (
                 <p className="text-yellow-400 text-sm font-semibold mt-2">
@@ -333,7 +330,7 @@ export default function Batallas() {
                 </h3>
                 
                 <div className="space-y-2">
-                  <Label className="text-white font-bold">Nombre artístico / Usuario de TikTok *</Label>
+                  <Label className="text-white font-bold">Usuario de TikTok *</Label>
                   <Input
                     required
                     value={battleForm.artistic_name}
@@ -388,16 +385,28 @@ export default function Batallas() {
                   <Label className="text-white font-bold">Tipo de batalla *</Label>
                   <RadioGroup value={battleForm.battle_type} onValueChange={(value) => setBattleForm({ ...battleForm, battle_type: value })}>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="oficial" id="oficial" className="border-orange-500 text-orange-500" />
-                      <Label htmlFor="oficial" className="text-white cursor-pointer">Batalla oficial</Label>
+                      <RadioGroupItem value="creadores_grandes" id="creadores_grandes" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="creadores_grandes" className="text-white cursor-pointer">Creadores grandes</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="batallita_oficial" id="batallita" className="border-orange-500 text-orange-500" />
-                      <Label htmlFor="batallita" className="text-white cursor-pointer">Batallita oficial</Label>
+                      <RadioGroupItem value="arregladas" id="arregladas" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="arregladas" className="text-white cursor-pointer">Arregladas</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="musical" id="musical" className="border-orange-500 text-orange-500" />
-                      <Label htmlFor="musical" className="text-white cursor-pointer">Batalla musical</Label>
+                      <RadioGroupItem value="oficiales" id="oficiales" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="oficiales" className="text-white cursor-pointer">Oficiales</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="musicales" id="musicales" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="musicales" className="text-white cursor-pointer">Musicales</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="gammers" id="gammers" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="gammers" className="text-white cursor-pointer">Gammers</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="random" id="random" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="random" className="text-white cursor-pointer">Random</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -468,7 +477,7 @@ export default function Batallas() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="mejor_3" id="mejor_3" className="border-orange-500 text-orange-500" />
-                      <Label htmlFor="mejor_3" className="text-white cursor-pointer">1 ronda (mejor de 3)</Label>
+                      <Label htmlFor="mejor_3" className="text-white cursor-pointer">Mejor de 3</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="otro" id="otro_rounds" className="border-orange-500 text-orange-500" />
@@ -502,6 +511,20 @@ export default function Batallas() {
                     />
                   </div>
                 )}
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">¿Necesito Host (promoción de la batalla)?</Label>
+                  <RadioGroup value={battleForm.needs_host ? "si" : "no"} onValueChange={(value) => setBattleForm({ ...battleForm, needs_host: value === "si" })}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="si" id="host_si" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="host_si" className="text-white cursor-pointer">Sí</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="host_no" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="host_no" className="text-white cursor-pointer">No</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
               </div>
 
               {/* 3️⃣ Reglas y condiciones */}
@@ -546,62 +569,12 @@ export default function Batallas() {
                   </RadioGroup>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-white font-bold">¿La batalla será en la parte musical? *</Label>
-                  <RadioGroup value={battleForm.musical_section} onValueChange={(value) => setBattleForm({ ...battleForm, musical_section: value })}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="si" id="musical_si" className="border-yellow-500 text-yellow-500" />
-                      <Label htmlFor="musical_si" className="text-white cursor-pointer">Sí</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="musical_no" className="border-yellow-500 text-yellow-500" />
-                      <Label htmlFor="musical_no" className="text-white cursor-pointer">No</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="indistinto" id="indistinto" className="border-yellow-500 text-yellow-500" />
-                      <Label htmlFor="indistinto" className="text-white cursor-pointer">Indistinto</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
               </div>
 
-              {/* 4️⃣ Material promocional */}
-              <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-4 space-y-4">
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  4️⃣ Material promocional
-                </h3>
-
-                <div className="space-y-2">
-                  <Label className="text-white font-bold">Subir flyer oficial de la batalla *</Label>
-                  <p className="text-xs text-gray-400">El flyer debe incluir fecha, hora, participantes y tipo de batalla</p>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, 'flyer_url')}
-                    disabled={uploadingImage}
-                    className="bg-black/30 border-green-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-green-700"
-                  />
-                  {uploadingImage && <span className="text-green-400 text-sm">Subiendo...</span>}
-                  {battleForm.flyer_url && (
-                    <img src={battleForm.flyer_url} alt="Flyer" className="w-full h-48 object-cover rounded-xl mt-2" />
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="flyer_support" 
-                    checked={battleForm.needs_flyer_support}
-                    onCheckedChange={(checked) => setBattleForm({ ...battleForm, needs_flyer_support: checked })}
-                    className="border-green-500"
-                  />
-                  <Label htmlFor="flyer_support" className="text-white cursor-pointer">¿Deseas apoyo para diseño del flyer?</Label>
-                </div>
-              </div>
-
-              {/* 5️⃣ Confirmación */}
+              {/* 4️⃣ Confirmación */}
               <div className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-4 space-y-4">
                 <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  5️⃣ Confirmación
+                  4️⃣ Confirmación
                 </h3>
 
                 <div className="flex items-center space-x-2">
