@@ -202,7 +202,7 @@ export default function Batallas() {
               className="h-12 px-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold shadow-lg shadow-red-500/30"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Crear Batalla
+              Solicitud Batalla
             </Button>
           </div>
           
