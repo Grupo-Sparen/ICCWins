@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -23,9 +25,25 @@ export default function Batallas() {
   const [showBattleForm, setShowBattleForm] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [battleForm, setBattleForm] = useState({
+    artistic_name: "",
+    contact_name: "",
+    contact_email: "",
+    contact_whatsapp: "",
+    battle_type: "oficial",
+    date_time: "",
+    timezone: "",
+    rounds: "1_ronda",
+    has_challenge: false,
+    challenge_description: "",
+    use_boosters: false,
+    diamonds_required: "10k",
+    musical_section: "indistinto",
+    flyer_url: "",
+    needs_flyer_support: false,
+    rules_confirmed: false,
+    additional_comments: "",
     opponent_name: "",
     opponent_name_2: "",
-    date_time: "",
     rules: "",
     prize: "",
     image_url: ""
@@ -76,9 +94,25 @@ export default function Batallas() {
       queryClient.invalidateQueries(["battles"]);
       setShowBattleForm(false);
       setBattleForm({
+        artistic_name: "",
+        contact_name: "",
+        contact_email: "",
+        contact_whatsapp: "",
+        battle_type: "oficial",
+        date_time: "",
+        timezone: "",
+        rounds: "1_ronda",
+        has_challenge: false,
+        challenge_description: "",
+        use_boosters: false,
+        diamonds_required: "10k",
+        musical_section: "indistinto",
+        flyer_url: "",
+        needs_flyer_support: false,
+        rules_confirmed: false,
+        additional_comments: "",
         opponent_name: "",
         opponent_name_2: "",
-        date_time: "",
         rules: "",
         prize: "",
         image_url: ""
@@ -104,13 +138,13 @@ export default function Batallas() {
     }
   });
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = async (e, fieldName = 'image_url') => {
     const file = e.target.files[0];
     if (!file) return;
     setUploadingImage(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
-      setBattleForm({ ...battleForm, image_url: result.file_url });
+      setBattleForm({ ...battleForm, [fieldName]: result.file_url });
       toast.success("Imagen subida correctamente");
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -291,111 +325,308 @@ export default function Batallas() {
               )}
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-white font-bold">Username TikTok Oponente 1 *</Label>
-                <Input
-                  required
-                  value={battleForm.opponent_name}
-                  onChange={(e) => setBattleForm({ ...battleForm, opponent_name: e.target.value })}
-                  className="bg-black/30 border-red-500/30 text-white"
-                  placeholder="@username1"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-white font-bold">Username TikTok Oponente 2 *</Label>
-                <Input
-                  required
-                  value={battleForm.opponent_name_2}
-                  onChange={(e) => setBattleForm({ ...battleForm, opponent_name_2: e.target.value })}
-                  className="bg-black/30 border-red-500/30 text-white"
-                  placeholder="@username2"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto px-1">
+              {/* 1️⃣ Información del solicitante */}
+              <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 space-y-4">
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  1️⃣ Información del solicitante
+                </h3>
+                
                 <div className="space-y-2">
-                  <Label className="text-white font-bold">Fecha *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal bg-black/30 border-red-500/30 text-white hover:bg-black/40 hover:text-white"
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {battleForm.date_time ? format(new Date(battleForm.date_time), 'PPP', { locale: es }) : <span className="text-gray-400">Seleccionar</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <CalendarComponent
-                        mode="single"
-                        selected={battleForm.date_time ? new Date(battleForm.date_time) : undefined}
-                        onSelect={(date) => {
-                          if (date) {
-                            const currentTime = battleForm.date_time ? new Date(battleForm.date_time) : new Date();
-                            date.setHours(currentTime.getHours(), currentTime.getMinutes());
-                            setBattleForm({ ...battleForm, date_time: date.toISOString() });
-                          }
-                        }}
-                        locale={es}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <Label className="text-white font-bold">Nombre artístico / Usuario de TikTok *</Label>
+                  <Input
+                    required
+                    value={battleForm.artistic_name}
+                    onChange={(e) => setBattleForm({ ...battleForm, artistic_name: e.target.value })}
+                    className="bg-black/30 border-red-500/30 text-white"
+                    placeholder="@usuario"
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white font-bold">Hora *</Label>
+                  <Label className="text-white font-bold">Nombre de contacto *</Label>
                   <Input
-                    type="time"
-                    value={battleForm.date_time ? format(new Date(battleForm.date_time), 'HH:mm') : ""}
-                    onChange={(e) => {
-                      const [hours, minutes] = e.target.value.split(':');
-                      const date = battleForm.date_time ? new Date(battleForm.date_time) : new Date();
-                      date.setHours(parseInt(hours), parseInt(minutes));
-                      setBattleForm({ ...battleForm, date_time: date.toISOString() });
-                    }}
+                    required
+                    value={battleForm.contact_name}
+                    onChange={(e) => setBattleForm({ ...battleForm, contact_name: e.target.value })}
                     className="bg-black/30 border-red-500/30 text-white"
+                    placeholder="Nombre real o del manager"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Correo electrónico de contacto *</Label>
+                  <Input
+                    required
+                    type="email"
+                    value={battleForm.contact_email}
+                    onChange={(e) => setBattleForm({ ...battleForm, contact_email: e.target.value })}
+                    className="bg-black/30 border-red-500/30 text-white"
+                    placeholder="email@ejemplo.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">WhatsApp de contacto *</Label>
+                  <Input
+                    required
+                    value={battleForm.contact_whatsapp}
+                    onChange={(e) => setBattleForm({ ...battleForm, contact_whatsapp: e.target.value })}
+                    className="bg-black/30 border-red-500/30 text-white"
+                    placeholder="+51 999 999 999"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-white font-bold">Reglas *</Label>
-                <Textarea
-                  required
-                  value={battleForm.rules}
-                  onChange={(e) => setBattleForm({ ...battleForm, rules: e.target.value })}
-                  className="bg-black/30 border-red-500/30 text-white"
-                  placeholder="Describe las reglas de la batalla..."
-                />
+              {/* 2️⃣ Detalles de la batalla */}
+              <div className="bg-orange-900/20 border border-orange-500/30 rounded-xl p-4 space-y-4">
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  2️⃣ Detalles de la batalla
+                </h3>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Tipo de batalla *</Label>
+                  <RadioGroup value={battleForm.battle_type} onValueChange={(value) => setBattleForm({ ...battleForm, battle_type: value })}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="oficial" id="oficial" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="oficial" className="text-white cursor-pointer">Batalla oficial</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="batallita_oficial" id="batallita" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="batallita" className="text-white cursor-pointer">Batallita oficial</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="musical" id="musical" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="musical" className="text-white cursor-pointer">Batalla musical</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-white font-bold">Fecha propuesta *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal bg-black/30 border-orange-500/30 text-white hover:bg-black/40 hover:text-white"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {battleForm.date_time ? format(new Date(battleForm.date_time), 'PPP', { locale: es }) : <span className="text-gray-400">Seleccionar</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarComponent
+                          mode="single"
+                          selected={battleForm.date_time ? new Date(battleForm.date_time) : undefined}
+                          onSelect={(date) => {
+                            if (date) {
+                              const currentTime = battleForm.date_time ? new Date(battleForm.date_time) : new Date();
+                              date.setHours(currentTime.getHours(), currentTime.getMinutes());
+                              setBattleForm({ ...battleForm, date_time: date.toISOString() });
+                            }
+                          }}
+                          locale={es}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-white font-bold">Hora *</Label>
+                    <Input
+                      type="time"
+                      required
+                      value={battleForm.date_time ? format(new Date(battleForm.date_time), 'HH:mm') : ""}
+                      onChange={(e) => {
+                        const [hours, minutes] = e.target.value.split(':');
+                        const date = battleForm.date_time ? new Date(battleForm.date_time) : new Date();
+                        date.setHours(parseInt(hours), parseInt(minutes));
+                        setBattleForm({ ...battleForm, date_time: date.toISOString() });
+                      }}
+                      className="bg-black/30 border-orange-500/30 text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Zona horaria</Label>
+                  <Input
+                    value={battleForm.timezone}
+                    onChange={(e) => setBattleForm({ ...battleForm, timezone: e.target.value })}
+                    className="bg-black/30 border-orange-500/30 text-white"
+                    placeholder="Ej: 9:00 pm COL / PER / MX"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Cantidad de rondas *</Label>
+                  <RadioGroup value={battleForm.rounds} onValueChange={(value) => setBattleForm({ ...battleForm, rounds: value })}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="1_ronda" id="1_ronda" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="1_ronda" className="text-white cursor-pointer">1 ronda</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="mejor_3" id="mejor_3" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="mejor_3" className="text-white cursor-pointer">1 ronda (mejor de 3)</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="otro" id="otro_rounds" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="otro_rounds" className="text-white cursor-pointer">Otro (especificar en comentarios)</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">¿La batalla tiene reto?</Label>
+                  <RadioGroup value={battleForm.has_challenge ? "si" : "no"} onValueChange={(value) => setBattleForm({ ...battleForm, has_challenge: value === "si" })}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="si" id="reto_si" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="reto_si" className="text-white cursor-pointer">Sí</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="reto_no" className="border-orange-500 text-orange-500" />
+                      <Label htmlFor="reto_no" className="text-white cursor-pointer">No</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {battleForm.has_challenge && (
+                  <div className="space-y-2">
+                    <Label className="text-white font-bold">Descripción del reto</Label>
+                    <Textarea
+                      value={battleForm.challenge_description}
+                      onChange={(e) => setBattleForm({ ...battleForm, challenge_description: e.target.value })}
+                      className="bg-black/30 border-orange-500/30 text-white"
+                      placeholder="Describe brevemente el reto..."
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-white font-bold">Premio (opcional)</Label>
-                <Input
-                  value={battleForm.prize}
-                  onChange={(e) => setBattleForm({ ...battleForm, prize: e.target.value })}
-                  className="bg-black/30 border-red-500/30 text-white"
-                  placeholder="Ej: $100, PS5, etc."
-                />
+              {/* 3️⃣ Reglas y condiciones */}
+              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-4 space-y-4">
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  3️⃣ Reglas y condiciones
+                </h3>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Uso de potenciadores</Label>
+                  <RadioGroup value={battleForm.use_boosters ? "si" : "no"} onValueChange={(value) => setBattleForm({ ...battleForm, use_boosters: value === "si" })}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="si" id="boost_si" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="boost_si" className="text-white cursor-pointer">Sí</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="boost_no" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="boost_no" className="text-white cursor-pointer">No</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Cantidad de diamantes requeridos *</Label>
+                  <RadioGroup value={battleForm.diamonds_required} onValueChange={(value) => setBattleForm({ ...battleForm, diamonds_required: value })}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="10k" id="10k" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="10k" className="text-white cursor-pointer">10k</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="200k" id="200k" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="200k" className="text-white cursor-pointer">200k</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="300k" id="300k" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="300k" className="text-white cursor-pointer">300k</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="otro" id="otro_diamonds" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="otro_diamonds" className="text-white cursor-pointer">Otro (especificar en comentarios)</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">¿La batalla será en la parte musical? *</Label>
+                  <RadioGroup value={battleForm.musical_section} onValueChange={(value) => setBattleForm({ ...battleForm, musical_section: value })}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="si" id="musical_si" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="musical_si" className="text-white cursor-pointer">Sí</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="musical_no" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="musical_no" className="text-white cursor-pointer">No</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="indistinto" id="indistinto" className="border-yellow-500 text-yellow-500" />
+                      <Label htmlFor="indistinto" className="text-white cursor-pointer">Indistinto</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-white font-bold">Imagen de la Batalla</Label>
-                <div className="flex gap-4 items-start">
+              {/* 4️⃣ Material promocional */}
+              <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-4 space-y-4">
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  4️⃣ Material promocional
+                </h3>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Subir flyer oficial de la batalla *</Label>
+                  <p className="text-xs text-gray-400">El flyer debe incluir fecha, hora, participantes y tipo de batalla</p>
                   <Input
                     type="file"
                     accept="image/*"
-                    onChange={handleImageUpload}
+                    onChange={(e) => handleImageUpload(e, 'flyer_url')}
                     disabled={uploadingImage}
-                    className="bg-black/30 border-red-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-red-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-red-700"
+                    className="bg-black/30 border-green-500/30 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-600 file:text-white file:font-bold file:cursor-pointer hover:file:bg-green-700"
                   />
-                  {uploadingImage && <span className="text-red-400 text-sm mt-2">Subiendo...</span>}
+                  {uploadingImage && <span className="text-green-400 text-sm">Subiendo...</span>}
+                  {battleForm.flyer_url && (
+                    <img src={battleForm.flyer_url} alt="Flyer" className="w-full h-48 object-cover rounded-xl mt-2" />
+                  )}
                 </div>
-                {battleForm.image_url && (
-                  <img src={battleForm.image_url} alt="Preview" className="w-full h-48 object-cover rounded-xl mt-4" />
-                )}
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="flyer_support" 
+                    checked={battleForm.needs_flyer_support}
+                    onCheckedChange={(checked) => setBattleForm({ ...battleForm, needs_flyer_support: checked })}
+                    className="border-green-500"
+                  />
+                  <Label htmlFor="flyer_support" className="text-white cursor-pointer">¿Deseas apoyo para diseño del flyer?</Label>
+                </div>
+              </div>
+
+              {/* 5️⃣ Confirmación */}
+              <div className="bg-purple-900/20 border border-purple-500/30 rounded-xl p-4 space-y-4">
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  5️⃣ Confirmación
+                </h3>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="rules_confirmed" 
+                    required
+                    checked={battleForm.rules_confirmed}
+                    onCheckedChange={(checked) => setBattleForm({ ...battleForm, rules_confirmed: checked })}
+                    className="border-purple-500"
+                  />
+                  <Label htmlFor="rules_confirmed" className="text-white cursor-pointer">
+                    Confirmo que cumplo y respetaré las reglas de las batallas oficiales de TikTok *
+                  </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white font-bold">Comentarios adicionales (opcional)</Label>
+                  <Textarea
+                    value={battleForm.additional_comments}
+                    onChange={(e) => setBattleForm({ ...battleForm, additional_comments: e.target.value })}
+                    className="bg-black/30 border-purple-500/30 text-white"
+                    placeholder="Escribe cualquier comentario adicional..."
+                    rows={3}
+                  />
+                </div>
               </div>
 
               <DialogFooter>
@@ -405,9 +636,25 @@ export default function Batallas() {
                   onClick={() => {
                     setShowBattleForm(false);
                     setBattleForm({
+                      artistic_name: "",
+                      contact_name: "",
+                      contact_email: "",
+                      contact_whatsapp: "",
+                      battle_type: "oficial",
+                      date_time: "",
+                      timezone: "",
+                      rounds: "1_ronda",
+                      has_challenge: false,
+                      challenge_description: "",
+                      use_boosters: false,
+                      diamonds_required: "10k",
+                      musical_section: "indistinto",
+                      flyer_url: "",
+                      needs_flyer_support: false,
+                      rules_confirmed: false,
+                      additional_comments: "",
                       opponent_name: "",
                       opponent_name_2: "",
-                      date_time: "",
                       rules: "",
                       prize: "",
                       image_url: ""
@@ -419,10 +666,10 @@ export default function Batallas() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={createBattleMutation.isPending}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                  disabled={createBattleMutation.isPending || !battleForm.rules_confirmed}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold disabled:opacity-50"
                 >
-                  {createBattleMutation.isPending ? "Creando..." : (user?.role === "admin" ? "Crear Batalla" : "Enviar para Aprobación")}
+                  {createBattleMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
                 </Button>
               </DialogFooter>
             </form>
