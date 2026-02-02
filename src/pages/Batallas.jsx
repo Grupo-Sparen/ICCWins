@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -549,26 +550,31 @@ export default function Batallas() {
                   </RadioGroup>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <Label className="text-white font-bold">Cantidad de diamantes requeridos *</Label>
-                  <RadioGroup value={battleForm.diamonds_required} onValueChange={(value) => setBattleForm({ ...battleForm, diamonds_required: value })}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="10k" id="10k" className="border-yellow-500 text-yellow-500" />
-                      <Label htmlFor="10k" className="text-white cursor-pointer">10k</Label>
+                  <div className="space-y-2">
+                    <div className="text-center">
+                      <span className="text-3xl font-black text-yellow-400">
+                        {parseInt(battleForm.diamonds_required).toLocaleString()}
+                      </span>
+                      <span className="text-white ml-2">diamantes</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="200k" id="200k" className="border-yellow-500 text-yellow-500" />
-                      <Label htmlFor="200k" className="text-white cursor-pointer">200k</Label>
+                    <Slider
+                      value={[parseInt(battleForm.diamonds_required)]}
+                      onValueChange={(value) => setBattleForm({ ...battleForm, diamonds_required: value[0].toString() })}
+                      min={10000}
+                      max={1000000}
+                      step={10000}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>10K</span>
+                      <span>250K</span>
+                      <span>500K</span>
+                      <span>750K</span>
+                      <span>1M</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="300k" id="300k" className="border-yellow-500 text-yellow-500" />
-                      <Label htmlFor="300k" className="text-white cursor-pointer">300k</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="otro" id="otro_diamonds" className="border-yellow-500 text-yellow-500" />
-                      <Label htmlFor="otro_diamonds" className="text-white cursor-pointer">Otro (especificar en comentarios)</Label>
-                    </div>
-                  </RadioGroup>
+                  </div>
                 </div>
 
               </div>
