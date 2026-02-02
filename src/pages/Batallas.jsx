@@ -600,11 +600,14 @@ export default function Batallas() {
 
                 <div className="space-y-2">
                   <Label className="text-white font-bold">Comentarios adicionales (opcional)</Label>
+                  <p className="text-sm text-gray-400">
+                    💡 También ofrecemos: diseño de flyer, video promocional, host, y más servicios
+                  </p>
                   <Textarea
                     value={battleForm.additional_comments}
                     onChange={(e) => setBattleForm({ ...battleForm, additional_comments: e.target.value })}
                     className="bg-black/30 border-purple-500/30 text-white"
-                    placeholder="Escribe cualquier comentario adicional..."
+                    placeholder="Escribe cualquier comentario adicional o solicita servicios como diseño de flyer, video promocional, host, etc..."
                     rows={3}
                   />
                 </div>
