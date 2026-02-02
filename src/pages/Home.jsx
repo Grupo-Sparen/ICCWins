@@ -64,7 +64,7 @@ export default function Home() {
   }, [emblaTournamentsApi]);
 
   return (
-    <div className="min-h-screen pt-32">
+    <div className="min-h-screen pt-16">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Effects */}
