@@ -517,6 +517,7 @@ export default function Batallas() {
 
                 <div className="space-y-2">
                   <Label className="text-white font-bold">¿Necesito Host (promoción de la batalla)?</Label>
+                  <p className="text-sm text-yellow-400">💰 Este servicio implica un costo adicional</p>
                   <RadioGroup value={battleForm.needs_host ? "si" : "no"} onValueChange={(value) => setBattleForm({ ...battleForm, needs_host: value === "si" })}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="si" id="host_si" className="border-orange-500 text-orange-500" />
