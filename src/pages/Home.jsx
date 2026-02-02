@@ -10,7 +10,16 @@ import useEmblaCarousel from "embla-carousel-react";
 import Countdown from "../components/Countdown";
 
 export default function Home() {
+  const [currentHero, setCurrentHero] = useState(0);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
+
+  // Rotate heroes every 8 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHero((prev) => (prev === 0 ? 1 : 0));
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: activePrizes = [] } = useQuery({
     queryKey: ["activePrizes"],
@@ -74,6 +83,8 @@ export default function Home() {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+          {/* Hero 1: Premios */}
+          {currentHero === 0 && (
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div className="text-center lg:text-left">
@@ -213,6 +224,117 @@ export default function Home() {
               )}
             </div>
           </div>
+          )}
+
+          {/* Hero 2: Batallas TikTok */}
+          {currentHero === 1 && (
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-red-600/20 border border-red-500/30 px-4 py-2 rounded-full mb-6">
+                <Swords className="w-4 h-4 text-red-400" />
+                <span className="text-red-300 font-bold text-sm">BATALLAS TIKTOK OFICIALES</span>
+              </div>
+              
+              <h1 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight">
+                Desafía a los<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-400 to-red-600 text-glow">
+                  Mejores
+                </span><br/>
+                Tiktokers en<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-red-500">
+                  BATALLAS ÉPICAS
+                </span>
+              </h1>
+              
+              <p className="text-xl text-gray-300 mb-8 max-w-xl">
+                Solicita tu batalla oficial de TikTok y demuestra quién es el mejor. 
+                <span className="text-red-400 font-bold"> Promoción, host y servicios profesionales disponibles.</span>
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link to={createPageUrl("Batallas")}>
+                  <Button className="h-14 px-8 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-black text-lg rounded-xl shadow-lg shadow-red-500/30">
+                    <Swords className="w-5 h-5 mr-2" />
+                    Solicitar Batalla
+                  </Button>
+                </Link>
+                <Link to={createPageUrl("Batallas")}>
+                  <Button className="h-14 px-8 bg-white/10 hover:bg-white/20 text-white font-bold text-lg rounded-xl border border-white/20">
+                    Ver Batallas
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="flex items-center gap-8 mt-12 justify-center lg:justify-start">
+                <div>
+                  <div className="text-3xl font-black text-white">50+</div>
+                  <div className="text-sm text-gray-400 font-semibold">Batallas</div>
+                </div>
+                <div className="w-px h-12 bg-red-600/30"></div>
+                <div>
+                  <div className="text-3xl font-black text-white">100K+</div>
+                  <div className="text-sm text-gray-400 font-semibold">Espectadores</div>
+                </div>
+                <div className="w-px h-12 bg-red-600/30"></div>
+                <div>
+                  <div className="text-3xl font-black text-white">Live</div>
+                  <div className="text-sm text-gray-400 font-semibold">En TikTok</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Content - Battles Preview */}
+            <div className="lg:pl-8">
+              <Card className="bg-gradient-to-br from-red-900/40 to-orange-900/40 border-2 border-red-500/30 p-8 rounded-3xl backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <Swords className="w-6 h-6 text-red-400" />
+                  <span className="text-red-400 font-black text-sm uppercase tracking-wide">Batallas Disponibles</span>
+                </div>
+
+                <div className="relative mb-6 rounded-2xl overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=600&auto=format&fit=crop" 
+                    alt="TikTok Battle"
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="text-white font-black text-2xl mb-2">¡Únete a la Arena!</div>
+                    <div className="text-gray-300 text-sm">Solicita tu batalla oficial ahora</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-3 text-white">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span>Host y promoción profesional</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-white">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span>Diseño de flyer y video promocional</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-white">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span>Transmisión en vivo en TikTok</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-white">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span>Apoyo en coordinación y reglas</span>
+                  </div>
+                </div>
+
+                <Link to={createPageUrl("Batallas")} className="block">
+                  <Button className="w-full h-12 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-black text-lg rounded-xl">
+                    <Swords className="w-5 h-5 mr-2" />
+                    Ver Todas las Batallas
+                  </Button>
+                </Link>
+              </Card>
+            </div>
+          </div>
+          )}
         </div>
       </section>
 
